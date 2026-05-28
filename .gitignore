@@ -1,0 +1,15 @@
+node_modules/
+out/
+dist/
+*.log
+.cursor/debug-*.log
+.cursor/skills/
+.vscode/
+coverage/
+.DS_Store
+.env
+.env.*
+!.env.example
+
+# Cursor skill installer cache (large zips / extracted trees)
+.cursor/.skills-vendor/

@@ -1,0 +1,11 @@
+{
+  "id": "imrad",
+  "name": "Empirical (IMRAD)",
+  "headings": {
+    "introduction": ["introduction", "background"],
+    "methods": ["methods", "materials and methods", "patients and methods"],
+    "results": ["results"],
+    "discussion": ["discussion", "conclusion", "conclusions"]
+  }
+}
+

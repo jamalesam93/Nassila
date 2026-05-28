@@ -1,0 +1,35 @@
+appId: com.nassila.app
+productName: Nassila
+directories:
+  buildResources: build
+  output: dist
+files:
+  - out/**/*
+  - package.json
+  - build/icon.png
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: build/icon.png
+  artifactName: ${productName} Setup ${version}.${ext}
+  signAndEditExecutable: false
+afterPack: scripts/win-after-pack.mjs
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  allowElevation: true
+  perMachine: false
+  createDesktopShortcut: always
+  createStartMenuShortcut: true
+  shortcutName: Nassila
+  uninstallDisplayName: Nassila
+mac:
+  target:
+    - dmg
+  icon: build/icon.png
+linux:
+  target:
+    - AppImage
+  icon: build/icon.png

@@ -1,0 +1,8 @@
+{
+  "id": "letter",
+  "name": "Letter / Commentary",
+  "headings": {
+    "body": ["letter", "commentary", "correspondence"]
+  }
+}
+

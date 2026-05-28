@@ -1,0 +1,10 @@
+{
+  "id": "case_report",
+  "name": "Case report",
+  "headings": {
+    "introduction": ["introduction", "background"],
+    "case": ["case", "case report", "case presentation", "case description"],
+    "discussion": ["discussion", "conclusion", "conclusions"]
+  }
+}
+

@@ -1,0 +1,11 @@
+{
+  "id": "review",
+  "name": "Review (narrative/systematic)",
+  "headings": {
+    "introduction": ["introduction", "background"],
+    "methods": ["methods", "methodology", "search strategy", "materials and methods"],
+    "results": ["results", "findings"],
+    "discussion": ["discussion", "conclusion", "conclusions"]
+  }
+}
+
