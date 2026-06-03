@@ -11,6 +11,7 @@ import {
   type OutputListFilter
 } from '../utils/output-filters'
 import type { CslDate } from '../../engine/types'
+import { authorPreviewLimits } from '../utils/author-preview'
 
 function formatAccessedForDisplay(accessed: CslDate): string {
   if (accessed.literal) return accessed.literal.trim()
@@ -220,6 +221,8 @@ export default function OutputPanel() {
               const duplicateStyle = duplicateMarker ? duplicateColors(duplicateMarker.colorIndex) : null
               const predatoryFlag = predatoryByCitation[item.id]
               const accessedLabel = item.accessed ? formatAccessedForDisplay(item.accessed) : ''
+              const authorCount = item.author?.length ?? 0
+              const { maxShown, etAlThreshold } = authorPreviewLimits(selectedStyleId)
 
               return (
                 <div
@@ -237,10 +240,10 @@ export default function OutputPanel() {
                       </div>
                       <p className="mt-1 ps-4 text-xs text-muted-foreground">
                         {(item.author ?? [])
-                          .slice(0, 3)
+                          .slice(0, maxShown)
                           .map((a) => (a.literal ?? `${a.family ?? ''}${a.given ? ', ' + a.given : ''}`).trim())
                           .join('; ')}
-                        {(item.author?.length ?? 0) > 3 && t('citationUi.etAl')}
+                        {authorCount >= etAlThreshold && t('citationUi.etAl')}
                         {item.issued?.['date-parts']?.[0]?.[0] &&
                           ` (${item.issued['date-parts'][0][0]})`}
                       </p>

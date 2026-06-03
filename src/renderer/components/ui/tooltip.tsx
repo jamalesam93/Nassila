@@ -51,29 +51,27 @@ function computePlacement(
   return { top, left, transform }
 }
 
-/**
- * Accessible hover helper. Floating tooltips render in a portal so they are not
- * clipped by app regions with overflow:hidden; position is clamped to the viewport.
- */
-export function Tooltip(props: {
+function TooltipAriaTitle(props: { label: ReactNode; children: ReactNode }) {
+  const title =
+    typeof props.label === 'string' || typeof props.label === 'number'
+      ? String(props.label)
+      : undefined
+  return (
+    <span className="inline-flex" title={title}>
+      {props.children}
+    </span>
+  )
+}
+
+function TooltipFloating(props: {
   label: ReactNode
   children: ReactNode
-  preferredMode?: 'floating' | 'aria-title'
   side?: 'top' | 'bottom'
 }) {
-  if (props.preferredMode === 'aria-title') {
-    const title =
-      typeof props.label === 'string' || typeof props.label === 'number' ? String(props.label) : undefined
-    return (
-      <span className="inline-flex" title={title}>
-        {props.children}
-      </span>
-    )
-  }
-
   const tooltipId = useId()
   const triggerRef = useRef<HTMLSpanElement>(null)
   const tooltipRef = useRef<HTMLSpanElement>(null)
+  const suppressFocusShowRef = useRef(false)
   const [open, setOpen] = useState(false)
   const [style, setStyle] = useState<CSSProperties>({
     position: 'fixed',
@@ -133,14 +131,55 @@ export function Tooltip(props: {
     }
   }, [open, reposition, props.label])
 
+  useLayoutEffect(() => {
+    if (!open) return
+    const onPointerDown = (e: PointerEvent) => {
+      const target = e.target as Node | null
+      const trigger = triggerRef.current
+      const tip = tooltipRef.current
+      if (trigger?.contains(target) || tip?.contains(target)) return
+      hide()
+    }
+    const onWindowBlur = () => hide()
+    const onPointerMove = (e: PointerEvent) => {
+      const trigger = triggerRef.current
+      if (!trigger) return
+      const rect = trigger.getBoundingClientRect()
+      const inside =
+        e.clientX >= rect.left &&
+        e.clientX <= rect.right &&
+        e.clientY >= rect.top &&
+        e.clientY <= rect.bottom
+      if (!inside) hide()
+    }
+    document.addEventListener('pointerdown', onPointerDown, true)
+    document.addEventListener('pointermove', onPointerMove)
+    window.addEventListener('blur', onWindowBlur)
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown, true)
+      document.removeEventListener('pointermove', onPointerMove)
+      window.removeEventListener('blur', onWindowBlur)
+    }
+  }, [open, hide])
+
   return (
     <span
       ref={triggerRef}
       className="relative inline-flex align-middle"
       onMouseEnter={show}
       onMouseLeave={hide}
-      onFocus={show}
+      onFocus={(e) => {
+        if (suppressFocusShowRef.current) {
+          suppressFocusShowRef.current = false
+          return
+        }
+        if (e.target instanceof HTMLElement && e.target.matches(':focus-visible')) show()
+      }}
       onBlur={hide}
+      onPointerDown={() => {
+        suppressFocusShowRef.current = true
+        hide()
+      }}
       aria-describedby={open ? tooltipId : undefined}
     >
       {props.children}
@@ -159,5 +198,26 @@ export function Tooltip(props: {
           document.body
         )}
     </span>
+  )
+}
+
+/**
+ * Accessible hover helper. Floating tooltips render in a portal so they are not
+ * clipped by app regions with overflow:hidden; position is clamped to the viewport.
+ */
+export function Tooltip(props: {
+  label: ReactNode
+  children: ReactNode
+  preferredMode?: 'floating' | 'aria-title'
+  side?: 'top' | 'bottom'
+}) {
+  if (props.preferredMode === 'aria-title') {
+    return <TooltipAriaTitle label={props.label}>{props.children}</TooltipAriaTitle>
+  }
+
+  return (
+    <TooltipFloating label={props.label} side={props.side}>
+      {props.children}
+    </TooltipFloating>
   )
 }

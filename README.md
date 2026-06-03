@@ -11,7 +11,7 @@ Import or paste your bibliography, fix common errors, verify rows against Crossr
 
 | | |
 |---|---|
-| **Download (Windows)** | [**Latest release**](https://github.com/jamalesam93/Nassila/releases/latest) — `Nassila Setup 1.0.0.exe` |
+| **Download (Windows)** | [**Latest release**](https://github.com/jamalesam93/Nassila/releases/latest) — `Nassila Setup 1.0.1.exe` |
 | **Documentation** | [How-to guide](docs/HOW_TO_GUIDE.md) · [User guide](docs/USER_GUIDE.md) · [Brand](docs/BRAND.md) · [Changelog](CHANGELOG.md) |
 | **License** | [MIT](LICENSE) |
 

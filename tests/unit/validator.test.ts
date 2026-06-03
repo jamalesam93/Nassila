@@ -70,7 +70,8 @@ describe('validateCitations', () => {
       issued: { 'date-parts': [[2024]] }
     }]
     const issues = validateCitations(items, 'vancouver')
-    expect(issues.some((i) => i.message.includes('Vancouver'))).toBe(true)
+    // Full author lists in CSL are correct; citeproc applies 6 + et al. on export.
+    expect(issues.some((i) => i.message.includes('Vancouver'))).toBe(false)
   })
 
   it('applies APA-specific rules', () => {

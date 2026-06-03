@@ -503,19 +503,6 @@ export const STYLE_RULES: StyleRule[] = [
     }
   },
 
-  // ── Vancouver-specific ────────────────────────────────────────────
-  {
-    id: 'vancouver-author-limit',
-    styleIds: ['vancouver'],
-    itemTypes: '*',
-    validate: (item) => {
-      if (item.author && item.author.length > 6) {
-        return [makeIssue(item.id, 'info', 'author', 'Vancouver: list first 6 authors then "et al." for 7+')]
-      }
-      return []
-    }
-  },
-
   // ── Gray Literature URL Recommendation (all styles) ────────────────
   {
     id: 'gray-lit-url-recommended',

@@ -2,6 +2,16 @@
 
 All notable changes to **Nassila** are documented here.
 
+## [Unreleased]
+
+## [1.0.1] — 2026-06-03
+
+### Fixed
+
+- **More** menu closes when you click outside or choose an action (replaces native `<details>` that stayed open).
+- **Import** (and other toolbar) hints dismiss when the pointer leaves the button, including after the file dialog closes.
+- **Vancouver:** citation cards show six authors then “et al.” when there are seven or more; removed a validator rule that incorrectly flagged full author lists as “Needs fix” (export via CSL was already correct).
+
 ## [1.0.0] — 2026-05-24
 
 Reference list verification baseline.

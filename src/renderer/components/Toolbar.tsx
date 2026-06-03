@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCitationStore } from '../stores/citation-store'
 import { useAppCommands } from '../hooks/use-app-commands'
@@ -62,6 +62,20 @@ export default function Toolbar() {
     if (ok) clearCitations()
   }
 
+  const [moreOpen, setMoreOpen] = useState(false)
+  const moreMenuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!moreOpen) return
+    const onPointerDown = (e: PointerEvent) => {
+      const target = e.target as Node | null
+      const inside = target && moreMenuRef.current?.contains(target)
+      if (!inside) setMoreOpen(false)
+    }
+    document.addEventListener('pointerdown', onPointerDown, true)
+    return () => document.removeEventListener('pointerdown', onPointerDown, true)
+  }, [moreOpen])
+
   return (
     <div className="border-b border-border bg-card">
       <div className="flex flex-wrap items-center gap-3 px-4 py-2 tracking-tight">
@@ -76,7 +90,12 @@ export default function Toolbar() {
 
       <div className="flex flex-wrap items-center gap-2 border-t border-border/70 px-4 py-2 rtl:flex-row-reverse">
         <Tooltip label={t('toolbar.importHint')} side="bottom">
-          <Button onClick={() => void importReferences()} size="sm" variant="secondary">
+          <Button
+            onClick={() => void importReferences()}
+            onMouseDown={(e) => e.preventDefault()}
+            size="sm"
+            variant="secondary"
+          >
             {t('toolbar.import')}
           </Button>
         </Tooltip>
@@ -105,16 +124,29 @@ export default function Toolbar() {
           </Button>
         </Tooltip>
 
-        <details className="relative">
-          <summary className="inline-flex h-8 cursor-pointer list-none items-center rounded-md border border-border bg-background px-2 text-xs font-medium text-foreground hover:bg-accent [&::-webkit-details-marker]:hidden">
+        <div ref={moreMenuRef} className="relative">
+          <button
+            type="button"
+            aria-expanded={moreOpen}
+            aria-haspopup="menu"
+            className="inline-flex h-8 cursor-pointer items-center rounded-md border border-border bg-background px-2 text-xs font-medium text-foreground hover:bg-accent"
+            onClick={() => setMoreOpen((open) => !open)}
+          >
             {t('toolbar.more')}
-          </summary>
-          <div className="absolute start-0 top-full z-30 mt-1 min-w-[11rem] rounded-md border border-border bg-popover p-1 shadow-lg rtl:start-auto rtl:end-0">
+          </button>
+          {moreOpen && (
+          <div
+            role="menu"
+            className="absolute start-0 top-full z-30 mt-1 min-w-[11rem] rounded-md border border-border bg-popover p-1 shadow-lg rtl:start-auto rtl:end-0"
+          >
             <button
               type="button"
               className="block w-full rounded px-2 py-1.5 text-start text-xs hover:bg-accent disabled:opacity-40"
               disabled={citationCount === 0 || autocorrecting}
-              onClick={() => void handleAutocorrect()}
+              onClick={() => {
+                setMoreOpen(false)
+                void handleAutocorrect()
+              }}
             >
               {autocorrecting ? t('toolbar.autocorrectBusy') : t('toolbar.autocorrect')}
             </button>
@@ -122,7 +154,10 @@ export default function Toolbar() {
               type="button"
               className="block w-full rounded px-2 py-1.5 text-start text-xs hover:bg-accent disabled:opacity-40"
               disabled={citationCount === 0 || findingDois || networkStatus !== 'online'}
-              onClick={() => void handleFindDois()}
+              onClick={() => {
+                setMoreOpen(false)
+                void handleFindDois()
+              }}
             >
               {findingDois ? t('toolbar.findingDoisBusy') : t('toolbar.findDois')}
             </button>
@@ -130,7 +165,10 @@ export default function Toolbar() {
               type="button"
               className="block w-full rounded px-2 py-1.5 text-start text-xs hover:bg-accent disabled:opacity-40"
               disabled={citationCount < 2}
-              onClick={detectDuplicates}
+              onClick={() => {
+                setMoreOpen(false)
+                detectDuplicates()
+              }}
             >
               {t('toolbar.duplicates')}
             </button>
@@ -139,7 +177,10 @@ export default function Toolbar() {
               type="button"
               className="block w-full rounded px-2 py-1.5 text-start text-xs hover:bg-accent disabled:opacity-40"
               disabled={!canUndo}
-              onClick={undo}
+              onClick={() => {
+                setMoreOpen(false)
+                undo()
+              }}
             >
               {t('toolbar.undo')}
             </button>
@@ -147,7 +188,10 @@ export default function Toolbar() {
               type="button"
               className="block w-full rounded px-2 py-1.5 text-start text-xs hover:bg-accent disabled:opacity-40"
               disabled={!canRedo}
-              onClick={redo}
+              onClick={() => {
+                setMoreOpen(false)
+                redo()
+              }}
             >
               {t('toolbar.redo')}
             </button>
@@ -155,12 +199,16 @@ export default function Toolbar() {
               type="button"
               className="block w-full rounded px-2 py-1.5 text-start text-xs text-destructive hover:bg-destructive/10 disabled:opacity-40"
               disabled={citationCount === 0}
-              onClick={handleClearAll}
+              onClick={() => {
+                setMoreOpen(false)
+                handleClearAll()
+              }}
             >
               {t('toolbar.clearAll')}
             </button>
           </div>
-        </details>
+          )}
+        </div>
 
         <div className="flex-1" />
       </div>
