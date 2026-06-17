@@ -4,6 +4,16 @@ All notable changes to **Nassila** are documented here.
 
 ## [Unreleased]
 
+### Added
+
+- **Training (NassilaT repo):** Phase 1.5 corpus pipeline (`build_paper_corpus.py`, `enrich_corpus_abstracts.py`) and Phase 2 abstract-only `l3_grounding_train.jsonl` (400 rows) for upcoming **`nassila-grounding-e4b-v1`** (target app **1.2.0** when GGUF ships on Hugging Face). See NassilaT `training/CORPUS_PIPELINE.md` and `training/PHASE2_VAST_WALKTHROUGH.md`.
+
+- **One Ring strategy:** [`docs/ONE_RING.md`](docs/ONE_RING.md) — one local model identity, multi-task routing over time; task registry in [`src/shared/nassila-agent-tasks.ts`](src/shared/nassila-agent-tasks.ts). Restored [`docs/WEBPAGE_ROADMAP.md`](docs/WEBPAGE_ROADMAP.md) with One Ring cross-links. Training pack updates: `training/ROADMAP.md`, `training/ONE_RING.md`, `DATASET_SCHEMA.md`.
+
+### Changed
+
+- **L3 grounding engine (Phase 0.5):** JSON auto-repair (`grounding-json-repair.ts`, aligned with training eval harness), one LLM retry on parse failure, passage/excerpt length caps in `grounding-llm.ts`, dedicated **LM Studio** preset in `llm-presets.ts` (`http://localhost:1234`).
+
 ## [1.0.1] — 2026-06-03
 
 ### Fixed

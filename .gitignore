@@ -3,7 +3,9 @@ out/
 dist/
 *.log
 .cursor/debug-*.log
-.cursor/skills/
+.cursor/skills/*
+!.cursor/skills/nassila/
+!.cursor/skills/nassila/**
 .vscode/
 coverage/
 .DS_Store

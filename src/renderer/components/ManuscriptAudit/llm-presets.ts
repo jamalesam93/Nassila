@@ -1,3 +1,5 @@
+import { NASSILA_MODEL_ARTIFACTS } from '../../../shared/nassila-agent-tasks'
+
 export interface LlmPreset {
   id: string
   label: string
@@ -72,12 +74,34 @@ export const LLM_PRESETS: LlmPreset[] = [
     notes: 'Local Ollama exposes /v1/chat/completions. Use any pulled model; key can be any string.'
   },
   {
+    id: 'lmstudio',
+    label: 'LM Studio (local)',
+    baseUrl: 'http://localhost:1234',
+    defaultModel: NASSILA_MODEL_ARTIFACTS.sanadE4b,
+    modelHints: [
+      'google/gemma-4-e4b',
+      NASSILA_MODEL_ARTIFACTS.sanadE4b,
+      NASSILA_MODEL_ARTIFACTS.sanad12b,
+      NASSILA_MODEL_ARTIFACTS.agentE12bV1,
+      'gemma-4-e4b-it-q6_k',
+      'gemma-4-e4b'
+    ],
+    notes:
+      'Start the Local Server in LM Studio. Use base URL http://localhost:1234 (Nassila appends /v1/chat/completions). Sanad default: ' +
+      NASSILA_MODEL_ARTIFACTS.sanadE4b +
+      ' Q6_K; optional quality: ' +
+      NASSILA_MODEL_ARTIFACTS.sanad12b +
+      ' Q6_K. Future merged Ouroboros: ' +
+      NASSILA_MODEL_ARTIFACTS.agentE12bV1 +
+      '. See docs/OUROBOROS.md.'
+  },
+  {
     id: 'vllm',
-    label: 'vLLM / llama.cpp / LM Studio (local)',
+    label: 'vLLM / llama.cpp (local)',
     baseUrl: 'http://localhost:8000',
     defaultModel: 'Qwen/Qwen2.5-72B-Instruct',
     modelHints: ['Qwen/Qwen2.5-72B-Instruct', 'Qwen/Qwen2.5-32B-Instruct'],
-    notes: 'Adjust port to match your local server.'
+    notes: 'Adjust port to match your local OpenAI-compatible server.'
   }
 ]
 

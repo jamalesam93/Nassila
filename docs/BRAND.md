@@ -44,8 +44,27 @@ Use these on README, About, and marketing. In the app UI, `toolbar.brandSubtitle
 | `productName` (electron-builder) | Nassila |
 | `appId` | `com.nassila.app` |
 | User-Agent (registry APIs) | `Nassila/1.0` |
-| Fine-tuned model file (planned) | `nassila-grounding-e4b-v1` |
+| Sanad default (E4B Q6_K) | `nassila-sanad-e4b` |
+| Sanad optional (12B Q6_K) | `nassila-sanad-12b` |
+| Unified local model (future) | `nassila-agent-e12b-v1` (or merged multi-task GGUF) |
+| Strategy doc | [`OUROBOROS.md`](./OUROBOROS.md) · agent brief [`OUROBOROS_CONTEXT.md`](./OUROBOROS_CONTEXT.md) |
 | Locale storage key | `nassila.locale` |
+
+---
+
+## Ouroboros workers (codenames)
+
+Seven **future product modules**; each has a deterministic core plus an optional trainable LLM facet. **Sanad** ships first. Constants: [`nassila-agent-tasks.ts`](../src/shared/nassila-agent-tasks.ts). Full brief: [`OUROBOROS_CONTEXT.md`](./OUROBOROS_CONTEXT.md).
+
+| Worker | Arabic | `task` id | Future module | LLM facet (when trained) |
+|--------|--------|-----------|---------------|--------------------------|
+| **Sanad** | سند | `l3_grounding` | Ground claims to sources | Passage vs excerpt → grounding JSON |
+| **Maktab** | مكتب | `doc_extract` | Manuscript ingest | PDF/DOCX → structured text |
+| **Masdar** | مصدر | `source_pdf_extract` | Cited source text | OA PDF → chunks for Sanad |
+| **Shahid** | شاهد | `table_figure_grounding` | Tables/figures as evidence | Multimodal region grounding |
+| **Raqim** | رقيم | `webpage_metadata` | Reference records (verify, export) | Webpage → CSL suggestions |
+| **Tasnif** | تصنيف | `webpage_classify` | Type, dedupe, predatory flags | Grey-web classification |
+| **Sharh** | شرح | `issue_explain` | Explain failures & mismatches | User-facing issue copy |
 
 ---
 

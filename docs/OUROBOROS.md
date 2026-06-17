@@ -74,7 +74,7 @@ Stable **`task`** ids in JSONL and code. Seven workers = seven future modules; f
 
 | task id | Codename | Module role | LLM facet status | Engine hook (today) |
 |---------|----------|-------------|------------------|---------------------|
-| `l3_grounding` | **Sanad** (سند) | Ground claims to sources | **Checkpoint** (v1.4a; Tier 2 not met) | [`grounding-llm.ts`](../src/engine/manuscript/grounding-llm.ts) |
+| `l3_grounding` | **Sanad** (سند) | Ground claims to sources | **Tier 2 PASS** (12B Q6_K v1.10 optional); E4B default | [`grounding-llm.ts`](../src/engine/manuscript/grounding-llm.ts) |
 | `doc_extract` | **Maktab** (مكتب) | Manuscript ingest | Planned | [`pdf-extract.ts`](../src/engine/manuscript/pdf-extract.ts) |
 | `source_pdf_extract` | **Masdar** (مصدر) | Cited source text | Planned | Manuscript audit |
 | `table_figure_grounding` | **Shahid** (شاهد) | Table/figure evidence | Planned (12B) | Multimodal |
@@ -102,20 +102,25 @@ Training pack: [`TRAINING.md`](./TRAINING.md) → [NassilaT `training/`](https:/
 
 | Stage | Artifact | Base | Notes |
 |-------|----------|------|-------|
-| **v1 ship** | `nassila-grounding-e4b-v1` | E4B | First Sanad release |
-| **Facet releases** | `nassila-grounding-e4b-v1.2`, … | E4B | Improved Sanad only |
+| **Sanad default** | `nassila-sanad-e4b` | E4B | Q6_K ~8 GB; checkpoint on model card only |
+| **Sanad optional** | `nassila-sanad-12b` | 12B | Q6_K; checkpoint v1.10 on card |
 | **Merged Ouroboros (future)** | `nassila-agent-e12b-v1` | 12B+ | Multi-worker + multimodal when ready |
 
 **Rule:** Prefer **one GGUF in LM Studio** with task routing. Separate adapters per worker during R&D; merge before marketing a unified Ouroboros bundle.
 
-**Dual-tier policy (A/B pilot):**
+**Dual-tier policy (A/B pilot — recorded June 2026):**
 
-| Tier | Base | Distribution | Role |
-|------|------|--------------|------|
-| **Default** | Gemma 4 E4B | Q6_K (~8GB-friendly) | Sanad + text workers (Maktab, Masdar, Raqim, Tasnif, Sharh) |
-| **Optional high-accuracy** | Gemma 4 12B | Q4_K_M → Q8_0 quant ladder | Sanad if A/B gates pass; **Shahid** multimodal regardless |
+| Tier | Base | Quant | Combined (115-row) | Tier 2 §10 | Role |
+|------|------|-------|-------------------|------------|------|
+| **Default** | Gemma 4 E4B | Q6_K (~8GB-friendly) | 88.12% (v1.10) | FAIL | Sanad + text workers; continue E4B iteration |
+| **Optional quality** | Gemma 4 12B | **Q6_K** (sweet spot) | **94.79%** (v1.10) | **PASS** | First Tier-2-passing Sanad checkpoint; optional download |
+| Shahid (future) | Gemma 4 12B | Q4–Q8 ladder | — | — | Multimodal worker |
 
-E4B remains the default download. 12B is offered only when the [A/B pilot](https://github.com/jamalesam93/NassilaT/blob/main/training/PHASE2_9_AB_PILOT_WALKTHROUGH.md) shows ≥3 pt combined-expect gain, `multi_claim` ≥80%, and quote validity ≥ E4B-Q6. Until then, iterate Sanad on E4B; forge Shahid on 12B when that worker starts.
+E4B remains the **default** LM Studio download (`nassila-sanad-e4b-q6_k.gguf`). **`nassila-sanad-12b-q6_k.gguf`** (checkpoint v1.10) is the optional high-accuracy Sanad tier — passes all six Tier 2 model gates on the hardened harness (quote validity 100%, false-supported 2.82%).
+
+The automated A/B script (`compare_ab_pilot.py`) still reports `defer_12b_to_shahid_only` because **`multi_claim` holdout pass = 69.23%** (threshold 80%) — persistent misses on h-043, h-045, h-088. That sub-gate is stricter than Tier 2 ship; dual-tier adoption treats it as a known limitation, not a blocker for the optional tier.
+
+Full walkthrough + HF upload: [NassilaT `PHASE2_9_AB_PILOT_WALKTHROUGH.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/PHASE2_9_AB_PILOT_WALKTHROUGH.md).
 
 ---
 
@@ -138,7 +143,7 @@ E4B remains the default download. 12B is offered only when the [A/B pilot](https
 
 ## Deprecated name
 
-**One Ring** was the earlier name for this strategy. See stub [`ONE_RING.md`](./ONE_RING.md) → this document.
+**One Ring** was the earlier name for this strategy; the canonical name is now **Ouroboros** (this document).
 
 ---
 

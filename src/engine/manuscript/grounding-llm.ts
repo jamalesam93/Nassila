@@ -1,4 +1,11 @@
 import type { ClaimGroundingRow, ClaimSupportVerdict, EvidenceSnippet, InTextSpan, LayerVerdict } from './types'
+import { parseGroundingJsonWithRepair } from './grounding-json-repair'
+
+/** Max chars for manuscript passage sent to the grounding LLM (Phase 0.5). */
+export const GROUNDING_PASSAGE_MAX_CHARS = 1500
+
+/** Max chars for source excerpt after chunk selection (Phase 0.5). */
+export const GROUNDING_EXCERPT_MAX_CHARS = 4200
 
 export interface GroundingLlmOpts {
   llmEnabled: boolean
@@ -55,14 +62,23 @@ export interface ParsedGroundingResponse {
   overallRationale?: string[]
 }
 
+/** Collapse whitespace and cap length for LLM prompts. */
+export function truncateForGrounding(text: string, maxChars: number): string {
+  const cleaned = text.replace(/\s+/g, ' ').trim()
+  if (cleaned.length <= maxChars) return cleaned
+  if (maxChars <= 1) return '…'
+  return `${cleaned.slice(0, maxChars - 1)}…`
+}
+
 export function buildGroundingUserPrompt(passage: string, sourceExcerpt: string, meta: { label: string; url?: string }): string {
   return [
     'You are a strict academic citation grounding assistant.',
     'Break the manuscript passage into short factual claims (atomic where possible).',
+    'Each claim string must restate an assertion from the PASSAGE (not copy SOURCE_EXCERPT sentences as claim text unless that assertion also appears in the PASSAGE).',
     'For each claim, compare ONLY to SOURCE_EXCERPT (verbatim text from the cited work).',
     'Verdict per claim:',
     '- supported: SOURCE_EXCERPT contains clear support; you MUST copy 1–3 verbatim sourceQuotes from SOURCE_EXCERPT.',
-    '- weak: partial or vague alignment.',
+    '- weak: partial or vague alignment, OR the source hedges (may/might/suggest/preliminary/unclear). Do NOT use weak when the excerpt clearly supports a single passage claim (including paraphrase and \'associated with\' / \'significantly\' wording). On compound passages, split conjuncts; if any conjunct lacks support or outcomes are mixed, use weak/contradicted/not_in_source — never supported when the passage bundles multiple claims.',
     '- not_in_source: not found in excerpt (excerpt may be incomplete).',
     '- contradicted: excerpt clearly conflicts.',
     '- insufficient_evidence: cannot tell from excerpt.',
@@ -75,19 +91,13 @@ export function buildGroundingUserPrompt(passage: string, sourceExcerpt: string,
   ].join('\n')
 }
 
-export function parseGroundingJson(raw: string): { ok: true; data: ParsedGroundingResponse } | { ok: false; error: string } {
-  const trimmed = raw.trim()
-  const start = trimmed.indexOf('{')
-  const end = trimmed.lastIndexOf('}')
-  if (start === -1 || end <= start) return { ok: false, error: 'No JSON object in model output' }
-  let parsed: unknown
-  try {
-    parsed = JSON.parse(trimmed.slice(start, end + 1)) as unknown
-  } catch {
-    return { ok: false, error: 'Invalid JSON from model' }
-  }
-  if (!parsed || typeof parsed !== 'object') return { ok: false, error: 'JSON root not an object' }
-  const rec = parsed as Record<string, unknown>
+export function parseGroundingJson(
+  raw: string
+): { ok: true; data: ParsedGroundingResponse; repaired?: boolean } | { ok: false; error: string } {
+  const parsed = parseGroundingJsonWithRepair(raw)
+  if (!parsed.ok) return { ok: false, error: parsed.error }
+
+  const rec = parsed.parsed
   const claimsRaw = rec.claims
   if (!Array.isArray(claimsRaw)) return { ok: false, error: 'Missing claims array' }
 
@@ -118,7 +128,7 @@ export function parseGroundingJson(raw: string): { ok: true; data: ParsedGroundi
     overallRationale = rec.overallRationale.filter((x): x is string => typeof x === 'string')
   }
 
-  return { ok: true, data: { claims, overallVerdict, overallRationale } }
+  return { ok: true, data: { claims, overallVerdict, overallRationale }, repaired: parsed.repaired || undefined }
 }
 
 function parseClaimVerdict(v: unknown): ClaimSupportVerdict | null {
@@ -135,10 +145,47 @@ function parseClaimVerdict(v: unknown): ClaimSupportVerdict | null {
   }
 }
 
+/** Collapse whitespace for quote substring checks (mirrors NassilaT evaluate_outputs.py). */
+export function normalizeWhitespaceForQuoteMatch(text: string): string {
+  return text.replace(/\s+/g, ' ').trim()
+}
+
+/** True when quote appears verbatim in excerpt (raw or whitespace-normalized). */
+export function isVerbatimQuoteSubstring(quote: string, excerpt: string): boolean {
+  if (!quote.trim()) return false
+  if (excerpt.includes(quote)) return true
+  const nq = normalizeWhitespaceForQuoteMatch(quote)
+  const ne = normalizeWhitespaceForQuoteMatch(excerpt)
+  return nq.length > 0 && ne.includes(nq)
+}
+
+export interface SourceQuoteValidationIssue {
+  claim: string
+  quote: string
+}
+
+/** Collect supported claims whose sourceQuotes are not substrings of the excerpt. */
+export function findInvalidSourceQuotes(
+  claims: ClaimGroundingRow[],
+  sourceExcerpt: string
+): SourceQuoteValidationIssue[] {
+  const issues: SourceQuoteValidationIssue[] = []
+  for (const c of claims) {
+    if (c.verdict !== 'supported') continue
+    for (const q of c.sourceQuotes ?? []) {
+      if (!isVerbatimQuoteSubstring(q, sourceExcerpt)) {
+        issues.push({ claim: c.claim, quote: q })
+      }
+    }
+  }
+  return issues
+}
+
 /** Maps structured claims (+ optional overlap) into a passage layer verdict. */
 export function passageVerdictFromGroundingClaims(
   claims: ClaimGroundingRow[],
-  deterministicBucket: 'low' | 'medium' | 'high'
+  deterministicBucket: 'low' | 'medium' | 'high',
+  sourceExcerpt?: string
 ): LayerVerdict {
   if (claims.length === 0) {
     return deterministicBucket === 'low'
@@ -179,6 +226,12 @@ export function passageVerdictFromGroundingClaims(
   for (const c of supported) {
     if (!c.sourceQuotes?.length) {
       reasons.push(`Supported claim missing verbatim quote: ${c.claim}`)
+    }
+  }
+  if (sourceExcerpt !== undefined) {
+    for (const { claim, quote } of findInvalidSourceQuotes(claims, sourceExcerpt)) {
+      const preview = quote.length > 80 ? `${quote.slice(0, 80)}…` : quote
+      reasons.push(`Quote not found in source excerpt for "${claim}": "${preview}"`)
     }
   }
   if (reasons.length > 0) return { status: 'warn', reasons }

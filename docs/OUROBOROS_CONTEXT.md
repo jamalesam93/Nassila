@@ -1,7 +1,7 @@
 # Ouroboros context brief
 
 > **For agents.** Single entry point for Nassila + NassilaT. Last updated: 2026-06-16.
-> **Checkpoint:** `nassila-grounding-e4b-v1.4a` (HF adapter). **Planning:** v1.5+.
+> **Checkpoint:** `nassila-sanad-e4b` train v1.4a adapter (internal). **Tier 2 ship:** `nassila-sanad-12b` Q6_K at checkpoint v1.10 (optional quality tier).
 > Training pack: [`TRAINING.md`](./TRAINING.md) → NassilaT repo. Do not read every historical walkthrough — use this brief, then drill into linked paths only.
 
 ## 1. Mission
@@ -43,7 +43,7 @@ Codenames: `docs/BRAND.md`, `src/shared/nassila-agent-tasks.ts`. Forge **one LLM
 
 | # | Worker | Arabic | `task` id | Future module (user-facing) | Deterministic core (no LLM replacement) | LLM facet | Phase | Status |
 |---|--------|--------|-----------|----------------------------|----------------------------------------|-----------|-------|--------|
-| 1 | **Sanad** | سند | `l3_grounding` | Ground claims to sources | JSON repair, quote substring checks, caps | Passage vs excerpt → grounding JSON | 1 | **CHECKPOINT** (v1.4a adapter) |
+| 1 | **Sanad** | سند | `l3_grounding` | Ground claims to sources | JSON repair, quote substring checks, caps | Passage vs excerpt → grounding JSON | 1 | **Tier 2 PASS** (12B Q6_K v1.10); E4B default |
 | 2 | **Maktab** | مكتب | `doc_extract` | Bring in the manuscript | File I/O, DOCX/PDF routing, plain-text ingest | Structured text/chunks from PDF/DOCX | 2 | Planned |
 | 3 | **Masdar** | مصدر | `source_pdf_extract` | Get source text for citations | OA fetch, chunking, secure desktop I/O | Cited OA PDF → text for Sanad | 2 | Planned |
 | 4 | **Shahid** | شاهد | `table_figure_grounding` | Tables & figures as evidence | Region detection (future) | Claims vs table/figure regions | 3+ | Planned (12B) |
@@ -103,7 +103,7 @@ Full vision: [`OUROBOROS.md`](./OUROBOROS.md). Web path: [`WEBPAGE_ROADMAP.md`](
 1. **Model gate** — raw eval metrics in §10 (quote validity ≥98% on holdout, etc.). Training target for v1.5.
 2. **Product-safety gate** — after deterministic quote-substring checks, **zero false `pass`** reaches the user for supported claims with invalid quotes. Achievable in-app even before the model gate passes.
 
-**v1.4a** passed the **intermediate 4a gate** (JSON ≥98%, supported h-001–h-010 ≥8/10) and beat **v1.4b**, so it is the checkpoint to build **v1.5** from. It did **not** pass quote validity (§10). **Manuscript Audit UI stays unmounted** until Tier 2 **model gates** pass.
+**v1.4a** passed the **intermediate 4a gate** (JSON ≥98%, supported h-001–h-010 ≥8/10) and beat **v1.4b**, so it is the adapter checkpoint to build from. **v1.10 12B Q6_K** passes Tier 2 §10 on the hardened harness (see §5 scorecard). **Manuscript Audit UI stays unmounted** until explicit request.
 
 **Excerpt scope:** Training and primary eval are **abstract-only**. Sanad compares passage vs text excerpt — it does not read PDFs. PDF → text is **Masdar** (`source_pdf_extract`) + engine extract; the app often falls back to abstract-only today. Do not claim full-paper grounding until Tier 3.
 
@@ -116,12 +116,17 @@ Full vision: [`OUROBOROS.md`](./OUROBOROS.md). Web path: [`WEBPAGE_ROADMAP.md`](
 | v1.3 | 80% | 86% | 3/10 | 36.4% | — | — | 5/5 | NO-GO |
 | **v1.4a** | **90%** | **100%** | **8/10** | **81.8%** | **11.1%** | **2.94%** | **5/5** | **CHECKPOINT** (adapter) |
 | v1.4b | 87.1% | 100% | 8/10 | 81.8% | — | — | 5/5 | NO-GO |
+| v1.8 | 91.43% | 100% | 9/10 | 90.91% | — | 2.94% | 5/5 | NO-GO (legacy 70-row harness) |
+| **v1.10 E4B Q6_K** | **88.12%** | **100%** | **10/10** | **89.47%** | — | **6.57%** | **5/5** | **NO-GO** (hardened **115-row**) |
+| **v1.10 12B Q6_K** | **94.79%** | **100%** | **10/10** | **100%** | — | **2.82%** | **5/5** | **TIER 2 PASS** (optional quality tier) |
 
 **Gate policy:** `false_supported` gates on **holdout only** (≤5%). **Monitor** extended-core false-supported (11.1% at v1.4a) in every report — it is not a ship gate but flags regression risk.
 
 **Expect margin:** Tier 2 minimum is combined expect ≥90%; **operator target ≥92%** so one holdout row does not flip the gate (v1.4a combined expect is exactly 90.0%).
 
-**HF adapter (checkpoint):** [`QinEmPeRoR93/nassila-grounding-e4b-v1.4a-adapter`](https://huggingface.co/QinEmPeRoR93/nassila-grounding-e4b-v1.4a-adapter)
+**HF adapter (checkpoint):** [`QinEmPeRoR93/nassila-grounding-e4b-v1.4a-adapter`](https://huggingface.co/QinEmPeRoR93/nassila-grounding-e4b-v1.4a-adapter) (legacy name; v1.4a only)
+
+**HF Sanad GGUF:** `QinEmPeRoR93/nassila-sanad-12b` (12B Q6_K, **private**, checkpoint v1.10) · `QinEmPeRoR93/nassila-sanad-e4b` (E4B Q6_K, when v1.11 passes). Upload: [`PHASE2_9_AB_PILOT_WALKTHROUGH.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/PHASE2_9_AB_PILOT_WALKTHROUGH.md) Part 9
 
 ## 6. v1.4 fixes (what worked)
 
@@ -198,19 +203,20 @@ Used to decide whether to run the next hyperparam phase (e.g. v1.4b): JSON parse
 
 **Vast (NassilaT):** `PHASE=4a|4b|5 bash training/scripts/run_vast_pipeline.sh` · llama.cpp **b9608** · port **1234**
 
-## 11. Model tier policy (A/B pilot)
+## 11. Model tier policy (A/B pilot — recorded)
 
-- **Default ship:** Gemma 4 **E4B** Q6_K — all text workers
-- **Optional tier:** Gemma 4 **12B** quant ladder — only if [A/B pilot gates](https://github.com/jamalesam93/NassilaT/blob/main/training/PHASE2_9_AB_PILOT_WALKTHROUGH.md) pass on hardened harness
+- **Default tier:** Gemma 4 **E4B** Q6_K — smaller download; all text workers; **v1.10 E4B = 88.12% combined, Tier 2 FAIL** on hardened 115-row harness
+- **Optional quality tier:** Gemma 4 **12B** Q6_K — **v1.10 = 94.79% combined, quote 100%, Tier 2 PASS** (first checkpoint in v1.0–v1.10 arc to pass all §10 model gates)
+- **A/B script note:** `compare_ab_pilot.py` defers on `multi_claim >= 0.80` (12B Q6_K = 69.23%); that sub-gate is **not** Tier 2 ship — h-043/h-045/h-088 remain hard
 - **Shahid:** 12B when multimodal worker forges (unchanged)
-- **Frozen for v1.10 train:** E4B base, `l3_grounding` only, abstract-only excerpts, ~850 rows
+- Continue **E4B** iteration (**v1.11** on Vast) to close the gap; `nassila-sanad-12b` available for users who want max Sanad quality today
 - No Manuscript Audit UI re-enable without explicit request
 
 ## 12. Open (post v1.10 / A/B)
 
-- Run E4B v1.10 + 12B A/B on Vast (`run_ab_pilot_pipeline.sh`)
-- Record decision in diagnosis + this brief §5 scorecard
-- After **Tier 2** model ship: plan Maktab/Masdar corpus; expand harness toward Tier 3
+- ~~Run E4B v1.10 + 12B A/B on Vast (`run_ab_pilot_pipeline.sh`)~~ **Done** — dual-tier recorded in diagnosis + §11
+- Upload GGUF/adapters to HF (`nassila-sanad-e4b`, `nassila-sanad-12b`)
+- After **Tier 2** model ship (12B Q6_K): plan Maktab/Masdar corpus; expand harness toward Tier 3
 
 ## 13. NassilaT operator index (execute, don’t plan from)
 
