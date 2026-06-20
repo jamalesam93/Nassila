@@ -6,9 +6,8 @@ All notable changes to **Nassila** are documented here.
 
 ### Added
 
-- **Training (NassilaT repo):** Phase 1.5 corpus pipeline (`build_paper_corpus.py`, `enrich_corpus_abstracts.py`) and Phase 2 abstract-only `l3_grounding_train.jsonl` (400 rows) for upcoming **`nassila-grounding-e4b-v1`** (target app **1.2.0** when GGUF ships on Hugging Face). See NassilaT `training/CORPUS_PIPELINE.md` and `training/PHASE2_VAST_WALKTHROUGH.md`.
-
-- **One Ring strategy:** [`docs/ONE_RING.md`](docs/ONE_RING.md) — one local model identity, multi-task routing over time; task registry in [`src/shared/nassila-agent-tasks.ts`](src/shared/nassila-agent-tasks.ts). Restored [`docs/WEBPAGE_ROADMAP.md`](docs/WEBPAGE_ROADMAP.md) with One Ring cross-links. Training pack updates: `training/ROADMAP.md`, `training/ONE_RING.md`, `DATASET_SCHEMA.md`.
+- **Training (NassilaT):** Sanad ship checkpoints E4B/12B **v1.12**; v1.13 multi_claim attempt **NO-GO**; v1.14+ loop documented in NassilaT `training/POST_V113_MAP.md`.
+- **Ouroboros strategy:** [`docs/OUROBOROS.md`](docs/OUROBOROS.md), [`docs/OUROBOROS_CONTEXT.md`](docs/OUROBOROS_CONTEXT.md); task registry [`src/shared/nassila-agent-tasks.ts`](src/shared/nassila-agent-tasks.ts). [`docs/WEBPAGE_ROADMAP.md`](docs/WEBPAGE_ROADMAP.md) for future Raqim/Tasnif/Sharh webpage tasks.
 
 ### Changed
 

@@ -1,7 +1,7 @@
 # Ouroboros context brief
 
-> **For agents.** Single entry point for Nassila + NassilaT. Last updated: 2026-06-16.
-> **Checkpoint:** `nassila-sanad-e4b` train v1.4a adapter (internal). **Tier 2 ship:** `nassila-sanad-12b` Q6_K at checkpoint v1.10 (optional quality tier).
+> **For agents.** Single entry point for Nassila + NassilaT. Last updated: 2026-06-20.
+> **Ship checkpoints:** `nassila-sanad-e4b` **v1.12** (default-tier) · `nassila-sanad-12b` **v1.12** (Tier 2). **v1.13 NO-GO** — v1.14+ loop: NassilaT [`training/POST_V113_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/POST_V113_MAP.md).
 > Training pack: [`TRAINING.md`](./TRAINING.md) → NassilaT repo. Do not read every historical walkthrough — use this brief, then drill into linked paths only.
 
 ## 1. Mission
@@ -43,7 +43,7 @@ Codenames: `docs/BRAND.md`, `src/shared/nassila-agent-tasks.ts`. Forge **one LLM
 
 | # | Worker | Arabic | `task` id | Future module (user-facing) | Deterministic core (no LLM replacement) | LLM facet | Phase | Status |
 |---|--------|--------|-----------|----------------------------|----------------------------------------|-----------|-------|--------|
-| 1 | **Sanad** | سند | `l3_grounding` | Ground claims to sources | JSON repair, quote substring checks, caps | Passage vs excerpt → grounding JSON | 1 | **Tier 2 PASS** (12B Q6_K v1.10); E4B default |
+| 1 | **Sanad** | سند | `l3_grounding` | Ground claims to sources | JSON repair, quote substring checks, caps | Passage vs excerpt → grounding JSON | 1 | **E4B default-tier PASS** (v1.12 ship); **Tier 2 PASS** (12B v1.10 optional) |
 | 2 | **Maktab** | مكتب | `doc_extract` | Bring in the manuscript | File I/O, DOCX/PDF routing, plain-text ingest | Structured text/chunks from PDF/DOCX | 2 | Planned |
 | 3 | **Masdar** | مصدر | `source_pdf_extract` | Get source text for citations | OA fetch, chunking, secure desktop I/O | Cited OA PDF → text for Sanad | 2 | Planned |
 | 4 | **Shahid** | شاهد | `table_figure_grounding` | Tables & figures as evidence | Region detection (future) | Claims vs table/figure regions | 3+ | Planned (12B) |
@@ -117,8 +117,9 @@ Full vision: [`OUROBOROS.md`](./OUROBOROS.md). Web path: [`WEBPAGE_ROADMAP.md`](
 | **v1.4a** | **90%** | **100%** | **8/10** | **81.8%** | **11.1%** | **2.94%** | **5/5** | **CHECKPOINT** (adapter) |
 | v1.4b | 87.1% | 100% | 8/10 | 81.8% | — | — | 5/5 | NO-GO |
 | v1.8 | 91.43% | 100% | 9/10 | 90.91% | — | 2.94% | 5/5 | NO-GO (legacy 70-row harness) |
-| **v1.10 E4B Q6_K** | **88.12%** | **100%** | **10/10** | **89.47%** | — | **6.57%** | **5/5** | **NO-GO** (hardened **115-row**) |
+| **v1.10 E4B Q6_K** | **88.12%** | **100%** | **10/10** | **89.47%** | — | **6.57%** | **5/5** | Superseded (default-tier only) |
 | **v1.10 12B Q6_K** | **94.79%** | **100%** | **10/10** | **100%** | — | **2.82%** | **5/5** | **TIER 2 PASS** (optional quality tier) |
+| **v1.12 E4B Q6_K** | **89.27%** | **100%** | **9–10/10** | **92.98%** | — | **3.81%** | **5/5** | **DEFAULT-TIER SHIP** (`nassila-sanad-e4b`) |
 
 **Gate policy:** `false_supported` gates on **holdout only** (≤5%). **Monitor** extended-core false-supported (11.1% at v1.4a) in every report — it is not a ship gate but flags regression risk.
 
@@ -126,7 +127,7 @@ Full vision: [`OUROBOROS.md`](./OUROBOROS.md). Web path: [`WEBPAGE_ROADMAP.md`](
 
 **HF adapter (checkpoint):** [`QinEmPeRoR93/nassila-grounding-e4b-v1.4a-adapter`](https://huggingface.co/QinEmPeRoR93/nassila-grounding-e4b-v1.4a-adapter) (legacy name; v1.4a only)
 
-**HF Sanad GGUF:** `QinEmPeRoR93/nassila-sanad-12b` (12B Q6_K, **private**, checkpoint v1.10) · `QinEmPeRoR93/nassila-sanad-e4b` (E4B Q6_K, when v1.11 passes). Upload: [`PHASE2_9_AB_PILOT_WALKTHROUGH.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/PHASE2_9_AB_PILOT_WALKTHROUGH.md) Part 9
+**HF Sanad GGUF:** [`QinEmPeRoR93/nassila-sanad-e4b`](https://huggingface.co/QinEmPeRoR93/nassila-sanad-e4b) (E4B Q6_K, **checkpoint v1.12**) · `QinEmPeRoR93/nassila-sanad-12b` (12B Q6_K, **private**, checkpoint v1.10). Upload: [`PHASE2_9_AB_PILOT_WALKTHROUGH.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/PHASE2_9_AB_PILOT_WALKTHROUGH.md) Part 9
 
 ## 6. v1.4 fixes (what worked)
 
@@ -205,35 +206,43 @@ Used to decide whether to run the next hyperparam phase (e.g. v1.4b): JSON parse
 
 ## 11. Model tier policy (A/B pilot — recorded)
 
-- **Default tier:** Gemma 4 **E4B** Q6_K — smaller download; all text workers; **v1.10 E4B = 88.12% combined, Tier 2 FAIL** on hardened 115-row harness
-- **Optional quality tier:** Gemma 4 **12B** Q6_K — **v1.10 = 94.79% combined, quote 100%, Tier 2 PASS** (first checkpoint in v1.0–v1.10 arc to pass all §10 model gates)
-- **A/B script note:** `compare_ab_pilot.py` defers on `multi_claim >= 0.80` (12B Q6_K = 69.23%); that sub-gate is **not** Tier 2 ship — h-043/h-045/h-088 remain hard
+- **Default tier:** Gemma 4 **E4B** Q6_K — **`nassila-sanad-e4b` v1.12** = 89.27% combined, E4B default-tier **PASS**
+- **Quality tier:** Gemma 4 **12B** Q6_K — **v1.12 = 94.20% combined, quote 100%, Tier 2 PASS** (ship on HF)
+- **v1.13:** **NO-GO** — do not publish; iterate **v1.14+** ([`POST_V113_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/POST_V113_MAP.md))
+- **A/B script note:** `multi_claim >= 0.80` is **not** Tier 2 ship — h-045/h-088 known gap on v1.12
 - **Shahid:** 12B when multimodal worker forges (unchanged)
-- Continue **E4B** iteration (**v1.11** on Vast) to close the gap; `nassila-sanad-12b` available for users who want max Sanad quality today
+- **v1.11:** trained, **NO-GO** (80.58% regression) — do not publish
+- **v1.12 E4B:** **GO** — archive [`PHASE2_11_V112_WALKTHROUGH.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/archive/PHASE2_11_V112_WALKTHROUGH.md)
+- **v1.12 12B:** **GO** — archive [`PHASE2_12_12B_QUALITY_WALKTHROUGH.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/archive/PHASE2_12_12B_QUALITY_WALKTHROUGH.md)
+- **v1.13 12B:** **NO-GO** — archive [`PHASE2_13_…`](https://github.com/jamalesam93/NassilaT/blob/main/training/archive/PHASE2_13_12B_MULTI_CLAIM_WALKTHROUGH.md)
 - No Manuscript Audit UI re-enable without explicit request
 
-## 12. Open (post v1.10 / A/B)
+## 12. Open (post v1.12 ship)
 
-- ~~Run E4B v1.10 + 12B A/B on Vast (`run_ab_pilot_pipeline.sh`)~~ **Done** — dual-tier recorded in diagnosis + §11
-- Upload GGUF/adapters to HF (`nassila-sanad-e4b`, `nassila-sanad-12b`)
-- After **Tier 2** model ship (12B Q6_K): plan Maktab/Masdar corpus; expand harness toward Tier 3
+- ~~E4B v1.12 + 12B v1.12 train/eval~~ **Done (GO)**
+- ~~12B v1.13 multi_claim boost~~ **Done (NO-GO)** — keep v1.12 on HF
+- **12B v1.14+** until h-045/h-088 fixed without Tier 2 regression — [`POST_V113_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/POST_V113_MAP.md)
+- Refresh HF READMEs from `MODEL_CARD_sanad_*.md`
+- Ouroboros UI reform (Nassila `docs/DESIGN.md`) — after model arc stable or v1.12 gaps accepted
+- Maktab/Masdar corpus planning → Tier 3 harness
 
-## 13. NassilaT operator index (execute, don’t plan from)
+## 13. NassilaT operator index
 
-Repo: [jamalesam93/NassilaT](https://github.com/jamalesam93/NassilaT). Local sibling: `../NassilaT/training/`. See [`TRAINING.md`](./TRAINING.md).
+Repo: [jamalesam93/NassilaT](https://github.com/jamalesam93/NassilaT). See [`TRAINING.md`](./TRAINING.md).
 
 | Need | Path (NassilaT) |
 |------|-----------------|
-| Model card | `training/MODEL_CARD_v1_4.md` |
-| Vast walkthrough | `training/PHASE2_8_V1_5_WALKTHROUGH.md` |
-| **A/B pilot (E4B vs 12B)** | `training/PHASE2_9_AB_PILOT_WALKTHROUGH.md` |
+| **Current map** | `training/POST_V113_MAP.md` |
+| Next Vast | `training/PHASE2_14_12B_MULTI_CLAIM_WALKTHROUGH.md` |
+| Ship gates | `docs/DUAL_TIER_POLICY.md` |
+| GO/NO-GO | `training/EVAL_GONOGO.md` |
+| A/B pipeline | `training/PHASE2_9_AB_PILOT_WALKTHROUGH.md` |
+| Model cards | `training/MODEL_CARD_sanad_e4b.md`, `MODEL_CARD_sanad_12b.md` |
 | Dataset schema | `training/DATASET_SCHEMA.md` |
 | Corpus | `training/CORPUS_PIPELINE.md` |
-| llama.cpp pin | `training/LLAMA_CPP_VAST.md` |
-| Deep diagnosis | [`nassila_training_diagnosis.md`](https://github.com/jamalesam93/NassilaT/blob/main/nassila_training_diagnosis.md) |
-| v1.5 train prep + Vast | `training/scripts/prepare_v15_train.py`, `training/PHASE2_8_V1_5_WALKTHROUGH.md` |
+| Archive | `training/archive/` |
 
-Historical v1.0–v1.3 walkthroughs removed from tree — see **git history**.
+Historical v1.0–v1.13 walkthroughs: **`training/archive/`** — not root `training/`.
 
 ## 14. Agent prompts
 

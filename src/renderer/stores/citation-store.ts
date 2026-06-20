@@ -395,7 +395,7 @@ export const useCitationStore = create<CitationState>((set, get) => {
         keeperIdx = keepIndex
       } else {
         keeperIdx = before.findIndex(
-          (c, idx) =>
+          (c) =>
             c.id === keepId && get().duplicateGroupByCitation[c.id]?.groupId === marker.groupId
         )
       }

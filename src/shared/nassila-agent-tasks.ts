@@ -64,7 +64,7 @@ export const OUROBOROS_WORKERS: Record<
   }
 }
 
-/** Shipped or planned GGUF / HF repo basename (without quant suffix). Train checkpoint (v1.10, v1.11) is on model cards only. */
+/** Shipped or planned GGUF / HF repo basename (without quant suffix). Train checkpoint (v1.12 E4B ship, v1.10 12B) is on model cards only. */
 export const NASSILA_MODEL_ARTIFACTS = {
   /** Sanad default tier — Gemma 4 E4B Q6_K (~8 GB). */
   sanadE4b: 'nassila-sanad-e4b',

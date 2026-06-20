@@ -28,7 +28,7 @@ All seven appear in navigation from day one. Maturity varies; stubs use honest e
 | **Masdar** | مصدر | Source text | **Stub** — Tier 3 dependency |
 | **Shahid** | شاهد | Tables & figures | **Disabled** — placeholder |
 
-**Settings** holds one LM Studio slot: `nassila-sanad-e4b` (default), optional `nassila-sanad-12b`. Train checkpoint versions (v1.10, v1.11) appear in docs and model cards only.
+**Settings** holds one LM Studio slot: `nassila-sanad-e4b` (default, **v1.12**), optional `nassila-sanad-12b` (**v1.12** Tier 2). v1.13 failed; v1.14+ train continues in NassilaT.
 
 ## Data flow (Sanad today)
 

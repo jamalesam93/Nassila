@@ -4,7 +4,7 @@ This folder and related engine hooks remain in the repository for future reuse (
 
 ## Ouroboros (local model strategy)
 
-Nassila’s long-term plan is **one LM Studio model** routed by `task` — see [`docs/OUROBOROS.md`](../../../docs/OUROBOROS.md) and [`docs/OUROBOROS_CONTEXT.md`](../../../docs/OUROBOROS_CONTEXT.md). **v1** uses **`l3_grounding`** only; checkpoint adapter **`nassila-grounding-e4b-v1.4a`**. Tier 2 abstract ship required before remounting this UI.
+Nassila’s long-term plan is **one LM Studio model** routed by `task` — see [`docs/OUROBOROS.md`](../../../docs/OUROBOROS.md) and [`docs/OUROBOROS_CONTEXT.md`](../../../docs/OUROBOROS_CONTEXT.md). **Sanad** ships as `nassila-sanad-e4b` / `nassila-sanad-12b` (**v1.12**). Remount only after Ouroboros UI reform (`docs/DESIGN.md`).
 
 Task constants: [`src/shared/nassila-agent-tasks.ts`](../../../src/shared/nassila-agent-tasks.ts).
 

@@ -7,11 +7,14 @@ import { referenceIntegrityRiskFromRegistry } from '../../engine/manuscript/inte
 import {
   buildGroundingUserPrompt,
   evidenceFromGroundingParse,
+  GROUNDING_EXCERPT_MAX_CHARS,
+  GROUNDING_PASSAGE_MAX_CHARS,
   parseGroundingJson,
   passageVerdictFromGroundingClaims,
   rollupPassageFromSites,
   selectSourceChunksForGrounding,
   syntheticSpanForBodyPreview,
+  truncateForGrounding,
   worstDeterministicBucket
 } from '../../engine/manuscript/grounding-llm'
 import { classifyGreyTags } from '../../engine/audit/grey'
@@ -32,8 +35,8 @@ import { scorePassageAgainstSource } from '../../engine/relevance/deterministic'
 
 const MAX_BIB_ENTRIES_FALLBACK = 80
 const PASSAGE_PAD = 260
-const GROUNDING_EXCERPT_MAX = 4200
 const MAX_LLM_RAW_STORE = 2400
+const GROUNDING_LLM_RETRY_ATTEMPTS = 2
 
 function sourcesAttribution(): AuditReport['sources'] {
   return [
@@ -365,7 +368,7 @@ async function evaluateCiteSite(
   const metaUrl = resolved.kind === 'full_text' ? resolved.url : undefined
 
   if (resolved.kind === 'abstract_only') {
-    const excerpt = selectSourceChunksForGrounding(passage, sourceText, GROUNDING_EXCERPT_MAX)
+    const excerpt = selectSourceChunksForGrounding(passage, sourceText, GROUNDING_EXCERPT_MAX_CHARS)
     const llmOutcome = await runGroundingLlm(passage, excerpt, { source: snippetSource, url: metaUrl, label: 'abstract' }, llm)
     if (llmOutcome.kind === 'parsed') {
       return {
@@ -420,7 +423,7 @@ async function evaluateCiteSite(
     }
   }
 
-  const excerpt = selectSourceChunksForGrounding(passage, sourceText, GROUNDING_EXCERPT_MAX)
+  const excerpt = selectSourceChunksForGrounding(passage, sourceText, GROUNDING_EXCERPT_MAX_CHARS)
   const label = resolved.kind === 'full_text' ? resolved.coverage.replace(/_/g, ' ') : 'source'
   const llmOutcome = await runGroundingLlm(passage, excerpt, { source: snippetSource, url: metaUrl, label }, llm)
 
@@ -503,29 +506,58 @@ async function runGroundingLlm(
   const encryption = await window.api.isEncryptionAvailable().catch(() => false)
   if (!encryption) return { kind: 'encryption_blocked' }
 
-  const userContent = buildGroundingUserPrompt(passage, sourceExcerpt, { label: meta.label, url: meta.url })
+  const cappedPassage = truncateForGrounding(passage, GROUNDING_PASSAGE_MAX_CHARS)
+  const cappedExcerpt = truncateForGrounding(sourceExcerpt, GROUNDING_EXCERPT_MAX_CHARS)
+
+  let lastRaw = ''
+  let lastParseError = 'Invalid JSON from model'
 
   try {
-    const content = await window.api.llmChat({ baseUrl: llm.llmBaseUrl, model: llm.llmModel }, [{ role: 'user', content: userContent }])
-    const parsed = parseGroundingJson(content)
-    if (!parsed.ok) {
-      return { kind: 'parse_fail', raw: content, hint: parsed.error }
-    }
-    const scored = scorePassageAgainstSource(passage, sourceExcerpt)
-    let verdict = passageVerdictFromGroundingClaims(parsed.data.claims, scored.bucket)
-
-    let parseWarning: string | undefined
-    if (parsed.data.overallVerdict === 'unrelated') {
-      if (verdict.status === 'pass') {
-        verdict = { status: 'warn', reasons: [`Model flagged unrelated overall: ${(parsed.data.overallRationale ?? []).join('; ') || '(no rationale)'}`] }
-      } else if (verdict.status === 'warn') {
-        parseWarning = `Model overall unrelated — ${(parsed.data.overallRationale ?? []).join('; ')}`
+    for (let attempt = 0; attempt < GROUNDING_LLM_RETRY_ATTEMPTS; attempt++) {
+      const content = await window.api.llmChat(
+        { baseUrl: llm.llmBaseUrl, model: llm.llmModel },
+        [
+          {
+            role: 'user',
+            content: buildGroundingUserPrompt(cappedPassage, cappedExcerpt, { label: meta.label, url: meta.url })
+          }
+        ]
+      )
+      lastRaw = content
+      const parsed = parseGroundingJson(content)
+      if (!parsed.ok) {
+        lastParseError = parsed.error
+        continue
       }
-    } else if (parsed.data.overallVerdict === 'weak' && verdict.status === 'pass') {
-      verdict = { status: 'warn', reasons: [`Model overall weak: ${(parsed.data.overallRationale ?? []).join('; ') || 'verify manually'}`] }
+
+      const scored = scorePassageAgainstSource(passage, sourceExcerpt)
+      let verdict = passageVerdictFromGroundingClaims(parsed.data.claims, scored.bucket, cappedExcerpt)
+
+      const warnings: string[] = []
+      if (parsed.repaired) warnings.push('LLM JSON was auto-repaired before parsing.')
+      if (attempt > 0) warnings.push('Recovered on a second LLM attempt.')
+
+      if (parsed.data.overallVerdict === 'unrelated') {
+        if (verdict.status === 'pass') {
+          verdict = {
+            status: 'warn',
+            reasons: [`Model flagged unrelated overall: ${(parsed.data.overallRationale ?? []).join('; ') || '(no rationale)'}`]
+          }
+        } else if (verdict.status === 'warn') {
+          warnings.push(`Model overall unrelated — ${(parsed.data.overallRationale ?? []).join('; ')}`)
+        }
+      } else if (parsed.data.overallVerdict === 'weak' && verdict.status === 'pass') {
+        verdict = {
+          status: 'warn',
+          reasons: [`Model overall weak: ${(parsed.data.overallRationale ?? []).join('; ') || 'verify manually'}`]
+        }
+      }
+
+      const parseWarning = warnings.length > 0 ? warnings.join(' ') : undefined
+      return { kind: 'parsed', verdict, claims: parsed.data.claims, raw: content, parseWarning }
     }
 
-    return { kind: 'parsed', verdict, claims: parsed.data.claims, raw: content, parseWarning }
+    return { kind: 'parse_fail', raw: lastRaw, hint: lastParseError }
   } catch (e) {
     return { kind: 'llm_error', message: `LLM check failed: ${(e as Error).message}` }
   }

@@ -49,4 +49,9 @@ git push -f origin main   # only after you are sure; overwrites remote history
 |-----------|---------|
 | Initial release | **1.0.0** |
 | App L3 repair + retry shipped | 1.1.0 |
-| First QLoRA adapter in LM Studio | 1.2.0 (or train pack `nassila-grounding-e4b-v1`) |
+| First QLoRA adapter in LM Studio (`nassila-grounding-e4b-v1`, `l3_grounding` only) | **1.2.0** |
+| Sanad checkpoint (`nassila-grounding-e4b-v1.4a`) | Training milestone (not Tier 2 ship) |
+| Additional Ouroboros worker facets (`doc_extract`, `webpage_*`, …) | 1.3.0+ per facet |
+| Merged multi-task `nassila-agent-*` GGUF | TBD (major bump when UI promotes “one Nassila model”) |
+
+See [`OUROBOROS.md`](./OUROBOROS.md) for task registry and artifact naming.
