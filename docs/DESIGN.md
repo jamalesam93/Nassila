@@ -35,7 +35,7 @@ Inspired by disciplined academic-tool patterns (see [Impeccable](https://github.
 | Verdict chip | `supported` / `weak` / `contradicted` / `not_in_source` / `insufficient_evidence` — color + label i18n |
 | Stub worker | Illustration or icon + one sentence + “planned” badge; no fake progress |
 | Empty state | Actionable (import, connect LM Studio, paste excerpt) |
-| Settings LM slot | Model id hint: `nassila-sanad-e4b`, optional `nassila-sanad-12b` |
+| Settings LM slot | Default `nassila-sanad-e4b` (v1.12); optional quality `nassila-sanad-12b` (v1.14) |
 
 ## Motion
 

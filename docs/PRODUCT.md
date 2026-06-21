@@ -28,7 +28,7 @@ All seven appear in navigation from day one. Maturity varies; stubs use honest e
 | **Masdar** | مصدر | Source text | **Stub** — Tier 3 dependency |
 | **Shahid** | شاهد | Tables & figures | **Disabled** — placeholder |
 
-**Settings** holds one LM Studio slot: `nassila-sanad-e4b` (default, **v1.12**), optional `nassila-sanad-12b` (**v1.12** Tier 2). v1.13 failed; v1.14+ train continues in NassilaT.
+**Settings** holds LM Studio slots: `nassila-sanad-e4b` (default, **v1.12**), optional `nassila-sanad-12b` (**v1.14** quality tier). Run laptop smoke ([`LAPTOP_SMOKE_TEST.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/LAPTOP_SMOKE_TEST.md)) on downloaded GGUFs before treating release as verified.
 
 ## Data flow (Sanad today)
 
@@ -59,6 +59,7 @@ All seven appear in navigation from day one. Maturity varies; stubs use honest e
 ## Success criteria (UI reform)
 
 - Seven-module shell with RTL parity.
-- Sanad panel wired to `nassila-sanad-e4b` / `nassila-sanad-12b` presets.
+- Sanad panel wired to `nassila-sanad-e4b` (v1.12) / `nassila-sanad-12b` (v1.14) presets after laptop smoke pass.
 - Raqim + Tasnif remain fully usable during transition.
 - Tier 2b guardrails visible in Sanad results (invalid quotes never show as pass).
+- Copy states Tier 2 = abstract excerpts; Tier 3 = full paper body (Maktab/Masdar) when ready.

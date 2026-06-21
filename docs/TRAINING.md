@@ -6,7 +6,7 @@ This repo (**Nassila**) owns the Electron app, citation engine, JSON repair guar
 
 **Agent entry:** [`OUROBOROS_CONTEXT.md`](./OUROBOROS_CONTEXT.md)
 
-**Current training arc:** v1.13 **NO-GO** → **v1.14+** on 12B. See NassilaT [`training/POST_V113_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/POST_V113_MAP.md).
+**Current training arc:** v1.14 **GO** on 12B (selected quality tier). Laptop smoke **PASS** (RTX 4060 8 GB). See NassilaT [`training/POST_V114_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/POST_V114_MAP.md) and [`outputs/LAPTOP_SMOKE_SIGNOFF.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/outputs/LAPTOP_SMOKE_SIGNOFF.md).
 
 ---
 
@@ -17,7 +17,8 @@ E:/Cursor Projects/
   Nassila/             ← this repo (app)
   NassilaT/            ← training pack
     training/
-      POST_V113_MAP.md
+      POST_V114_MAP.md
+      LAPTOP_SMOKE_TEST.md
       ROADMAP.md
       scripts/
       data/
@@ -32,7 +33,10 @@ E:/Cursor Projects/
 
 | Need | Path (NassilaT) |
 |------|-----------------|
-| **Current map** | `training/POST_V113_MAP.md` |
+| **Current map** | `training/POST_V114_MAP.md` |
+| Laptop smoke sign-off | `training/outputs/LAPTOP_SMOKE_SIGNOFF.md` |
+| HF verify | `training/HF_RELEASE_VERIFY.md` |
+| Tier 3 plan | `training/PHASE3_TIER3_GROUNDWORK.md` |
 | Next Vast run | `training/PHASE2_14_12B_MULTI_CLAIM_WALKTHROUGH.md` |
 | Roadmap | `training/ROADMAP.md` |
 | Ship gates | `docs/DUAL_TIER_POLICY.md` |

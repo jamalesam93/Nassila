@@ -89,9 +89,9 @@ export const LLM_PRESETS: LlmPreset[] = [
     notes:
       'Start the Local Server in LM Studio. Use base URL http://localhost:1234 (Nassila appends /v1/chat/completions). Sanad default: ' +
       NASSILA_MODEL_ARTIFACTS.sanadE4b +
-      ' Q6_K; optional quality: ' +
+      ' Q6_K (v1.12); optional quality: ' +
       NASSILA_MODEL_ARTIFACTS.sanad12b +
-      ' Q6_K. Future merged Ouroboros: ' +
+      ' Q6_K (v1.14). Validate GGUFs via NassilaT training/LAPTOP_SMOKE_TEST.md. Future merged Ouroboros: ' +
       NASSILA_MODEL_ARTIFACTS.agentE12bV1 +
       '. See docs/OUROBOROS.md.'
   },

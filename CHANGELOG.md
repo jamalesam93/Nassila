@@ -6,7 +6,7 @@ All notable changes to **Nassila** are documented here.
 
 ### Added
 
-- **Training (NassilaT):** Sanad ship checkpoints E4B/12B **v1.12**; v1.13 multi_claim attempt **NO-GO**; v1.14+ loop documented in NassilaT `training/POST_V113_MAP.md`.
+- **Training (NassilaT):** Sanad ship checkpoints E4B **v1.12**, 12B **v1.14** selected; v1.13 **NO-GO**; operator map `training/POST_V114_MAP.md`; laptop smoke `training/LAPTOP_SMOKE_TEST.md`.
 - **Ouroboros strategy:** [`docs/OUROBOROS.md`](docs/OUROBOROS.md), [`docs/OUROBOROS_CONTEXT.md`](docs/OUROBOROS_CONTEXT.md); task registry [`src/shared/nassila-agent-tasks.ts`](src/shared/nassila-agent-tasks.ts). [`docs/WEBPAGE_ROADMAP.md`](docs/WEBPAGE_ROADMAP.md) for future Raqim/Tasnif/Sharh webpage tasks.
 
 ### Changed
