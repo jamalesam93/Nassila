@@ -8,12 +8,6 @@ export type ManuscriptAuditPrefsV1 = {
   llmModel?: string
   selectedTemplateId?: string
   templateStrict?: boolean
-  /** Experimental: run external Marker CLI for PDF manuscript import */
-  markerPdfImportEnabled?: boolean
-  /** Executable or full path (e.g. marker_single, or path to .exe) */
-  markerCommand?: string
-  /** Extra CLI args as a single whitespace-separated string */
-  markerExtraArgs?: string
   /** User dismissed the Sanad setup guide auto-prompt. */
   sanadSetupDismissed?: boolean
   /** Passage grounding test connection succeeded at least once. */

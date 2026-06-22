@@ -1,6 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import type { AppMenuCommand } from '../shared/app-menu-commands'
-import type { MarkerConvertPdfRequest, MarkerConvertPdfResponse } from '../shared/marker-pdf-ipc'
 import type { AppMode } from '../shared/app-mode'
 import type { ManuscriptAuditPrefsV1 } from '../shared/manuscript-audit-prefs'
 import type { PredatoryList, PredatoryListMeta, UpdateCheckResult } from '../shared/predatory'
@@ -13,8 +12,6 @@ export type StructureTemplate = { id: string; name: string; headings: Record<str
 
 export type { ManuscriptAuditPrefsV1 }
 export type { PredatoryList, PredatoryListMeta, UpdateCheckResult }
-export type { MarkerConvertPdfRequest, MarkerConvertPdfResponse }
-
 const api = {
   // ── File Dialogs ──────────────────────────────────────────────────────
   openFileDialog: (options?: {
@@ -150,9 +147,6 @@ const api = {
     ipcRenderer.invoke('app:set-menu-locale', locale),
 
   setAppMode: (mode: AppMode): Promise<void> => ipcRenderer.invoke('app:set-app-mode', mode),
-
-  convertPdfWithMarker: (req: MarkerConvertPdfRequest): Promise<MarkerConvertPdfResponse> =>
-    ipcRenderer.invoke('marker:convertPdf', req),
 
   predatory: {
     getList: (): Promise<PredatoryList> => ipcRenderer.invoke('predatory:getList'),

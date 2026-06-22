@@ -28,9 +28,6 @@ export function registerManuscriptAuditPrefsHandlers(): void {
       if (typeof o.llmModel === 'string' && o.llmModel.length < 256) next.llmModel = o.llmModel
       if (typeof o.selectedTemplateId === 'string' && o.selectedTemplateId.length < 80) next.selectedTemplateId = o.selectedTemplateId
       if (typeof o.templateStrict === 'boolean') next.templateStrict = o.templateStrict
-      if (typeof o.markerPdfImportEnabled === 'boolean') next.markerPdfImportEnabled = o.markerPdfImportEnabled
-      if (typeof o.markerCommand === 'string' && o.markerCommand.length < 512) next.markerCommand = o.markerCommand
-      if (typeof o.markerExtraArgs === 'string' && o.markerExtraArgs.length < 2000) next.markerExtraArgs = o.markerExtraArgs
       if (typeof o.sanadSetupDismissed === 'boolean') next.sanadSetupDismissed = o.sanadSetupDismissed
       if (typeof o.sanadConnectionTested === 'boolean') next.sanadConnectionTested = o.sanadConnectionTested
       return next
@@ -50,9 +47,6 @@ export function registerManuscriptAuditPrefsHandlers(): void {
     if (typeof p.llmModel === 'string' && p.llmModel.length < 256) out.llmModel = p.llmModel
     if (typeof p.selectedTemplateId === 'string' && p.selectedTemplateId.length < 80) out.selectedTemplateId = p.selectedTemplateId
     if (typeof p.templateStrict === 'boolean') out.templateStrict = p.templateStrict
-    if (typeof p.markerPdfImportEnabled === 'boolean') out.markerPdfImportEnabled = p.markerPdfImportEnabled
-    if (typeof p.markerCommand === 'string' && p.markerCommand.length < 512) out.markerCommand = p.markerCommand
-    if (typeof p.markerExtraArgs === 'string' && p.markerExtraArgs.length < 2000) out.markerExtraArgs = p.markerExtraArgs
     if (typeof p.sanadSetupDismissed === 'boolean') out.sanadSetupDismissed = p.sanadSetupDismissed
     if (typeof p.sanadConnectionTested === 'boolean') out.sanadConnectionTested = p.sanadConnectionTested
     const serialized = JSON.stringify(out, null, 2)

@@ -10,7 +10,6 @@ import { registerOaIpcHandlers } from './ipc-oa'
 import { registerLlmIpcHandlers } from './ipc-llm'
 import { registerTemplateIpcHandlers } from './ipc-templates'
 import { registerManuscriptAuditPrefsHandlers } from './ipc-manuscript-audit-prefs'
-import { registerMarkerPdfHandlers } from './ipc-marker-pdf'
 import { registerPredatoryIpcHandlers } from './ipc-predatory-updates'
 
 const PRESETS_DIR = join(homedir(), '.citations-style')
@@ -132,14 +131,6 @@ export function registerIpcHandlers(): void {
   registerManuscriptAuditPrefsHandlers()
   registerTemplateIpcHandlers()
   registerPredatoryIpcHandlers()
-
-  registerMarkerPdfHandlers((filePath: unknown) => {
-    try {
-      return assertAllowedPath(filePath, readablePaths, 'read')
-    } catch {
-      return null
-    }
-  })
 
   // ── File Dialogs ────────────────────────────────────────────────────────
   ipcMain.handle('dialog:open-file', async (_event, options: OpenDialogOptions) => {

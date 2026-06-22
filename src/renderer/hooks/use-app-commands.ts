@@ -55,55 +55,17 @@ export function useAppCommands() {
             sourceFormat = 'docx'
           }
         } else if (ext === 'pdf') {
-          const prefs = await window.api?.loadManuscriptAuditPrefs()
-          let markerNote: string | null = null
-
-          if (prefs?.markerPdfImportEnabled && window.api?.convertPdfWithMarker) {
-            const markerRes = await window.api.convertPdfWithMarker({
-              filePath: first,
-              markerCommand: prefs.markerCommand,
-              markerExtraArgs: prefs.markerExtraArgs
-            })
-            if (markerRes.ok && markerRes.markdown.trim()) {
-              const { normalizeMarkerMarkdownForAudit } = await import(
-                '../../engine/manuscript/marker-text'
-              )
-              text = normalizeMarkerMarkdownForAudit(markerRes.markdown)
-              if (markerRes.stderr.trim()) {
-                markerNote = markerRes.stderr.trim().slice(0, 500)
-              }
-            } else if (!markerRes.ok) {
-              markerNote = [markerRes.error, markerRes.stderr].filter(Boolean).join(' · ').slice(0, 900)
-            } else {
-              markerNote = t('manuscriptAudit.markerEmptyOutput')
-            }
-          }
-
-          if (!text.trim()) {
-            const buf = await window.api?.readFileBinary(first)
-            if (buf) {
-              const { extractManuscriptFromPdf } = await import('../../engine/manuscript/pdf-extract')
-              const extraction = await extractManuscriptFromPdf(buf)
-              text = extraction.text
-              sourceFormat = 'pdf'
-              const parts: string[] = []
-              if (prefs?.markerPdfImportEnabled && markerNote) {
-                parts.push(markerNote, t('manuscriptAudit.markerFallbackPdfjs'))
-              } else if (markerNote) {
-                parts.push(markerNote)
-              }
-              if (extraction.warnings.length > 0) {
-                parts.push(extraction.warnings.join(' · '))
-              }
-              if (parts.length > 0) {
-                setAuditError(parts.join(' · '))
-              } else {
-                setAuditError(null)
-              }
-            }
-          } else {
+          const buf = await window.api?.readFileBinary(first)
+          if (buf) {
+            const { extractManuscriptFromPdf } = await import('../../engine/manuscript/pdf-extract')
+            const extraction = await extractManuscriptFromPdf(buf)
+            text = extraction.text
             sourceFormat = 'pdf'
-            setAuditError(markerNote)
+            if (extraction.warnings.length > 0) {
+              setAuditError(extraction.warnings.join(' · '))
+            } else {
+              setAuditError(null)
+            }
           }
         } else {
           text = (await window.api?.readFile(first)) ?? ''

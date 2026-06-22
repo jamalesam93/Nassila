@@ -96,9 +96,6 @@ export default function AuditView() {
 
   const { importManuscript, importManuscriptFromPath } = useAppCommands()
   const [manuscriptDragOver, setManuscriptDragOver] = useState(false)
-  const [markerPdfImportEnabled, setMarkerPdfImportEnabled] = useState(false)
-  const [markerCommand, setMarkerCommand] = useState('')
-  const [markerExtraArgs, setMarkerExtraArgs] = useState('')
   const [prefsLoaded, setPrefsLoaded] = useState(false)
   const [hasLlmKey, setHasLlmKey] = useState(false)
   const [llmKeyDraft, setLlmKeyDraft] = useState('')
@@ -144,9 +141,6 @@ export default function AuditView() {
         if (typeof p.llmBaseUrl === 'string') setLlmBaseUrl(p.llmBaseUrl)
         if (typeof p.llmModel === 'string') setLlmModel(p.llmModel)
         if (typeof p.selectedTemplateId === 'string') setSelectedTemplateId(p.selectedTemplateId)
-        if (typeof p.markerPdfImportEnabled === 'boolean') setMarkerPdfImportEnabled(p.markerPdfImportEnabled)
-        if (typeof p.markerCommand === 'string') setMarkerCommand(p.markerCommand)
-        if (typeof p.markerExtraArgs === 'string') setMarkerExtraArgs(p.markerExtraArgs)
         setPrefsLoaded(true)
       })
       .catch(() => setPrefsLoaded(true))
@@ -164,10 +158,7 @@ export default function AuditView() {
         llmBaseUrl,
         llmModel,
         selectedTemplateId,
-        templateStrict,
-        markerPdfImportEnabled,
-        markerCommand,
-        markerExtraArgs
+        templateStrict
       })
     }, 500)
     return () => {
@@ -181,10 +172,7 @@ export default function AuditView() {
     llmBaseUrl,
     llmModel,
     selectedTemplateId,
-    templateStrict,
-    markerPdfImportEnabled,
-    markerCommand,
-    markerExtraArgs
+    templateStrict
   ])
 
   const saveLlmKey = useCallback(async () => {
@@ -322,39 +310,6 @@ export default function AuditView() {
                     {t('manuscriptAudit.strictMode')}
                   </label>
                 </div>
-              </div>
-
-              <div className="rounded-lg border border-border bg-card p-4">
-                <h3 className="text-sm font-semibold text-foreground">{t('manuscriptAudit.markerTitle')}</h3>
-                <p className="mt-1 text-[10px] leading-relaxed text-muted-foreground">{t('manuscriptAudit.markerDisclaimer')}</p>
-                <label className="mt-3 flex cursor-pointer items-start gap-2 text-xs text-foreground">
-                  <input
-                    type="checkbox"
-                    className="mt-0.5"
-                    checked={markerPdfImportEnabled}
-                    onChange={(e) => setMarkerPdfImportEnabled(e.target.checked)}
-                  />
-                  {t('manuscriptAudit.markerEnable')}
-                </label>
-                <label className="mt-3 block text-[11px] font-medium text-foreground">{t('manuscriptAudit.markerCommandLabel')}</label>
-                <input
-                  value={markerCommand}
-                  onChange={(e) => setMarkerCommand(e.target.value)}
-                  disabled={!markerPdfImportEnabled}
-                  className="mt-1 w-full rounded-md border border-border bg-background px-2 py-1.5 text-xs text-foreground outline-none disabled:opacity-50"
-                  placeholder={t('manuscriptAudit.markerCommandPlaceholder')}
-                  autoComplete="off"
-                />
-                <label className="mt-2 block text-[11px] font-medium text-foreground">{t('manuscriptAudit.markerExtraArgsLabel')}</label>
-                <input
-                  value={markerExtraArgs}
-                  onChange={(e) => setMarkerExtraArgs(e.target.value)}
-                  disabled={!markerPdfImportEnabled}
-                  className="mt-1 w-full rounded-md border border-border bg-background px-2 py-1.5 text-xs text-foreground outline-none disabled:opacity-50"
-                  placeholder={t('manuscriptAudit.markerExtraArgsPlaceholder')}
-                  autoComplete="off"
-                />
-                <p className="mt-2 text-[10px] leading-relaxed text-muted-foreground">{t('manuscriptAudit.markerTestPdfHint')}</p>
               </div>
 
               <div className="rounded-lg border border-border bg-card p-4">
