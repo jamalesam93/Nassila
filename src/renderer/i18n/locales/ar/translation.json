@@ -2,6 +2,21 @@
   "app": {
     "productName": "ناسيلا"
   },
+  "dialog": {
+    "confirm": "تأكيد",
+    "cancel": "إلغاء"
+  },
+  "shell": {
+    "mode": {
+      "manuscript": "المخطوطة",
+      "bibliography": "المراجع"
+    },
+    "drawerToggle": "النمط والمشكلات",
+    "drawerTitle": "النمط والمشكلات",
+    "drawerClose": "إغلاق",
+    "drawerAria": "لوحة إعدادات المراجع",
+    "exportAudit": "تصدير تقرير التدقيق"
+  },
   "toolbar": {
     "brandSubtitle": "تحقق من مراجعك. اربط ما تكتبه بالمصدر.",
     "brandSubtitleManuscriptAudit": "مساحة تدقيق المخطوطة",
@@ -58,7 +73,97 @@
   "settings": {
     "title": "الإعدادات",
     "subtitle": "تفضيلات التطبيق ومصادر البيانات.",
-    "close": "إغلاق"
+    "close": "إغلاق",
+    "tabsAria": "أقسام الإعدادات",
+    "tabGeneral": "عام",
+    "tabLocalModels": "ربط المقاطع",
+    "localModels": {
+      "title": "ربط المقاطع",
+      "subtitle": "ربط Sanad اختياري أثناء تدقيق المخطوطة. استخدم مشغّلًا محليًا مع GGUF من Nassila، أو مفتاح API سحابي (تجريبي).",
+      "enable": "تفعيل ربط مقاطع Sanad",
+      "providerLabel": "المزوّد",
+      "groupLocal": "محلي",
+      "groupCloud": "سحابي",
+      "provider": {
+        "lmstudio": "LM Studio",
+        "ollama": "Ollama",
+        "vllm": "vLLM",
+        "custom": "نقطة نهاية مخصصة",
+        "cloud": "API سحابي"
+      },
+      "runnerHint": {
+        "lmstudio": "شغّل الخادم المحلي في LM Studio. ناسيلا تستدعي /v1/chat/completions على عنوان الأساس.",
+        "ollama": "حمّل GGUF Sanad من Nassila في Ollama. يجب أن يطابق معرّف النموذج ما يظهر في ollama list.",
+        "vllm": "وجّه إلى خادم متوافق مع OpenAI. طابق معرّف النموذج مع ما يعرضه الخادم.",
+        "custom": "أي نقطة نهاية محلية متوافقة مع OpenAI. يجب أن يطابق معرّف النموذج خادمك."
+      },
+      "cloudDisclaimer": "نماذج السحابة ليست Nassila Sanad — جودة الربط تجريبية. الصق مفتاح API؛ يُستنتج عنوان الأساس عند الإمكان.",
+      "cloudDetected": {
+        "openrouter": "تم التعرف على OpenRouter",
+        "openai": "تم التعرف على OpenAI"
+      },
+      "nassilaTierTitle": "نماذج Nassila Sanad",
+      "nassilaTierHint": "مدرّبة لربط الاقتباس بالمصدر. حمّل GGUF في مشغّلك المحلي ثم اختر المستوى.",
+      "tierLabel": "مستوى النموذج",
+      "tier": {
+        "e4b": "افتراضي (E4B v1.12)",
+        "12b": "جودة (12B v1.14)"
+      },
+      "showAdvanced": "نقطة نهاية متقدمة…",
+      "hideAdvanced": "إخفاء المتقدم",
+      "endpointLabel": "عنوان الأساس",
+      "endpointPlaceholder": "https://api.example.com أو http://localhost:1234",
+      "modelLabel": "النموذج",
+      "modelPlaceholder": "معرّف النموذج كما يعرضه المشغّل",
+      "endpointRequired": "عنوان الأساس مطلوب",
+      "modelRequired": "معرّف النموذج مطلوب",
+      "localKeyHint": "localhost يقبل أي مفتاح قصير",
+      "testConnection": "اختبار الاتصال",
+      "testing": "جارٍ الاختبار…",
+      "testOk": "الاتصال ناجح.",
+      "testFailed": "فشل الاتصال",
+      "privacy": "يعمل الربط عند تدقيق المخطوطة. يُرسل النص فقط إلى نقطة النهاية التي تضبطها — وليس إلى ناسيلا.",
+      "setupGuide": "دليل إعداد Sanad…"
+    }
+  },
+  "sanadSetup": {
+    "title": "إعداد Sanad",
+    "subtitle": "Sanad يتحقق من مقاطع المخطوطة مقابل مقتطفات المصدر عبر نموذج محلي تشغّله أنت. حمّل GGUF من Nassila، ثم اضبط ربط المقاطع في الإعدادات.",
+    "modelsTitle": "تنزيل النماذج",
+    "models": {
+      "e4b": "افتراضي — nassila-sanad-e4b (E4B v1.12، Q6_K)",
+      "12b": "جودة — nassila-sanad-12b (12B v1.14، Q6_K)"
+    },
+    "runnersTitle": "اختر مشغّلًا",
+    "recommended": "موصى به",
+    "runners": {
+      "lmstudio": {
+        "title": "LM Studio",
+        "link": "lmstudio.ai",
+        "step1": "حمّل GGUF Sanad من Hugging Face (الروابط أعلاه).",
+        "step2": "حمّل النموذج في LM Studio وشغّل الخادم المحلي.",
+        "step3": "في ناسيلا: عنوان الأساس {{url}}، معرّف النموذج {{model}} (أو ما يظهر في LM Studio)."
+      },
+      "ollama": {
+        "title": "Ollama",
+        "link": "ollama.com",
+        "hfPullHint": "اسحب مباشرة من Hugging Face (المستوى الافتراضي):",
+        "modelIdHint": "استخدم اسم النموذج من ollama list في حقل النموذج في ناسيلا.",
+        "modelfileHint": "لديك ملف .gguf على القرص؟ أنشئ Modelfile بـ FROM ./your-file.gguf ثم ollama create."
+      },
+      "vllm": {
+        "title": "vLLM / llama.cpp",
+        "link": "وثائق vLLM",
+        "step1": "قدّم GGUF Sanad عبر خادم متوافق مع OpenAI (مثل {{model}}).",
+        "step2": "وجّه ناسيلا إلى عنوان الخادم ومعرّف النموذج الذي يعرضه."
+      }
+    },
+    "privacy": "يُرسل نص المقطع فقط إلى نقطة النهاية التي تضبطها — وليس إلى ناسيلا.",
+    "dontShowAgain": "لا تُظهر هذا مجددًا",
+    "openSettings": "فتح إعدادات ربط المقاطع",
+    "close": "إغلاق",
+    "copyCommand": "نسخ",
+    "copied": "تم النسخ"
   },
   "tabs": {
     "referencesHint": "تحليل المراجع والتحقق منها وتنسيقها بأنماط CSL.",
@@ -248,6 +353,10 @@
     "searchPlaceholder": "بحث في العنوان أو المؤلف أو DOI…",
     "filteredCount": "{{shown}} / {{total}} معروض",
     "emptyFilter": "لا توجد مراجع تطابق هذا الفلتر أو البحث.",
+    "busyOverlay": "جارٍ معالجة المراجع…",
+    "labelDoi": "DOI",
+    "labelUrl": "URL",
+    "registryMismatchBadge": "سجل ×{{count}}",
     "filter": {
       "all": "الكل",
       "issues": "مشكلات",
@@ -373,5 +482,165 @@
     "document": "مستند",
     "review": "مراجعة",
     "review-book": "مراجعة كتاب"
+  },
+  "workers": {
+    "navAria": "عمال أوروبوروس",
+    "availability": {
+      "live": "متاح",
+      "partial": "جزئي",
+      "stub": "مخطط"
+    },
+    "stubTier3Note": "استيعاب المخطوطة الكاملة ونص المصدر المقتبس (المستوى 3) مخطط. سيُفعَّل هذا العامل عند إطلاق مكتب ومصدر.",
+    "raqim": {
+      "name": "رقيم",
+      "tagline": "مكتبة المراجع — استيراد، تحقق، تصدير"
+    },
+    "tasnif": {
+      "name": "تصنيف",
+      "tagline": "تصنيف التكرارات والمجلات المشبوهة والمشكلات"
+    },
+    "sanad": {
+      "name": "سند",
+      "tagline": "ربط مقطع بنص مصدر"
+    },
+    "sharh": {
+      "name": "شرح",
+      "tagline": "شرح مشكلات التحقق وعدم تطابق السجل",
+      "stubBody": "شروحات حتمية لمشكلات مكتبة المراجع. الشروحات السردية بمساعدة نموذج لغوي مخططة."
+    },
+    "maktab": {
+      "name": "مكتب",
+      "tagline": "استيعاب المخطوطة (مخطط)",
+      "stubBody": "استيراد مخطوطات كاملة (DOCX، PDF) وتقسيمها للتدقيق. يتطلب تدريب المستوى 3 وعامل مكتب."
+    },
+    "masdar": {
+      "name": "مصدر",
+      "tagline": "نص المصدر المقتبس كاملاً (مخطط)",
+      "stubBody": "جلب وتقسيم النص المفتوح للأوراق المقتبسة ليتمكن سند من الربط بأكثر من الملخصات."
+    },
+    "shahid": {
+      "name": "شاهد",
+      "tagline": "الجداول والأشكال كأدلة (مخطط)",
+      "stubBody": "ربط الادعاءات بمناطق الجداول والأشكال. المستوى 3 متعدد الوسائط — غير متاح في هذا الإصدار."
+    }
+  },
+  "tasnif": {
+    "drawerTitle": "التصنيف",
+    "intro": "صنّف مكتبتك حسب التكرارات وعلامات المجلات المشبوهة ومشكلات التحقق. افتح فئة في جدول المراجع لمراجعة الصفوف.",
+    "empty": "لا مراجع بعد. استورد المراجع في رقيم لبدء التصنيف.",
+    "openRaqim": "فتح رقيم",
+    "viewInRaqim": "مراجعة في رقيم ←",
+    "duplicatesTitle": "إدخالات مكررة",
+    "duplicatesBody": "مجموعات تكرار محتملة في مكتبتك.",
+    "predatoryTitle": "علامات مشبوهة",
+    "predatoryBody": "إدخالات تطابق قائمة المجلات المشبوهة المضمّنة.",
+    "issuesTitle": "مشكلات التحقق",
+    "issuesBody": "صفوف بمشكلات تحليل أو حقول أو سجل."
+  },
+  "sharh": {
+    "intro": "اقرأ شروحات حتمية لمشكلات التحقق وعدم تطابق السجل والمجلات المشبوهة. للتعليق على المخطوطة الكاملة، عمال المستوى 3 مخططون.",
+    "openIssuesInRaqim": "عرض المشكلات في رقيم"
+  },
+  "sanad": {
+    "intro": "الصق مقطعاً من المخطوطة ومقتطفاً من المصدر (ملخص أو فقرة). يتحقق سند من دعم الادعاءات عبر نموذج LM Studio المحلي.",
+    "passageLabel": "المقطع (نصك)",
+    "passagePlaceholder": "مثال: أفاد سميث وآخرون بانخفاض 42٪ في الوفيات…",
+    "excerptLabel": "مقتطف المصدر",
+    "excerptPlaceholder": "الصق الملخص أو الفقرة من الورقة المقتبسة…",
+    "modelConfig": "النموذج المحلي",
+    "customEndpoint": "نقطة نهاية مخصصة",
+    "llmEnabled": "تفعيل الربط بالنموذج",
+    "openSettings": "الإعدادات…",
+    "tier": {
+      "e4b": "افتراضي (E4B v1.12)",
+      "12b": "جودة (12B v1.14)"
+    },
+    "tier2LimitNote": "المستوى 2: ربط بالمقتطف فقط. أدلة النص الكامل والجداول تتطلب المستوى 3 (مصدر، شاهد).",
+    "run": "تشغيل الربط",
+    "running": "جارٍ التشغيل…",
+    "resultsTitle": "نتيجة الربط",
+    "resultsEmpty": "شغّل الربط لعرض الحكم ودعم كل ادعاء.",
+    "disabled": "ربط النموذج معطّل. فعّله أعلاه أو في الإعدادات.",
+    "encryptionBlocked": "التخزين الآمن غير متاح؛ لا يمكن حفظ مفاتيح API لاستدعاءات النموذج.",
+    "parseError": "تعذّر تحليل JSON من النموذج: {{error}}",
+    "repairedNotice": "تم إصلاح JSON تلقائياً قبل التحليل.",
+    "retryNotice": "تمت الاستعادة في محاولة ثانية.",
+    "showQuotes": "عرض اقتباسات المصدر",
+    "hideQuotes": "إخفاء الاقتباسات",
+    "tier3FutureNote": "مسارات المخطوطة الكاملة وPDF المصدر ستمر عبر مكتب ومصدر عند إطلاق المستوى 3.",
+    "verdict": {
+      "pass": "مدعوم",
+      "fail": "غير مدعوم",
+      "warn": "مراجعة",
+      "insufficient": "أدلة غير كافية",
+      "skipped": "تخطي",
+      "unknown": "غير معروف"
+    },
+    "claimVerdict": {
+      "supported": "مدعوم",
+      "weak": "ضعيف",
+      "contradicted": "متناقض",
+      "not_in_source": "غير موجود في المصدر",
+      "insufficient_evidence": "أدلة غير كافية"
+    }
+  },
+  "loop": {
+    "surface": {
+      "navAria": "وضع التطبيق",
+      "manuscript": "المخطوطة",
+      "audit": "المخطوطة",
+      "bibliography": "المراجع"
+    },
+    "title": "تدقيق المخطوطة",
+    "intro": "ارفع مخطوطتك، وحلّ المراجع المقتبسة عبر قواعد البيانات أو أرفق PDF، ثم راجع الادعاءات والمراجع في مسار واحد.",
+    "importManuscript": "رفع مخطوطة…",
+    "sanadBar": {
+      "grounding": "ربط Sanad",
+      "tier": {
+        "e4b": "E4B",
+        "12b": "12B"
+      },
+      "statusOn": "مفعّل",
+      "statusOff": "معطّل",
+      "configure": "إعداد…",
+      "setup": "إعداد Sanad…"
+    },
+    "runAudit": "تشغيل التدقيق",
+    "running": "جارٍ التدقيق…",
+    "settings": "الإعدادات…",
+    "offlineHint": "حل السجل وجلب المصادر يتطلب اتصالاً. تحرير المراجع يعمل دون اتصال.",
+    "previewEmpty": "الصق أو ارفع مخطوطة تتضمن قسم المراجع.",
+    "previewNoReferences": "تعذّر العثور على قسم المراجع أو الببليوغرافيا.",
+    "previewStats": "{{words}} كلمة · {{cites}} اقتباساً داخل النص",
+    "llmOn": "ربط سند مفعّل",
+    "llmOff": "ربط سند معطّل",
+    "sourcesTitle": "المصادر المقتبسة",
+    "sourcesHint": "يُحلّ عبر Crossref وPubMed وOpenAlex وواجهات الوصول المفتوح. اختر صفاً لعرض تفاصيل الربط.",
+    "pipelineGap": "PDF للمصادر: إرفاق يدوي متاح · جلب تلقائي مخطط (مصدر).",
+    "statusFindings": "{{count}} مصادر مُدقَّقة",
+    "sourcesEmpty": "شغّل التدقيق لملء المصادر المقتبسة وأحكام سند.",
+    "selectSource": "اختر مصدراً مقتبساً لمراجعة السجل والبيانات الوصفية ونتائج الربط.",
+    "verdictSection": "أحكام سند وشروحات عدم التطابق",
+    "colReference": "المرجع",
+    "colPassage": "الربط",
+    "siteLabel": "اقتباس داخل النص {{index}}",
+    "sourceCoverage": "نص المصدر",
+    "attachPdfTitle": "إرفاق PDF للمصدر (اختياري)",
+    "attachPdfNote": "يُخزَّن لمرحلة مصدر القادمة. التدقيق يستخدم قواعد البيانات والوصول المفتوح اليوم (المستوى 2).",
+    "attachPdfAction": "إرفاق PDF…",
+    "attachPdfClear": "إزالة",
+    "pdfAttached": "PDF مرفق",
+    "groundingSites": "ربط المقاطع",
+    "layers": {
+      "registry": "السجل (L1)",
+      "metadata": "البيانات الوصفية (L2)",
+      "passage": "المقطع (L3 / سند)"
+    },
+    "coverage": {
+      "fullTextEpmc": "نص كامل مفتوح (Europe PMC)",
+      "fullTextOa": "نص كامل مفتوح",
+      "abstractOnly": "ملخص فقط",
+      "unavailable": "نص المصدر غير متاح"
+    }
   }
 }

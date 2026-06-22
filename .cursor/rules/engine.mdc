@@ -1,0 +1,14 @@
+---
+description: Citation engine — parsers, CSL, resolvers, verification
+globs: src/engine/**/*
+alwaysApply: false
+---
+
+# Engine (`src/engine`)
+
+- `CslItem` in `types.ts` is the canonical reference shape.
+- Format bibliographies only via `formatter/citeproc-wrapper.ts` and style modules — never ad-hoc citation strings.
+- Verification: respect `MAX_VERIFICATION_ITEMS` (200) from `src/shared/verification-limits.ts`; L1 resolve then L2 compare in `verifier/`.
+- Network calls belong in `resolver/` and `network/http.ts`, not in the renderer.
+- Parser or verifier changes require tests under `tests/unit/`.
+- See root `AGENTS.md` and `.cursor/skills/nassila/SKILL.md` for full context.

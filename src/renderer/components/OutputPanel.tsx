@@ -1,6 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCitationStore, type CitationStatus } from '../stores/citation-store'
+import { useShellStore } from '../stores/shell-store'
+import { requestConfirm } from '../stores/confirm-store'
 import { useCitationEngine } from '../hooks/use-citation-engine'
 import { duplicateColors } from '../utils/duplicate-colors'
 import {
@@ -45,9 +47,13 @@ export default function OutputPanel() {
   const [pendingDoiId, setPendingDoiId] = useState<string | null>(null)
   const [listFilter, setListFilter] = useState<OutputListFilter>('all')
   const [searchQuery, setSearchQuery] = useState('')
+  const raqimListFilter = useShellStore((s) => s.raqimListFilter)
+  const clearRaqimListFilter = useShellStore((s) => s.clearRaqimListFilter)
+  const bibliographyBusy = useShellStore((s) => s.bibliographyBusy)
   const citations = useCitationStore((s) => s.citations)
   const selectedStyleId = useCitationStore((s) => s.selectedStyleId)
   const issues = useCitationStore((s) => s.issues)
+  const verificationMismatches = useCitationStore((s) => s.verificationMismatches)
   const citationStatuses = useCitationStore((s) => s.citationStatuses)
   const duplicateGroupByCitation = useCitationStore((s) => s.duplicateGroupByCitation)
   const predatoryByCitation = useCitationStore((s) => s.predatoryByCitation)
@@ -55,6 +61,19 @@ export default function OutputPanel() {
   const deleteCitation = useCitationStore((s) => s.deleteCitation)
   const keepDuplicateCitation = useCitationStore((s) => s.keepDuplicateCitation)
   const { findMissingDoi } = useCitationEngine()
+
+  useEffect(() => {
+    if (raqimListFilter) {
+      setListFilter(raqimListFilter)
+    }
+  }, [raqimListFilter])
+
+  const onListFilterChange = (filter: OutputListFilter) => {
+    setListFilter(filter)
+    if (raqimListFilter && filter !== raqimListFilter) {
+      clearRaqimListFilter()
+    }
+  }
 
   const STATUS_STYLES = useMemo(
     () =>
@@ -171,12 +190,12 @@ export default function OutputPanel() {
               <button
                 key={key}
                 type="button"
-                className={`rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors ${
+                className={`rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                   listFilter === key
                     ? 'bg-primary text-primary-foreground'
                     : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground'
                 }`}
-                onClick={() => setListFilter(key)}
+                onClick={() => onListFilterChange(key)}
               >
                 {t(`outputPanel.filter.${key}`)}
               </button>
@@ -198,7 +217,12 @@ export default function OutputPanel() {
         </div>
       )}
 
-      <div className="flex-1 overflow-auto px-4 py-3">
+      <div className="relative flex-1 overflow-auto px-4 py-3">
+        {bibliographyBusy ? (
+          <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-background/60">
+            <span className="text-sm text-muted-foreground">{t('outputPanel.busyOverlay')}</span>
+          </div>
+        ) : null}
         {citations.length === 0 ? (
           <div className="flex h-full items-center justify-center">
             <div className="text-center">
@@ -212,23 +236,34 @@ export default function OutputPanel() {
             <p className="text-sm text-muted-foreground">{t('outputPanel.emptyFilter')}</p>
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="divide-y divide-border">
             {displayEntries.map(({ item, index }) => {
               const status = getStatus(item.id)
               const styles = STATUS_STYLES[status]
               const itemIssues = issues.filter((i) => i.citationId === item.id)
+              const itemMismatches = verificationMismatches.filter((m) => m.citationId === item.id)
               const duplicateMarker = duplicateGroupByCitation[item.id]
               const duplicateStyle = duplicateMarker ? duplicateColors(duplicateMarker.colorIndex) : null
               const predatoryFlag = predatoryByCitation[item.id]
               const accessedLabel = item.accessed ? formatAccessedForDisplay(item.accessed) : ''
               const authorCount = item.author?.length ?? 0
               const { maxShown, etAlThreshold } = authorPreviewLimits(selectedStyleId)
+              const emphasized =
+                status === 'has-issues' ||
+                status === 'partially-fixed' ||
+                !!predatoryFlag ||
+                !!duplicateMarker ||
+                itemMismatches.length > 0
 
               return (
                 <div
                   key={`${item.id}-${index}`}
                   id={citationRowId(item.id, index)}
-                  className={`rounded-md border ${styles.border} ${styles.bg} p-3 transition-colors duration-300 ${duplicateStyle?.row ?? ''}`}
+                  className={`py-3 transition-colors duration-300 ${
+                    emphasized
+                      ? `rounded-md border px-3 ${styles.border} ${styles.bg} ${duplicateStyle?.row ?? ''}`
+                      : duplicateStyle?.row ?? ''
+                  }`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
@@ -272,6 +307,7 @@ export default function OutputPanel() {
                           className="mt-0.5 ps-4 text-xs text-blue-600 dark:text-blue-400 truncate"
                           title={item.URL}
                         >
+                          <span className="font-medium">{t('outputPanel.labelUrl')}: </span>
                           {item.URL}
                         </p>
                       )}
@@ -283,6 +319,7 @@ export default function OutputPanel() {
                           target="_blank"
                           title={doiUrl(item.DOI)}
                         >
+                          <span className="font-medium">{t('outputPanel.labelDoi')}: </span>
                           {doiUrl(item.DOI)}
                         </a>
                       )}
@@ -324,6 +361,11 @@ export default function OutputPanel() {
                             {predatoryFlag.tier === 'predatory'
                               ? t('predatoryPanel.badgePredatory')
                               : t('predatoryPanel.badgeSuspicious')}
+                          </span>
+                        )}
+                        {itemMismatches.length > 0 && (
+                          <span className="rounded bg-yellow-100 px-1.5 py-0.5 text-xs font-semibold text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-200">
+                            {t('outputPanel.registryMismatchBadge', { count: itemMismatches.length })}
                           </span>
                         )}
                         {item.DOI && (
@@ -423,6 +465,23 @@ export default function OutputPanel() {
                           )}
                         </div>
                       )}
+                      {itemMismatches.length > 0 && (
+                        <div className="mt-1.5 ps-4 space-y-1 rounded-md border border-yellow-500/25 bg-yellow-500/5 px-2 py-1.5">
+                          {itemMismatches.map((m) => (
+                            <div key={m.id} className="text-xs">
+                              <p className="font-medium text-yellow-800 dark:text-yellow-300">
+                                {t('issuePanel.mismatchField', { field: m.field })}
+                              </p>
+                              <p className="text-yellow-800/80 dark:text-yellow-300/80">
+                                {t('issuePanel.yours', { value: m.userValue })}
+                              </p>
+                              <p className="text-yellow-800/80 dark:text-yellow-300/80">
+                                {t('issuePanel.canonical', { source: m.source, value: m.canonicalValue })}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                     <div className="flex shrink-0 flex-col items-end gap-1">
                       <span
@@ -434,42 +493,39 @@ export default function OutputPanel() {
                       >
                         {typeLabel(item.type)}
                       </span>
-                      {duplicateMarker && (
-                        <details className="relative">
-                          <summary className="list-none rounded px-1.5 py-0.5 text-xs text-muted-foreground hover:bg-accent hover:text-foreground cursor-pointer">
-                            ...
-                          </summary>
-                          <div className="absolute end-0 z-20 mt-1 w-44 rounded-md border border-border bg-popover p-1 shadow-lg rtl:text-start">
-                            <button
-                              className="block w-full rounded px-2 py-1 text-start text-[11px] text-muted-foreground hover:bg-accent hover:text-foreground"
-                              onClick={(e) => {
-                                e.stopPropagation()
+                      {duplicateMarker ? (
+                        <div className="flex flex-col gap-0.5">
+                          <button
+                            type="button"
+                            className="rounded px-1.5 py-0.5 text-[11px] text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              void (async () => {
                                 const msg =
                                   duplicateMarker.siblingIds.length > 1
                                     ? t('outputPanel.keepEntryConfirm', {
                                         count: duplicateMarker.siblingIds.length
                                       })
                                     : null
-                                if (msg && typeof window !== 'undefined' && !window.confirm(msg)) return
+                                if (msg && !(await requestConfirm(msg))) return
                                 keepDuplicateCitation(item.id, index)
-                              }}
-                              type="button"
-                            >
-                              {t('outputPanel.keepEntry')}
-                            </button>
-                            <button
-                              className="block w-full rounded px-2 py-1 text-start text-[11px] text-destructive hover:bg-destructive/10"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                deleteCitation(item.id, index)
-                              }}
-                              type="button"
-                            >
-                              {t('outputPanel.deleteEntry')}
-                            </button>
-                          </div>
-                        </details>
-                      )}
+                              })()
+                            }}
+                          >
+                            {t('outputPanel.keepEntry')}
+                          </button>
+                          <button
+                            type="button"
+                            className="rounded px-1.5 py-0.5 text-[11px] text-destructive hover:bg-destructive/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              deleteCitation(item.id, index)
+                            }}
+                          >
+                            {t('outputPanel.deleteEntry')}
+                          </button>
+                        </div>
+                      ) : null}
                     </div>
                   </div>
                 </div>

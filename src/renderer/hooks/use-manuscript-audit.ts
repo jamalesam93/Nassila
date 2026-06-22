@@ -31,6 +31,7 @@ import type {
 } from '../../engine/manuscript/types'
 import { useManuscriptAuditStore } from '../stores/manuscript-audit-store'
 import { useCitationStore } from '../stores/citation-store'
+import { ensureLlmKeyReady } from '../utils/llm-config-utils'
 import { scorePassageAgainstSource } from '../../engine/relevance/deterministic'
 
 const MAX_BIB_ENTRIES_FALLBACK = 80
@@ -75,6 +76,7 @@ export function useManuscriptAudit() {
   const llmEnabled = useManuscriptAuditStore((s) => s.llmEnabled)
   const llmBaseUrl = useManuscriptAuditStore((s) => s.llmBaseUrl)
   const llmModel = useManuscriptAuditStore((s) => s.llmModel)
+  const llmPresetId = useManuscriptAuditStore((s) => s.llmPresetId)
   const unpaywallEmail = useManuscriptAuditStore((s) => s.unpaywallEmail)
   const selectedTemplateId = useManuscriptAuditStore((s) => s.selectedTemplateId)
   const templateStrict = useManuscriptAuditStore((s) => s.templateStrict)
@@ -184,7 +186,8 @@ export function useManuscriptAudit() {
           const site = await evaluateCiteSite(passageWindow, span, resolved, {
             llmEnabled,
             llmBaseUrl,
-            llmModel
+            llmModel,
+            llmPresetId
           })
           citeSites.push(site)
           groundingEvidence.push(...groundingEvidenceFromSite(site, resolved))
@@ -261,7 +264,7 @@ export function useManuscriptAudit() {
       setStep('done')
       controllerRef.current = null
     },
-    [llmBaseUrl, llmEnabled, llmModel, networkStatus, selectedTemplateId, setError, setReport, setStep, templateStrict, templates, unpaywallEmail, userActionsByBibKey]
+    [llmBaseUrl, llmEnabled, llmModel, llmPresetId, networkStatus, selectedTemplateId, setError, setReport, setStep, templateStrict, templates, unpaywallEmail, userActionsByBibKey]
   )
 
   return { runAudit, cancel }
@@ -338,7 +341,7 @@ async function evaluateCiteSite(
   passage: string,
   span: InTextSpan,
   resolved: ResolvedL3Source,
-  llm: { llmEnabled: boolean; llmBaseUrl: string; llmModel: string }
+  llm: { llmEnabled: boolean; llmBaseUrl: string; llmModel: string; llmPresetId: string }
 ): Promise<CiteGroundingSite> {
   if (resolved.kind === 'unavailable') {
     return {
@@ -499,12 +502,18 @@ async function runGroundingLlm(
   passage: string,
   sourceExcerpt: string,
   meta: LlmGroundingMeta,
-  llm: { llmEnabled: boolean; llmBaseUrl: string; llmModel: string }
+  llm: { llmEnabled: boolean; llmBaseUrl: string; llmModel: string; llmPresetId: string }
 ): Promise<GroundingLlmResult> {
   if (!llm.llmEnabled || !window.api) return { kind: 'disabled' }
 
   const encryption = await window.api.isEncryptionAvailable().catch(() => false)
   if (!encryption) return { kind: 'encryption_blocked' }
+
+  try {
+    await ensureLlmKeyReady(llm.llmPresetId, llm.llmBaseUrl)
+  } catch (e) {
+    return { kind: 'llm_error', message: e instanceof Error ? e.message : String(e) }
+  }
 
   const cappedPassage = truncateForGrounding(passage, GROUNDING_PASSAGE_MAX_CHARS)
   const cappedExcerpt = truncateForGrounding(sourceExcerpt, GROUNDING_EXCERPT_MAX_CHARS)

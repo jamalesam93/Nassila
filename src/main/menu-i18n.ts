@@ -32,7 +32,6 @@ type MenuLabelSet = {
   switchMode: string
   modeReferences: string
   modeManuscriptAudit: string
-  devTools: string
   alwaysOnTop: string
   helpExternalGroup: string
   cslDocs: string
@@ -85,8 +84,7 @@ const EN: MenuLabelSet = {
   toggleTheme: 'Toggle Theme',
   switchMode: 'Switch Mode',
   modeReferences: 'References',
-  modeManuscriptAudit: 'Manuscript Audit',
-  devTools: 'Toggle Developer Tools',
+  modeManuscriptAudit: 'Manuscript',
   alwaysOnTop: 'Always on Top',
   helpExternalGroup: 'Citation style websites',
   cslDocs: 'Citation Style Language documentation',
@@ -139,8 +137,7 @@ const AR: MenuLabelSet = {
   toggleTheme: 'تبديل المظهر',
   switchMode: 'تبديل الوضع',
   modeReferences: 'المراجع',
-  modeManuscriptAudit: 'تدقيق المخطوطة',
-  devTools: 'أدوات المطور',
+  modeManuscriptAudit: 'المخطوطة',
   alwaysOnTop: 'فوق كل النوافذ',
   helpExternalGroup: 'مواقع أنماط الاقتباس',
   cslDocs: 'توثيق Citation Style Language',

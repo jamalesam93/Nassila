@@ -31,6 +31,8 @@ export function registerManuscriptAuditPrefsHandlers(): void {
       if (typeof o.markerPdfImportEnabled === 'boolean') next.markerPdfImportEnabled = o.markerPdfImportEnabled
       if (typeof o.markerCommand === 'string' && o.markerCommand.length < 512) next.markerCommand = o.markerCommand
       if (typeof o.markerExtraArgs === 'string' && o.markerExtraArgs.length < 2000) next.markerExtraArgs = o.markerExtraArgs
+      if (typeof o.sanadSetupDismissed === 'boolean') next.sanadSetupDismissed = o.sanadSetupDismissed
+      if (typeof o.sanadConnectionTested === 'boolean') next.sanadConnectionTested = o.sanadConnectionTested
       return next
     } catch {
       return { version: 1 }
@@ -51,6 +53,8 @@ export function registerManuscriptAuditPrefsHandlers(): void {
     if (typeof p.markerPdfImportEnabled === 'boolean') out.markerPdfImportEnabled = p.markerPdfImportEnabled
     if (typeof p.markerCommand === 'string' && p.markerCommand.length < 512) out.markerCommand = p.markerCommand
     if (typeof p.markerExtraArgs === 'string' && p.markerExtraArgs.length < 2000) out.markerExtraArgs = p.markerExtraArgs
+    if (typeof p.sanadSetupDismissed === 'boolean') out.sanadSetupDismissed = p.sanadSetupDismissed
+    if (typeof p.sanadConnectionTested === 'boolean') out.sanadConnectionTested = p.sanadConnectionTested
     const serialized = JSON.stringify(out, null, 2)
     await writeFile(prefsPath(), serialized, 'utf-8')
   })

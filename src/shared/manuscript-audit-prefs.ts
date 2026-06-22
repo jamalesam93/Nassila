@@ -14,4 +14,8 @@ export type ManuscriptAuditPrefsV1 = {
   markerCommand?: string
   /** Extra CLI args as a single whitespace-separated string */
   markerExtraArgs?: string
+  /** User dismissed the Sanad setup guide auto-prompt. */
+  sanadSetupDismissed?: boolean
+  /** Passage grounding test connection succeeded at least once. */
+  sanadConnectionTested?: boolean
 }

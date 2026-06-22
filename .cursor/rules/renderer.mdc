@@ -1,0 +1,14 @@
+---
+description: Electron renderer — React UI, stores, i18n
+globs: src/renderer/**/*
+alwaysApply: false
+---
+
+# Renderer (`src/renderer`)
+
+- No Node.js APIs; use `window.api` from preload IPC only.
+- UI state: Zustand stores under `stores/`; keep components focused.
+- i18n: add EN and AR keys in `i18n/` when adding user-visible copy; Arabic enables RTL on `<html>`.
+- Manuscript audit UI (`ManuscriptAudit/`) is **retired** — do not remount `AuditView` or expose manuscript mode unless explicitly requested.
+- Engine-heavy work belongs in `src/engine/`, not duplicated in the renderer.
+- Run `npm test` and `npm run lint` after substantive changes.

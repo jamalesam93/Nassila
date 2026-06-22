@@ -1,8 +1,12 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCitationStore, type CitationStatus } from '../stores/citation-store'
+import { useShellStore } from '../stores/shell-store'
+import { requestConfirm } from '../stores/confirm-store'
 import type { IssueSeverity, PredatoryFlag } from '../../engine/types'
 import type { LayerVerdict } from '../../engine/manuscript/types'
+import type { OutputListFilter } from '../utils/output-filters'
+import { getCitationStatus } from '../utils/output-filters'
 import { setPredatoryListCache } from '../../engine/predatory/list-store'
 import { duplicateColors } from '../utils/duplicate-colors'
 
@@ -71,6 +75,7 @@ function layerDetailText(v: LayerVerdict): string {
 
 export default function IssuePanel() {
   const { t } = useTranslation()
+  const openRaqimWithFilter = useShellStore((s) => s.openRaqimWithFilter)
   const issues = useCitationStore((s) => s.issues)
   const mismatches = useCitationStore((s) => s.verificationMismatches)
   const duplicates = useCitationStore((s) => s.duplicates)
@@ -162,6 +167,29 @@ export default function IssuePanel() {
   const partialCount = Object.values(citationStatuses).filter((s) => s === 'partially-fixed').length
   const errorCount = Object.values(citationStatuses).filter((s) => s === 'has-issues').length
 
+  const tasnifCounts = useMemo(() => {
+    const duplicateIds = new Set(Object.keys(duplicateGroupByCitation))
+    const predatoryIds = new Set(predatoryFlags.map((f) => f.citationId))
+    let issueRowCount = 0
+    for (const c of citations) {
+      const status = getCitationStatus(c.id, citationStatuses, issues)
+      if (status === 'has-issues' || issues.some((i) => i.citationId === c.id)) {
+        issueRowCount++
+      }
+    }
+    return {
+      duplicates: duplicateIds.size,
+      predatory: predatoryIds.size,
+      issues: issueRowCount
+    }
+  }, [citations, citationStatuses, duplicateGroupByCitation, issues, predatoryFlags])
+
+  const tasnifRows: { filter: OutputListFilter; count: number; titleKey: string }[] = [
+    { filter: 'duplicates', count: tasnifCounts.duplicates, titleKey: 'tasnif.duplicatesTitle' },
+    { filter: 'predatory', count: tasnifCounts.predatory, titleKey: 'tasnif.predatoryTitle' },
+    { filter: 'issues', count: tasnifCounts.issues, titleKey: 'tasnif.issuesTitle' }
+  ]
+
   return (
     <div className="flex flex-col">
       <div className="flex items-start justify-between gap-2 border-b border-border px-4 py-2">
@@ -196,6 +224,29 @@ export default function IssuePanel() {
       </div>
 
       <div className="flex-1 overflow-auto">
+        {citations.length > 0 && tasnifRows.some((row) => row.count > 0) ? (
+          <div className="border-b border-border px-3 py-2">
+            <p className="text-xs font-medium text-foreground">{t('tasnif.drawerTitle')}</p>
+            <ul className="mt-2 divide-y divide-border rounded-md border border-border">
+              {tasnifRows.map((row) =>
+                row.count > 0 ? (
+                  <li key={row.filter}>
+                    <button
+                      type="button"
+                      className="flex w-full items-center gap-3 px-3 py-2 text-start hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      onClick={() => openRaqimWithFilter(row.filter)}
+                    >
+                      <span className="min-w-[2rem] text-sm font-semibold tabular-nums">{row.count}</span>
+                      <span className="flex-1 text-xs font-medium">{t(row.titleKey)}</span>
+                      <span className="text-xs text-primary">{t('tasnif.viewInRaqim')}</span>
+                    </button>
+                  </li>
+                ) : null
+              )}
+            </ul>
+          </div>
+        ) : null}
+
         {citationsWithIssues.length === 0 &&
         mismatches.length === 0 &&
         duplicates.length === 0 &&
@@ -548,22 +599,21 @@ export default function IssuePanel() {
                               className="rounded px-1.5 py-0.5 text-xs font-medium text-primary hover:bg-primary/10"
                               onClick={(e) => {
                                 e.stopPropagation()
-                                const citationIndex = citations.findIndex((c) => c === item)
-                                if (
-                                  dup.items.length > 2 &&
-                                  typeof window !== 'undefined' &&
-                                  !window.confirm(
-                                    t('outputPanel.keepEntryConfirm', {
-                                      count: dup.items.length - 1
-                                    })
+                                void (async () => {
+                                  const citationIndex = citations.findIndex((c) => c === item)
+                                  if (dup.items.length > 2) {
+                                    const ok = await requestConfirm(
+                                      t('outputPanel.keepEntryConfirm', {
+                                        count: dup.items.length - 1
+                                      })
+                                    )
+                                    if (!ok) return
+                                  }
+                                  keepDuplicateCitation(
+                                    item.id,
+                                    citationIndex >= 0 ? citationIndex : undefined
                                   )
-                                ) {
-                                  return
-                                }
-                                keepDuplicateCitation(
-                                  item.id,
-                                  citationIndex >= 0 ? citationIndex : undefined
-                                )
+                                })()
                               }}
                               type="button"
                             >

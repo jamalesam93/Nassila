@@ -8,6 +8,7 @@ import { useAppCommands } from '../../hooks/use-app-commands'
 import { exportReportJson, exportReportMarkdown } from '../../../engine/audit/report'
 import { manuscriptAuditExportTimestamp } from '../../utils/export-timestamp'
 import { LLM_PRESETS, findPresetByBaseUrl } from './llm-presets'
+import { allowsShortLlmKey } from '../../utils/llm-config-utils'
 import type { AuditReport, ReferenceIntegrityRisk, CitationFinding, CiteGroundingSite } from '../../../engine/manuscript/types'
 
 function findingIntegrityCardClass(risk: ReferenceIntegrityRisk): string {
@@ -18,16 +19,6 @@ function findingIntegrityCardClass(risk: ReferenceIntegrityRisk): string {
       return 'border-l-[5px] border-amber-600 bg-amber-500/[0.08] dark:border-amber-400 dark:bg-amber-500/15'
     default:
       return ''
-  }
-}
-
-function allowShortLlmKey(presetId: string, baseUrl: string): boolean {
-  if (presetId === 'ollama' || presetId === 'vllm') return true
-  try {
-    const u = new URL(baseUrl.trim().startsWith('http') ? baseUrl.trim() : `http://${baseUrl.trim()}`)
-    return u.hostname === 'localhost' || u.hostname === '127.0.0.1'
-  } catch {
-    return false
   }
 }
 
@@ -199,7 +190,7 @@ export default function AuditView() {
   const saveLlmKey = useCallback(async () => {
     const k = llmKeyDraft.trim()
     if (!k) return
-    const allowShort = allowShortLlmKey(llmPresetId, llmBaseUrl)
+    const allowShort = allowsShortLlmKey(llmPresetId, llmBaseUrl)
     try {
       await window.api?.setLlmKey(k, { allowShortPlaceholder: allowShort })
       setLlmKeyDraft('')
@@ -407,9 +398,6 @@ export default function AuditView() {
                         </option>
                       ))}
                     </select>
-                    {LLM_PRESETS.find((p) => p.id === llmPresetId)?.notes ? (
-                      <p className="text-[10px] text-muted-foreground">{LLM_PRESETS.find((p) => p.id === llmPresetId)?.notes}</p>
-                    ) : null}
                     <input
                       value={llmBaseUrl}
                       onChange={(e) => {
@@ -451,7 +439,7 @@ export default function AuditView() {
                     value={llmKeyDraft}
                     onChange={(e) => setLlmKeyDraft(e.target.value)}
                     autoComplete="off"
-                    placeholder={allowShortLlmKey(llmPresetId, llmBaseUrl) ? t('manuscriptAudit.apiKeyPlaceholderLocal') : t('manuscriptAudit.apiKeyPlaceholder')}
+                    placeholder={allowsShortLlmKey(llmPresetId, llmBaseUrl) ? t('manuscriptAudit.apiKeyPlaceholderLocal') : t('manuscriptAudit.apiKeyPlaceholder')}
                     className="mt-1 w-full rounded-md border border-border bg-background px-2 py-1.5 text-xs text-foreground outline-none"
                   />
                   <div className="mt-2 flex flex-wrap gap-2">

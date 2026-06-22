@@ -8,18 +8,20 @@
 
 **Nassila** — Windows-first Electron app for bibliography quality (offline validate, format, dedup, registry verify, predatory flags).
 
-**Ouroboros** — one local GGUF identity in LM Studio over time; **seven workers** are future **product modules** (post–UI-reshape), each forged one trainable facet at a time, then merged. **v1 trains worker 1 only: Sanad** (not yet at product ship bar).
+**Ouroboros** — one local GGUF identity in LM Studio over time; **seven workers** are **loop stages** and product modules, each forged one trainable facet at a time, then merged. **v1 trains worker 1 only: Sanad** (Tier 2 manual bridge in app; full loop requires Maktab/Masdar at Tier 3).
 
 **Rule:** Workers assist where LLM helps; **deterministic core** (APIs, citeproc, lists, parsers) stays authoritative and **lives inside worker boundaries** — never LLM-replaced.
+
+**Ouroboros, not Hydra:** Do not ship or plan UI where the user visits seven disconnected worker tabs and manually wires manuscript text between them. One manuscript audit loop is the product; worker names are vocabulary and code boundaries.
 
 | Repo | Role | GitHub |
 |------|------|--------|
 | **Nassila** | App, engine, guardrails, eval hooks | `jamalesam93/Nassila` |
 | **NassilaT** | QLoRA train, corpus, eval, reports | `jamalesam93/NassilaT` |
 
-## 2. Workers = product modules (two layers each)
+## 2. Workers = loop stages (two layers each)
 
-Each worker is a **future app module**, not only a GPU-trained facet. When Ouroboros is complete, the current **references-tab UI is replaced** by worker-centric flows. Engine code migrates **into** worker boundaries; only the assist layer is forged on Vast.
+Each worker is a **stage in the Ouroboros loop** and a **code module**, not only a GPU-trained facet. When Ouroboros is complete, the UI centers on **one manuscript audit journey** (upload → sources → audit → explain → export). The seven-item worker nav from the first UI slice is **transitional scaffolding** — not the end-state IA. See [`PRODUCT.md`](./PRODUCT.md).
 
 | Layer | Role | Examples |
 |-------|------|----------|
@@ -28,7 +30,9 @@ Each worker is a **future app module**, not only a GPU-trained facet. When Ourob
 
 Do **not** read “no LLM facet yet” as “not part of Ouroboros.” Registry verify and citeproc are **Raqim/Tasnif module cores**, not a separate product outside the seven workers.
 
-**Today (v1):** deterministic cores still live under `src/engine/`; Sanad is the only shipped LLM facet. **Future:** same logic, reshaped UI grouped by worker.
+**Agent warning:** Future UI work must **not** recreate seven disconnected mini-apps (Hydra). Sanad must ultimately consume **Maktab** + **Masdar** outputs automatically; manual passage/excerpt paste remains a Tier 2 fallback and model test panel only.
+
+**Today (v1 scaffold):** deterministic cores live under `src/engine/`; Sanad manual paste is live; Maktab/Masdar are stubs. **Target:** same logic, loop-first UI per [`DESIGN.md`](./DESIGN.md).
 
 ```
 Ingest (Maktab) → Sources (Masdar) → Ground (Sanad) → Evidence (Shahid)
@@ -58,7 +62,7 @@ Codenames: `docs/BRAND.md`, `src/shared/nassila-agent-tasks.ts`. Forge **one LLM
 | Milestone | Unlocks |
 |-----------|---------|
 | **Tier 2** (abstract Sanad ship, §10 model gates) | Remount Manuscript Audit UI; **start worker 2 Maktab** + **worker 3 Masdar** corpus/train planning |
-| **Tier 3** (product Sanad ship) | Requires **Masdar** body-text in app loop + full-text eval slice; not abstract-only claims |
+| **Tier 3** (product Sanad ship) | Requires **Maktab** ingest + **Masdar** body-text in app loop + full-text eval slice; not abstract-only claims. **Maktab/Masdar are required for the real manuscript/PDF audit product**, not optional polish. |
 
 Tier 2 completes Sanad on the abstract harness. Tier 3 needs Masdar even though Masdar is worker 3 — forge planning for Maktab/Masdar begins after Tier 2, not after Tier 3.
 
@@ -199,8 +203,10 @@ Used to decide whether to run the next hyperparam phase (e.g. v1.4b): JSON parse
 ### Tier 3 — product Sanad ship (additional)
 
 - Tier 2 on abstract harness **and**
-- Masdar pipeline supplies body text in app loop **and**
+- **Maktab** manuscript ingest + **Masdar** pipeline supplies cited-source body text in app loop **and**
 - Eval slice on full-text / body-chunk excerpts passes same quote + expect gates
+
+Manual Sanad paste does **not** satisfy Tier 3 product ship; it is a bridge until the loop feeds Sanad automatically.
 
 **Vast (NassilaT):** `PHASE=4a|4b|5 bash training/scripts/run_vast_pipeline.sh` · llama.cpp **b9608** · port **1234**
 
@@ -221,7 +227,7 @@ Used to decide whether to run the next hyperparam phase (e.g. v1.4b): JSON parse
 - ~~E4B v1.12 + 12B v1.14 train/eval~~ **Done (GO)**
 - ~~Laptop smoke~~ **Done (PASS, RTX 4060 8 GB, 2026-06-21)**
 - **HF release verify** — [`HF_RELEASE_VERIFY.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/HF_RELEASE_VERIFY.md)
-- Ouroboros UI reform (Nassila `docs/DESIGN.md`, `docs/PRODUCT.md`) — after laptop smoke pass
+- Ouroboros loop UI (Nassila `docs/PRODUCT.md`, `docs/DESIGN.md`) — primary IA correction after laptop smoke pass
 - Maktab/Masdar → Tier 3 — [`PHASE3_TIER3_GROUNDWORK.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/PHASE3_TIER3_GROUNDWORK.md)
 - Optional **v1.15** combined-score recovery (not default)
 
@@ -254,8 +260,8 @@ Historical v1.0–v1.13 walkthroughs: **`training/archive/`** — not root `trai
 @docs/OUROBOROS.md
 
 Review the Ouroboros plan as a whole:
-- Seven workers as future product modules (deterministic core + LLM facet per §2–§3)
-- Pillar ↔ worker mapping and future UI reshape (references tab → worker flows)
+- **Ouroboros, not Hydra** — one manuscript audit loop; seven workers as loop stages (deterministic core + LLM facet per §2–§3)
+- Pillar ↔ worker mapping and loop-first UI (not seven peer worker tabs as end-state IA)
 - Sanad v1.4a **checkpoint** state, tiered ship gates (§5, §10), and v1.5 targets (§7–§8)
 - Forge order, eval gates, and what must pass before worker 2 (Maktab)
 - Risks, gaps, and explicit non-goals (APIs stay authoritative; no LLM replacement of registry/citeproc)

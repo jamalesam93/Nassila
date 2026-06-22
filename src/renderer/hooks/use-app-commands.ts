@@ -2,12 +2,14 @@ import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import mammoth from 'mammoth'
 import { APP_MENU_COMMANDS, type AppMenuCommand } from '../../shared/app-menu-commands'
+import { exportReportJson, exportReportMarkdown } from '../../engine/audit/report'
 import { setAppLocale } from '../i18n/config'
 import { useCitationEngine } from './use-citation-engine'
 import { useCitationStore } from '../stores/citation-store'
 import { useManuscriptAuditStore } from '../stores/manuscript-audit-store'
 import { useShellStore } from '../stores/shell-store'
 import { useThemeStore } from '../stores/theme-store'
+import { manuscriptAuditExportTimestamp } from '../utils/export-timestamp'
 
 type ThemeMode = 'light' | 'dark' | 'system'
 
@@ -18,6 +20,7 @@ export function useAppCommands() {
   const setRawManuscriptText = useManuscriptAuditStore((s) => s.setRawManuscriptText)
   const setAuditError = useManuscriptAuditStore((s) => s.setError)
   const setManuscriptSourceFormat = useManuscriptAuditStore((s) => s.setManuscriptSourceFormat)
+  const setAppSurface = useShellStore((s) => s.setAppSurface)
 
   const {
     importFiles,
@@ -113,12 +116,13 @@ export function useAppCommands() {
 
         setRawManuscriptText(text)
         setManuscriptSourceFormat(sourceFormat)
+        setAppSurface('loop')
         if (sourceFormat !== 'pdf') setAuditError(null)
       } catch (e) {
         setAuditError(t('manuscriptAudit.importFailed', { message: (e as Error).message }))
       }
     },
-    [setAuditError, setManuscriptSourceFormat, setRawManuscriptText, t]
+    [setAppSurface, setAuditError, setManuscriptSourceFormat, setRawManuscriptText, t]
   )
 
   const importManuscript = useCallback(async () => {
@@ -171,6 +175,30 @@ export function useAppCommands() {
 
   const detectDuplicates = useCallback(() => {
     useCitationStore.getState().refreshDuplicatesAndPredatory()
+  }, [])
+
+  const exportManuscriptAuditJson = useCallback(async () => {
+    const report = useManuscriptAuditStore.getState().report
+    if (!report) return
+    const stamp = manuscriptAuditExportTimestamp()
+    const path = await window.api?.saveFileDialog({
+      defaultPath: `manuscript-audit_${stamp}.json`,
+      filters: [{ name: 'JSON', extensions: ['json'] }]
+    })
+    if (!path) return
+    await window.api?.writeFile(path, exportReportJson(report))
+  }, [])
+
+  const exportManuscriptAuditMarkdown = useCallback(async () => {
+    const report = useManuscriptAuditStore.getState().report
+    if (!report) return
+    const stamp = manuscriptAuditExportTimestamp()
+    const path = await window.api?.saveFileDialog({
+      defaultPath: `manuscript-audit_${stamp}.md`,
+      filters: [{ name: 'Markdown', extensions: ['md'] }]
+    })
+    if (!path) return
+    await window.api?.writeFile(path, exportReportMarkdown(report))
   }, [])
 
   const cycleTheme = useCallback(() => {
@@ -269,6 +297,8 @@ export function useAppCommands() {
     executeCommand,
     exportCslJson,
     exportBibliography: exportWithDialog,
+    exportManuscriptAuditJson,
+    exportManuscriptAuditMarkdown,
     findMissingDois,
     importManuscript,
     importManuscriptFromPath,

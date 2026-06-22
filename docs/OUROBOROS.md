@@ -1,6 +1,6 @@
 # Nassila Ouroboros — local model strategy
 
-Long-term vision for Nassila’s **local AI** and **post–references-tab UI**: one model identity (one LM Studio slot, one download story) refined over time. The app routes requests to **seven workers** — each a **product module** with a deterministic core plus an optional trainable LLM facet. **v1 trains only the first worker facet: Sanad** (`l3_grounding`); v1.4a is an **adapter checkpoint**, not product ship (see [`OUROBOROS_CONTEXT.md` §5](./OUROBOROS_CONTEXT.md)).
+Long-term vision for Nassila’s **local AI** and **post–references-tab UI**: one model identity (one LM Studio slot, one download story) refined over time. The app routes requests to **seven workers** — each a **loop stage** and code module with a deterministic core plus an optional trainable LLM facet. **v1 trains only the first worker facet: Sanad** (`l3_grounding`); v1.4a is an **adapter checkpoint**, not product ship (see [`OUROBOROS_CONTEXT.md` §5](./OUROBOROS_CONTEXT.md)).
 
 This is a **north star**, not a v1 scope promise.
 
@@ -8,7 +8,9 @@ This is a **north star**, not a v1 scope promise.
 
 ## What Ouroboros means
 
-Workers are **future app modules**, not sidecar LLM tricks. Registry verification, citeproc, predatory lists, dedup, and import parsers stay **authoritative and deterministic** — they **belong inside worker modules** (especially Raqim and Tasnif), not outside Ouroboros.
+**Ouroboros, not Hydra.** One snake eating its tail — a **closed loop** where workers complete each other. The user uploads a manuscript, the app resolves or accepts cited sources, audits claims and references, explains issues, and exports. **Hydra** is the anti-pattern: seven visible “heads” (peer worker tabs) that force the user to choose a destination and manually connect the workflow.
+
+Workers are **stages in that loop** and **engineering modules**, not sidecar LLM tricks. Registry verification, citeproc, predatory lists, dedup, and import parsers stay **authoritative and deterministic** — they **belong inside worker modules** (especially Raqim and Tasnif), not outside Ouroboros.
 
 | Worker module | Deterministic core (stays) | LLM facet (forge when ready) |
 |---------------|---------------------------|------------------------------|
@@ -23,32 +25,20 @@ Workers are **future app modules**, not sidecar LLM tricks. Registry verificatio
 The model **assists**; deterministic layers **decide** where APIs and schemas are authoritative.
 
 ```mermaid
-flowchart TB
-  subgraph future_ui [Future_Nassila_UI_by_worker]
-    Maktab[Maktab_ingest]
-    Masdar[Masdar_sources]
-    Sanad[Sanad_ground]
-    Shahid[Shahid_evidence]
-    Raqim[Raqim_records]
-    Tasnif[Tasnif_classify]
-    Sharh[Sharh_explain]
-  end
-  subgraph ouroboros [Ouroboros_local_model]
-    LLM[task_router_by_task_id]
-  end
-  subgraph engine [Deterministic_core_per_module]
-    APIs[registry_citeproc_predatory_dedup_parsers]
-    Guards[JSON_repair_quote_checks_caps]
-  end
-  Maktab --> Masdar --> Sanad --> Shahid
-  Raqim --> Tasnif --> Sharh
-  future_ui --> LLM
-  LLM --> Guards
-  engine --> future_ui
-  Guards --> Export[Formatted_export]
+flowchart TD
+  userGoal["User: check my manuscript"] --> uploadManuscript["Upload manuscript"]
+  uploadManuscript --> maktab["Maktab: extract structure and citations"]
+  maktab --> sourceChoice["Sources: attach PDFs or auto-fetch"]
+  sourceChoice --> masdar["Masdar: source text and chunks"]
+  maktab --> raqim["Raqim: reference records and L1/L2 verify"]
+  raqim --> tasnif["Tasnif: dedupe, risk, type checks"]
+  masdar --> sanad["Sanad: ground claims to sources"]
+  sanad --> sharh["Sharh: explain findings"]
+  tasnif --> sharh
+  sharh --> exportResult["Export bibliography and audit report"]
 ```
 
-**Today:** deterministic cores live under `src/engine/`; shipping UI is still references-tab-centric. **When Ouroboros is complete:** UI reshaped from scratch around worker flows; engine code reorganized under module boundaries.
+**Today:** deterministic cores live under `src/engine/`; the first Ouroboros UI slice may still show a **seven-item worker nav** — treat that as **transitional scaffolding**, not the end-state IA (see [`PRODUCT.md`](./PRODUCT.md)). **When Ouroboros is complete:** UI centers on the loop above; engine code reorganized under module boundaries.
 
 **Agent brief:** [`OUROBOROS_CONTEXT.md`](./OUROBOROS_CONTEXT.md).
 
@@ -70,7 +60,7 @@ Rules **1, 6, and 7** are especially critical on desktop: secure ingest, determi
 
 ## Workers registry
 
-Stable **`task`** ids in JSONL and code. Seven workers = seven future modules; forge **one LLM facet at a time**. **Agent brief:** [`OUROBOROS_CONTEXT.md`](./OUROBOROS_CONTEXT.md).
+Stable **`task`** ids in JSONL and code. Seven workers = seven loop stages / code modules; forge **one LLM facet at a time**. **Agent brief:** [`OUROBOROS_CONTEXT.md`](./OUROBOROS_CONTEXT.md).
 
 | task id | Codename | Module role | LLM facet status | Engine hook (today) |
 |---------|----------|-------------|------------------|---------------------|

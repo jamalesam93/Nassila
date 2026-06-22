@@ -2,6 +2,21 @@
   "app": {
     "productName": "Nassila"
   },
+  "dialog": {
+    "confirm": "Confirm",
+    "cancel": "Cancel"
+  },
+  "shell": {
+    "mode": {
+      "manuscript": "Manuscript",
+      "bibliography": "Bibliography"
+    },
+    "drawerToggle": "Style & issues",
+    "drawerTitle": "Style and issues",
+    "drawerClose": "Close",
+    "drawerAria": "Bibliography settings drawer",
+    "exportAudit": "Export audit report"
+  },
   "toolbar": {
     "brandSubtitle": "Verify your references. Ground your claims.",
     "brandSubtitleManuscriptAudit": "Manuscript audit workspace",
@@ -58,7 +73,97 @@
   "settings": {
     "title": "Settings",
     "subtitle": "Application preferences and data sources.",
-    "close": "Close"
+    "close": "Close",
+    "tabsAria": "Settings sections",
+    "tabGeneral": "General",
+    "tabLocalModels": "Passage grounding",
+    "localModels": {
+      "title": "Passage grounding",
+      "subtitle": "Optional Sanad grounding during manuscript audit. Use a local runner with Nassila GGUFs, or a cloud API key (experimental).",
+      "enable": "Enable Sanad passage grounding",
+      "providerLabel": "Provider",
+      "groupLocal": "Local",
+      "groupCloud": "Cloud",
+      "provider": {
+        "lmstudio": "LM Studio",
+        "ollama": "Ollama",
+        "vllm": "vLLM",
+        "custom": "Custom endpoint",
+        "cloud": "Cloud API"
+      },
+      "runnerHint": {
+        "lmstudio": "Start the local server in LM Studio. Nassila calls /v1/chat/completions on your base URL.",
+        "ollama": "Load a Nassila Sanad GGUF in Ollama. Model id must match what ollama list shows.",
+        "vllm": "Point at your OpenAI-compatible server. Match the model id to what the server exposes.",
+        "custom": "Any local OpenAI-compatible endpoint. Model id must match your server."
+      },
+      "cloudDisclaimer": "Cloud models are not Nassila Sanad — grounding quality is experimental. Paste your API key; base URL is inferred when possible.",
+      "cloudDetected": {
+        "openrouter": "Detected OpenRouter",
+        "openai": "Detected OpenAI"
+      },
+      "nassilaTierTitle": "Nassila Sanad models",
+      "nassilaTierHint": "Trained for cite-to-source grounding. Load the GGUF in your local runner, then pick a tier.",
+      "tierLabel": "Model tier",
+      "tier": {
+        "e4b": "Default (E4B v1.12)",
+        "12b": "Quality (12B v1.14)"
+      },
+      "showAdvanced": "Advanced endpoint…",
+      "hideAdvanced": "Hide advanced",
+      "endpointLabel": "Base URL",
+      "endpointPlaceholder": "https://api.example.com or http://localhost:1234",
+      "modelLabel": "Model",
+      "modelPlaceholder": "Model id as exposed by your runner",
+      "endpointRequired": "Base URL is required",
+      "modelRequired": "Model id is required",
+      "localKeyHint": "localhost accepts any short placeholder key",
+      "testConnection": "Test connection",
+      "testing": "Testing…",
+      "testOk": "Connection OK.",
+      "testFailed": "Connection failed",
+      "privacy": "Grounding runs when you audit a manuscript. Text is sent only to the endpoint you configure — not to Nassila.",
+      "setupGuide": "Set up Sanad guide…"
+    }
+  },
+  "sanadSetup": {
+    "title": "Set up Sanad",
+    "subtitle": "Sanad checks manuscript passages against source excerpts using a local model you run. Download a Nassila GGUF, load it in a runner, then configure Passage grounding in Settings.",
+    "modelsTitle": "Download models",
+    "models": {
+      "e4b": "Default — nassila-sanad-e4b (E4B v1.12, Q6_K)",
+      "12b": "Quality — nassila-sanad-12b (12B v1.14, Q6_K)"
+    },
+    "runnersTitle": "Pick a runner",
+    "recommended": "recommended",
+    "runners": {
+      "lmstudio": {
+        "title": "LM Studio",
+        "link": "lmstudio.ai",
+        "step1": "Download a Sanad GGUF from Hugging Face (links above).",
+        "step2": "Load the model in LM Studio and start the Local Server.",
+        "step3": "In Nassila: base URL {{url}}, model id {{model}} (or the id LM Studio shows)."
+      },
+      "ollama": {
+        "title": "Ollama",
+        "link": "ollama.com",
+        "hfPullHint": "Pull directly from Hugging Face (default tier):",
+        "modelIdHint": "Use the model name from ollama list in Nassila's model field.",
+        "modelfileHint": "Already have the .gguf on disk? Create a Modelfile with FROM ./your-file.gguf and run ollama create."
+      },
+      "vllm": {
+        "title": "vLLM / llama.cpp",
+        "link": "vLLM docs",
+        "step1": "Serve a Sanad GGUF with your OpenAI-compatible server (e.g. {{model}}).",
+        "step2": "Point Nassila at your server base URL and the model id it exposes."
+      }
+    },
+    "privacy": "Grounding sends passage text only to the endpoint you configure — not to Nassila.",
+    "dontShowAgain": "Don't show this again",
+    "openSettings": "Open Passage grounding settings",
+    "close": "Close",
+    "copyCommand": "Copy",
+    "copied": "Copied"
   },
   "tabs": {
     "referencesHint": "Parse, validate, autocorrect, and format your reference library with CSL styles.",
@@ -248,6 +353,10 @@
     "searchPlaceholder": "Search title, author, DOI…",
     "filteredCount": "{{shown}} / {{total}} shown",
     "emptyFilter": "No references match this filter or search.",
+    "busyOverlay": "Working on references…",
+    "labelDoi": "DOI",
+    "labelUrl": "URL",
+    "registryMismatchBadge": "Registry ×{{count}}",
     "filter": {
       "all": "All",
       "issues": "Issues",
@@ -374,5 +483,165 @@
     "document": "Document",
     "review": "Review",
     "review-book": "Book review"
+  },
+  "workers": {
+    "navAria": "Ouroboros workers",
+    "availability": {
+      "live": "Available",
+      "partial": "Partial",
+      "stub": "Planned"
+    },
+    "stubTier3Note": "Full-text manuscript and cited-paper ingest (Tier 3) is planned. This worker will activate when Maktab and Masdar ship.",
+    "raqim": {
+      "name": "Raqim",
+      "tagline": "Reference library — import, validate, verify, export"
+    },
+    "tasnif": {
+      "name": "Tasnif",
+      "tagline": "Classify duplicates, predatory flags, and issues"
+    },
+    "sanad": {
+      "name": "Sanad",
+      "tagline": "Ground a passage against a source excerpt"
+    },
+    "sharh": {
+      "name": "Sharh",
+      "tagline": "Explain validation and registry mismatches",
+      "stubBody": "Deterministic issue explanations for your reference library. LLM-assisted narrative explanations are planned."
+    },
+    "maktab": {
+      "name": "Maktab",
+      "tagline": "Manuscript ingest (planned)",
+      "stubBody": "Import full manuscripts (DOCX, PDF) and segment them for audit. Requires Tier 3 training and Maktab worker."
+    },
+    "masdar": {
+      "name": "Masdar",
+      "tagline": "Cited source full text (planned)",
+      "stubBody": "Fetch and chunk open-access full text for cited papers so Sanad can ground against more than abstracts."
+    },
+    "shahid": {
+      "name": "Shahid",
+      "tagline": "Tables & figures as evidence (planned)",
+      "stubBody": "Ground claims against table and figure regions. Multimodal Tier 3 — not available in this release."
+    }
+  },
+  "tasnif": {
+    "drawerTitle": "Triage",
+    "intro": "Triage your library by duplicates, predatory journal flags, and validation issues. Open a category in the reference table to review rows.",
+    "empty": "No citations yet. Import references in Raqim to start triage.",
+    "openRaqim": "Open Raqim",
+    "viewInRaqim": "Review in Raqim →",
+    "duplicatesTitle": "Duplicate entries",
+    "duplicatesBody": "Likely duplicate groups detected in your library.",
+    "predatoryTitle": "Predatory flags",
+    "predatoryBody": "Entries matching the bundled predatory journal list.",
+    "issuesTitle": "Validation issues",
+    "issuesBody": "Rows with parse, field, or registry problems."
+  },
+  "sharh": {
+    "intro": "Read deterministic explanations for validation issues, registry mismatches, and predatory matches. For full manuscript commentary, Tier 3 workers are planned.",
+    "openIssuesInRaqim": "Show issues in Raqim"
+  },
+  "sanad": {
+    "intro": "Paste a manuscript passage and a source excerpt (abstract or paragraph). Sanad checks whether claims are supported using your local LM Studio model.",
+    "passageLabel": "Passage (your text)",
+    "passagePlaceholder": "e.g. Smith et al. reported a 42% reduction in mortality…",
+    "excerptLabel": "Source excerpt",
+    "excerptPlaceholder": "Paste the abstract or paragraph from the cited paper…",
+    "modelConfig": "Local model",
+    "customEndpoint": "Custom endpoint",
+    "llmEnabled": "Enable LLM grounding",
+    "openSettings": "Settings…",
+    "tier": {
+      "e4b": "Default (E4B v1.12)",
+      "12b": "Quality (12B v1.14)"
+    },
+    "tier2LimitNote": "Tier 2: excerpt-only grounding. Full-paper and table/figure evidence require Tier 3 (Masdar, Shahid).",
+    "run": "Run grounding",
+    "running": "Running…",
+    "resultsTitle": "Grounding result",
+    "resultsEmpty": "Run grounding to see verdict and per-claim support.",
+    "disabled": "LLM grounding is disabled. Enable it above or in Settings.",
+    "encryptionBlocked": "Secure storage is unavailable; cannot save API keys for LLM calls.",
+    "parseError": "Could not parse model JSON: {{error}}",
+    "repairedNotice": "Model JSON was auto-repaired before parsing.",
+    "retryNotice": "Recovered on a second LLM attempt.",
+    "showQuotes": "Show source quotes",
+    "hideQuotes": "Hide quotes",
+    "tier3FutureNote": "Full manuscript and cited-PDF workflows will route through Maktab and Masdar when Tier 3 ships.",
+    "verdict": {
+      "pass": "Supported",
+      "fail": "Not supported",
+      "warn": "Review",
+      "insufficient": "Insufficient evidence",
+      "skipped": "Skipped",
+      "unknown": "Unknown"
+    },
+    "claimVerdict": {
+      "supported": "Supported",
+      "weak": "Weak",
+      "contradicted": "Contradicted",
+      "not_in_source": "Not in source",
+      "insufficient_evidence": "Insufficient evidence"
+    }
+  },
+  "loop": {
+    "surface": {
+      "navAria": "Application mode",
+      "manuscript": "Manuscript",
+      "audit": "Manuscript",
+      "bibliography": "Bibliography"
+    },
+    "title": "Manuscript audit",
+    "intro": "Upload your manuscript, resolve cited sources from scholarly databases or attach PDFs, then audit claims and references in one flow.",
+    "importManuscript": "Upload manuscript…",
+    "sanadBar": {
+      "grounding": "Sanad grounding",
+      "tier": {
+        "e4b": "E4B",
+        "12b": "12B"
+      },
+      "statusOn": "On",
+      "statusOff": "Off",
+      "configure": "Configure…",
+      "setup": "Setup…"
+    },
+    "runAudit": "Run audit",
+    "running": "Auditing…",
+    "settings": "Settings…",
+    "offlineHint": "Registry and source fetch need a network connection. Bibliography editing still works offline.",
+    "previewEmpty": "Paste or upload a manuscript with a References section.",
+    "previewNoReferences": "Could not find a References or Bibliography section.",
+    "previewStats": "{{words}} words · {{cites}} in-text citations detected",
+    "llmOn": "Sanad grounding on",
+    "llmOff": "Sanad grounding off",
+    "sourcesTitle": "Cited sources",
+    "sourcesHint": "Resolved via Crossref, PubMed, OpenAlex, and open-access APIs. Select a row for grounding details.",
+    "pipelineGap": "Cited PDFs: manual attach live · automated source fetch planned (Masdar).",
+    "statusFindings": "{{count}} sources audited",
+    "sourcesEmpty": "Run an audit to populate cited sources and Sanad verdicts.",
+    "selectSource": "Select a cited source to review registry, metadata, and grounding results.",
+    "verdictSection": "Sanad verdicts and mismatch explanations",
+    "colReference": "Reference",
+    "colPassage": "Grounding",
+    "siteLabel": "In-text cite {{index}}",
+    "sourceCoverage": "Source text",
+    "attachPdfTitle": "Attach cited PDF (optional)",
+    "attachPdfNote": "Stored for a future Masdar pass. The audit still uses database and open-access fetch today (Tier 2).",
+    "attachPdfAction": "Attach PDF…",
+    "attachPdfClear": "Remove",
+    "pdfAttached": "PDF attached",
+    "groundingSites": "Passage grounding",
+    "layers": {
+      "registry": "Registry (L1)",
+      "metadata": "Metadata (L2)",
+      "passage": "Passage (L3 / Sanad)"
+    },
+    "coverage": {
+      "fullTextEpmc": "Open-access full text (Europe PMC)",
+      "fullTextOa": "Open-access full text",
+      "abstractOnly": "Abstract only",
+      "unavailable": "Source text unavailable"
+    }
   }
 }

@@ -1,9 +1,8 @@
 import { useEffect } from 'react'
-import Toolbar from './components/Toolbar'
-import InputPanel from './components/InputPanel'
-import OutputPanel from './components/OutputPanel'
-import Sidebar from './components/Sidebar'
+import AppHeader from './components/shell/AppHeader'
 import StatusBar from './components/StatusBar'
+import WorkerShell from './components/workers/WorkerShell'
+import ConfirmDialog from './components/ui/confirm-dialog'
 import { useThemeStore } from './stores/theme-store'
 import { useKeyboardShortcuts } from './hooks/use-keyboard-shortcuts'
 import { useNetworkStatus } from './hooks/use-network-status'
@@ -13,6 +12,7 @@ import { useCitationStore } from './stores/citation-store'
 import { loadPresets, savePresets } from '../engine/target'
 import { useShellStore } from './stores/shell-store'
 import AboutModal from './components/AboutModal'
+import SanadSetupModal from './components/SanadSetupModal'
 import SettingsModal from './components/SettingsModal'
 import { readStoredLocale } from './i18n/config'
 
@@ -68,21 +68,14 @@ export default function App() {
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
-      <Toolbar />
+      <AppHeader />
       <AboutModal />
+      <SanadSetupModal />
       <SettingsModal />
+      <ConfirmDialog />
 
       <div className="flex flex-1 overflow-hidden">
-        <div className="flex flex-1 overflow-hidden">
-          <div className="flex-1 overflow-hidden border-r border-border">
-            <InputPanel />
-          </div>
-          <div className="flex-1 overflow-hidden">
-            <OutputPanel />
-          </div>
-        </div>
-
-        <Sidebar />
+        <WorkerShell />
       </div>
 
       <StatusBar />

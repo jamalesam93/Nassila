@@ -65,7 +65,9 @@ Build output: `out/` (electron-vite), `dist/` (installers). Do not edit generate
 
 ### Manuscript / L3 / Ouroboros (engine only for now)
 
-- **Ouroboros** ([`docs/OUROBOROS.md`](docs/OUROBOROS.md), agent brief [`docs/OUROBOROS_CONTEXT.md`](docs/OUROBOROS_CONTEXT.md)): seven workers as future product modules. **Sanad** `nassila-sanad-e4b` **v1.12** (default) / `nassila-sanad-12b` **v1.14** (quality); v1.13 **NO-GO** — NassilaT [`POST_V114_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/POST_V114_MAP.md). Task ids: [`src/shared/nassila-agent-tasks.ts`](src/shared/nassila-agent-tasks.ts). UI reform: [`docs/PRODUCT.md`](docs/PRODUCT.md), [`docs/DESIGN.md`](docs/DESIGN.md). **Training:** [`docs/TRAINING.md`](docs/TRAINING.md) → NassilaT.
+- **Ouroboros, not Hydra** — one manuscript audit loop (upload → sources → audit → explain → export). Workers are **stages**, not seven peer destinations. Read [`docs/PRODUCT.md`](docs/PRODUCT.md) before any UI work. The current seven-item worker nav is **transitional scaffolding**, not end-state IA.
+- **Ouroboros** ([`docs/OUROBOROS.md`](docs/OUROBOROS.md), agent brief [`docs/OUROBOROS_CONTEXT.md`](docs/OUROBOROS_CONTEXT.md)): seven workers as loop stages and code modules. **Sanad** `nassila-sanad-e4b` **v1.12** (default) / `nassila-sanad-12b` **v1.14** (quality); v1.13 **NO-GO** — NassilaT [`POST_V114_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/POST_V114_MAP.md). Task ids: [`src/shared/nassila-agent-tasks.ts`](src/shared/nassila-agent-tasks.ts). **Training:** [`docs/TRAINING.md`](docs/TRAINING.md) → NassilaT.
+- **Impeccable UI rule** — before renderer/UI changes, read [`docs/DESIGN.md`](docs/DESIGN.md) § Impeccable discipline. Reject AI-template tells: purple gradients, nested cards, Inter-only typography, identical card grids, gray-on-tinted muted text, hero metrics, decorative glass, fake progress on stubs.
 - Full-manuscript **audit UI is not mounted** in the shipping app. See [`src/renderer/components/ManuscriptAudit/README.md`](src/renderer/components/ManuscriptAudit/README.md).
 - Engine code under `src/engine/manuscript/` (grounding JSON, PDF extract, etc.) may remain for future releases — do not re-enable audit UI or menu entries unless explicitly requested.
 - Grounding schema and parsing: [`grounding-llm.ts`](src/engine/manuscript/grounding-llm.ts), [`grounding-json-repair.ts`](src/engine/manuscript/grounding-json-repair.ts).
@@ -107,6 +109,8 @@ Other: `build:mac`, `build:linux`, `build:unpack`, `preview`.
 ## Change discipline
 
 - Keep diffs **minimal** and scoped to the task; match existing naming and patterns.
+- **Ouroboros product:** do not add Hydra-style peer worker tabs or ask users to copy manuscript text between modules; prefer loop-first UI per `PRODUCT.md`.
+- **UI craft:** follow `DESIGN.md` Impeccable discipline; product workstation, not AI SaaS chrome.
 - Run `npm test` and `npm run lint` before considering work done.
 - Add or update unit tests for engine behavior you change.
 - Do **not** commit secrets (`.env`, API keys), large model weights, or `out/` / `dist/` artifacts.

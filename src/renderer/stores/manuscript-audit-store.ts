@@ -1,5 +1,7 @@
 import { create } from 'zustand'
+import { NASSILA_MODEL_ARTIFACTS } from '../../shared/nassila-agent-tasks'
 import type { AuditReport, UserAction } from '../../engine/manuscript/types'
+import { LM_STUDIO_DEFAULT_URL } from '../utils/llm-config-utils'
 
 export type AuditStep = 'idle' | 'parsing' | 'l1' | 'l2' | 'oa_fetch' | 'l3' | 'llm' | 'done' | 'error'
 
@@ -14,6 +16,7 @@ interface ManuscriptAuditState {
   llmBaseUrl: string
   llmModel: string
   unpaywallEmail: string
+  llmPrefsHydrated: boolean
   manuscriptSourceFormat: 'docx' | 'pdf' | 'text' | null
 
   selectedTemplateId: string
@@ -30,6 +33,7 @@ interface ManuscriptAuditState {
   setLlmBaseUrl: (url: string) => void
   setLlmModel: (model: string) => void
   setUnpaywallEmail: (email: string) => void
+  setLlmPrefsHydrated: (hydrated: boolean) => void
   setManuscriptSourceFormat: (format: 'docx' | 'pdf' | 'text' | null) => void
   setSelectedTemplateId: (id: string) => void
   setTemplateStrict: (strict: boolean) => void
@@ -43,11 +47,12 @@ export const useManuscriptAuditStore = create<ManuscriptAuditState>((set, get) =
   step: 'idle',
   error: null,
   userActionsByBibKey: {},
-  llmEnabled: false,
-  llmPresetId: 'openai',
-  llmBaseUrl: 'https://api.openai.com',
-  llmModel: 'gpt-4.1-mini',
+  llmEnabled: true,
+  llmPresetId: 'lmstudio',
+  llmBaseUrl: LM_STUDIO_DEFAULT_URL,
+  llmModel: NASSILA_MODEL_ARTIFACTS.sanadE4b,
   unpaywallEmail: '',
+  llmPrefsHydrated: false,
   manuscriptSourceFormat: null,
 
   selectedTemplateId: 'imrad',
@@ -68,6 +73,7 @@ export const useManuscriptAuditStore = create<ManuscriptAuditState>((set, get) =
   setLlmBaseUrl: (llmBaseUrl) => set({ llmBaseUrl }),
   setLlmModel: (llmModel) => set({ llmModel }),
   setUnpaywallEmail: (unpaywallEmail) => set({ unpaywallEmail }),
+  setLlmPrefsHydrated: (llmPrefsHydrated) => set({ llmPrefsHydrated }),
   setManuscriptSourceFormat: (manuscriptSourceFormat) => set({ manuscriptSourceFormat }),
   setSelectedTemplateId: (selectedTemplateId) => set({ selectedTemplateId }),
   setTemplateStrict: (templateStrict) => set({ templateStrict }),

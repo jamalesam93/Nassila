@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu, shell, type MenuItemConstructorOptions } from 'electron'
+import { BrowserWindow, Menu, shell, type MenuItemConstructorOptions } from 'electron'
 import { APP_MENU_COMMANDS, type AppMenuCommand } from '../shared/app-menu-commands'
 import type { AppMode } from '../shared/app-mode'
 import { type MainMenuLocale, mainMenuLabels } from './menu-i18n'
@@ -127,7 +127,6 @@ export function buildAppMenu(window: BrowserWindow, locale?: MainMenuLocale, mod
         { type: 'separator' },
         { role: 'reload', label: m.reload },
         { role: 'forceReload', label: m.forceReload },
-        ...(app.isPackaged ? [] : [{ role: 'toggleDevTools' as const, label: m.devTools }]),
         { type: 'separator' },
         { role: 'resetZoom', label: m.resetZoom },
         { role: 'zoomIn', label: m.zoomIn },
