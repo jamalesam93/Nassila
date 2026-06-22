@@ -17,8 +17,8 @@ export const OLLAMA_DEFAULT_BASE = 'http://localhost:11434'
  * Ollama HF Hub one-liners (verify :Q6_K tags against your HF filenames).
  * Model id in Nassila must match `ollama list` after pull.
  */
-export const OLLAMA_HF_PULL_E4B = `ollama run hf.co/QinEmPeRoR93/${NASSILA_MODEL_ARTIFACTS.sanadE4b}:Q6_K`
-export const OLLAMA_HF_PULL_12B = `ollama run hf.co/QinEmPeRoR93/${NASSILA_MODEL_ARTIFACTS.sanad12b}:Q6_K`
+export const OLLAMA_HF_PULL_E4B = `ollama pull huggingface.co/QinEmPeRoR93/${NASSILA_MODEL_ARTIFACTS.sanadE4b}:Q6_K`
+export const OLLAMA_HF_PULL_12B = `ollama pull huggingface.co/QinEmPeRoR93/${NASSILA_MODEL_ARTIFACTS.sanad12b}:Q6_K`
 
 export const SANAD_DEFAULT_MODEL_ID = NASSILA_MODEL_ARTIFACTS.sanadE4b
 export const SANAD_QUALITY_MODEL_ID = NASSILA_MODEL_ARTIFACTS.sanad12b
