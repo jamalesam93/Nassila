@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { validateExternalUrl } from '../../src/engine/network/http'
+import { tryValidateExternalUrl, validateExternalUrl } from '../../src/engine/network/http'
 
 describe('validateExternalUrl', () => {
   it('allows public https URLs', () => {
@@ -24,5 +24,15 @@ describe('validateExternalUrl', () => {
   it('rejects unsupported protocols and authenticated URLs', () => {
     expect(() => validateExternalUrl('ftp://example.org/file')).toThrow(/only http/i)
     expect(() => validateExternalUrl('https://user:pass@example.org')).toThrow(/authenticated/i)
+  })
+
+  it('allows public http URLs when explicitly permitted', () => {
+    const url = validateExternalUrl('http://example.org/article.pdf', { allowHttp: true })
+    expect(url.protocol).toBe('http:')
+  })
+
+  it('tryValidateExternalUrl returns null instead of throwing', () => {
+    expect(tryValidateExternalUrl('ftp://example.org/file')).toBeNull()
+    expect(tryValidateExternalUrl('http://example.org/oa', { allowHttp: true })?.hostname).toBe('example.org')
   })
 })

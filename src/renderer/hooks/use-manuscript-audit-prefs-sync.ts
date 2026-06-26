@@ -82,6 +82,8 @@ export function useManuscriptAuditPrefsSync(options: UseManuscriptAuditPrefsSync
 
   const llmModel = useManuscriptAuditStore((s) => s.llmModel)
 
+  const unpaywallEmail = useManuscriptAuditStore((s) => s.unpaywallEmail)
+
   const llmPrefsHydrated = useManuscriptAuditStore((s) => s.llmPrefsHydrated)
 
   const setLlmPrefsHydrated = useManuscriptAuditStore((s) => s.setLlmPrefsHydrated)
@@ -142,6 +144,8 @@ export function useManuscriptAuditPrefsSync(options: UseManuscriptAuditPrefsSync
 
           version: 1,
 
+          unpaywallEmail: unpaywallEmail.trim() || undefined,
+
           llmEnabled,
 
           llmPresetId,
@@ -162,7 +166,7 @@ export function useManuscriptAuditPrefsSync(options: UseManuscriptAuditPrefsSync
 
     }
 
-  }, [llmBaseUrl, llmEnabled, llmModel, llmPresetId, llmPrefsHydrated, saveEnabled])
+  }, [llmBaseUrl, llmEnabled, llmModel, llmPresetId, llmPrefsHydrated, saveEnabled, unpaywallEmail])
 
 }
 

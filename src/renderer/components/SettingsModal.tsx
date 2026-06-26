@@ -5,6 +5,7 @@ import { Button } from './ui/button'
 import { Tabs } from './ui/tabs'
 import PredatoryListSettings from './settings/PredatoryListSettings'
 import LocalModelsSettings from './settings/LocalModelsSettings'
+import SourceFetchSettings from './settings/SourceFetchSettings'
 import { useShellStore } from '../stores/shell-store'
 
 type SettingsTab = 'general' | 'localModels'
@@ -52,7 +53,12 @@ export default function SettingsModal() {
         </div>
 
         <div className="mt-4">
-          {tab === 'general' ? <PredatoryListSettings /> : null}
+          {tab === 'general' ? (
+            <div className="space-y-2">
+              <PredatoryListSettings />
+              <SourceFetchSettings />
+            </div>
+          ) : null}
           {tab === 'localModels' ? <LocalModelsSettings /> : null}
         </div>
 

@@ -1,0 +1,8 @@
+Compare the manuscript passage to the source excerpt below.
+<manuscript_passage>
+The intervention worked equally well in adults and children (Daniels, 2024).
+</manuscript_passage>
+
+<source_excerpt label="abstract">
+Efficacy was demonstrated in adults; pediatric data were not collected.
+</source_excerpt>

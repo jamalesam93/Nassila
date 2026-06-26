@@ -8,8 +8,9 @@ let currentMenuLocale: MainMenuLocale = 'en'
 let currentAppMode: AppMode = 'references'
 
 function sendCommand(window: BrowserWindow, command: AppMenuCommand): void {
-  if (!window.isDestroyed()) {
-    window.webContents.send('menu:command', command)
+  const target = BrowserWindow.getFocusedWindow() ?? window
+  if (!target.isDestroyed()) {
+    target.webContents.send('menu:command', command)
   }
 }
 

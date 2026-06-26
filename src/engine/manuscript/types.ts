@@ -81,6 +81,11 @@ export interface CiteGroundingSite {
   llmParseWarning?: string
   /** Truncated raw LLM output when grounding was attempted */
   llmRawResponse?: string
+  /** Chunk-selected excerpt from the cited source sent to grounding */
+  sourceExcerpt?: string
+  sourceExcerptSource?: EvidenceSnippet['source']
+  sourceExcerptUrl?: string
+  sourceExcerptLabel?: string
 }
 
 export interface CitationFinding {

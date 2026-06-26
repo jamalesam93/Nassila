@@ -68,4 +68,4 @@ Phase 0–1 pack was superseded by **NassilaT**. Do not duplicate; use NassilaT 
 | Task ids + workers | `src/shared/nassila-agent-tasks.ts` |
 | LM Studio presets | `src/renderer/components/ManuscriptAudit/llm-presets.ts` |
 
-Prompt sync deferred until Ouroboros UI reform; Tier 2b quote guardrail is live in engine.
+Prompt format aligned with engine (system/user split, SEC-05); loop UI ships per `PRODUCT.md`.

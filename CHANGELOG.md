@@ -4,14 +4,27 @@ All notable changes to **Nassila** are documented here.
 
 ## [Unreleased]
 
-### Added
+## [1.1.0] — 2026-06-27
 
-- **Training (NassilaT):** Sanad ship checkpoints E4B **v1.12**, 12B **v1.14** selected; v1.13 **NO-GO**; operator map `training/POST_V114_MAP.md`; laptop smoke `training/LAPTOP_SMOKE_TEST.md`.
-- **Ouroboros strategy:** [`docs/OUROBOROS.md`](docs/OUROBOROS.md), [`docs/OUROBOROS_CONTEXT.md`](docs/OUROBOROS_CONTEXT.md); task registry [`src/shared/nassila-agent-tasks.ts`](src/shared/nassila-agent-tasks.ts). [`docs/WEBPAGE_ROADMAP.md`](docs/WEBPAGE_ROADMAP.md) for future Raqim/Tasnif/Sharh webpage tasks.
+### Added — Sanad & Ouroboros loop
+
+- **Manuscript loop** — upload DOCX/PDF, run full audit (L1 registry + L2 metadata + L3 passage grounding), cited-sources table, and evidence detail (passage, source excerpt, quotes).
+- **Passage grounding (Sanad)** — local runners (LM Studio, Ollama, vLLM, Custom) and Cloud API; E4B / 12B tier chips; **Set up Sanad** guide modal.
+- **Settings → General → Manuscript source fetch** — one-time Unpaywall email for OA full-text lookups.
+- **L1 multi-registry fallback** — DOI: Crossref/DataCite → OpenAlex → PubMed; PMID: PubMed → OpenAlex.
+- **DOCX references fallback** — numbered bibliography block when no `References` heading.
+- **Security (SEC-01–07):** LLM URL validation, redirect-safe OA fetch, production CSP, grounding prompt delimiters — see [`docs/SECURITY-FIX-PLAN.md`](docs/SECURITY-FIX-PLAN.md).
 
 ### Changed
 
-- **L3 grounding engine (Phase 0.5):** JSON auto-repair (`grounding-json-repair.ts`, aligned with training eval harness), one LLM retry on parse failure, passage/excerpt length caps in `grounding-llm.ts`, dedicated **LM Studio** preset in `llm-presets.ts` (`http://localhost:1234`).
+- **Hydra worker tabs removed** — primary surfaces are **Manuscript loop** + **Bibliography**; Tasnif / Sharh inline in bibliography drawer and loop detail.
+- **External Marker PDF CLI removed** — PDF ingest uses bundled pdf.js only.
+- **OA fetch** — allows public `http://` Unpaywall links; soft-fails invalid URLs; tries multiple Unpaywall location fields.
+- **L3 grounding engine:** JSON auto-repair, LLM retry on parse failure, passage/excerpt caps, system/user prompt split.
+
+### Notes
+
+- Ship checkpoints: `nassila-sanad-e4b` **v1.12**, `nassila-sanad-12b` **v1.14** (NassilaT). Re-run manuscript audit smoke after upgrade to validate L1/OA fixes on your corpus.
 
 ## [1.0.1] — 2026-06-03
 
@@ -34,5 +47,4 @@ Reference list verification baseline.
 
 ### Notes
 
-- Manuscript audit / L3 grounding UI is not enabled in this release; engine code remains for a later phase.
 - Windows `appId`: `com.nassila.app`.

@@ -67,7 +67,9 @@ const api = {
 
   // ── Application Menu ───────────────────────────────────────────────────
   onMenuCommand: (callback: (command: AppMenuCommand) => void): (() => void) => {
-    const listener = (_event: Electron.IpcRendererEvent, command: AppMenuCommand) => callback(command)
+    const listener = (_event: Electron.IpcRendererEvent, command: AppMenuCommand) => {
+      callback(command)
+    }
     ipcRenderer.on('menu:command', listener)
     return () => {
       ipcRenderer.removeListener('menu:command', listener)

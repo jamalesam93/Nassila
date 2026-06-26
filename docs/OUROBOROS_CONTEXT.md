@@ -61,7 +61,7 @@ Codenames: `docs/BRAND.md`, `src/shared/nassila-agent-tasks.ts`. Forge **one LLM
 
 | Milestone | Unlocks |
 |-----------|---------|
-| **Tier 2** (abstract Sanad ship, §10 model gates) | Remount Manuscript Audit UI; **start worker 2 Maktab** + **worker 3 Masdar** corpus/train planning |
+| **Tier 2** (abstract Sanad ship, §10 model gates) | Ouroboros loop UI shipped; **start worker 2 Maktab** + **worker 3 Masdar** corpus/train planning |
 | **Tier 3** (product Sanad ship) | Requires **Maktab** ingest + **Masdar** body-text in app loop + full-text eval slice; not abstract-only claims. **Maktab/Masdar are required for the real manuscript/PDF audit product**, not optional polish. |
 
 Tier 2 completes Sanad on the abstract harness. Tier 3 needs Masdar even though Masdar is worker 3 — forge planning for Maktab/Masdar begins after Tier 2, not after Tier 3.
@@ -84,12 +84,14 @@ Full vision: [`OUROBOROS.md`](./OUROBOROS.md). Web path: [`WEBPAGE_ROADMAP.md`](
 
 **Active code (Nassila):**
 
+- `src/renderer/components/loop/OuroborosLoopWorkspace.tsx` — **shipping** Manuscript loop UI (upload → audit → per-cite detail)
+- `src/renderer/components/workers/WorkerShell.tsx` — mounts loop (`appSurface === 'loop'`) or bibliography (`RaqimWorkspace`)
 - `src/engine/manuscript/grounding-llm.ts` — prompt + schema
 - `src/engine/manuscript/grounding-json-repair.ts` — repair layer
 - `src/shared/nassila-agent-tasks.ts` — task ids + worker codenames
 - `src/renderer/components/ManuscriptAudit/llm-presets.ts` — LM Studio preset
 
-**Manuscript Audit UI:** code exists; **not mounted** in shipping app unless explicitly requested.
+**Legacy `ManuscriptAudit/AuditView`:** code remains; **not** mounted. Production manuscript UX is the Ouroboros loop above.
 
 ## 5. Training arc (Sanad / E4B)
 
@@ -107,7 +109,7 @@ Full vision: [`OUROBOROS.md`](./OUROBOROS.md). Web path: [`WEBPAGE_ROADMAP.md`](
 1. **Model gate** — raw eval metrics in §10 (quote validity ≥98% on holdout, etc.). Training target for v1.5.
 2. **Product-safety gate** — after deterministic quote-substring checks, **zero false `pass`** reaches the user for supported claims with invalid quotes. Achievable in-app even before the model gate passes.
 
-**v1.4a** passed the **intermediate 4a gate** (JSON ≥98%, supported h-001–h-010 ≥8/10) and beat **v1.4b**, so it is the adapter checkpoint to build from. **v1.10 12B Q6_K** passes Tier 2 §10 on the hardened harness (see §5 scorecard). **Manuscript Audit UI stays unmounted** until explicit request.
+**v1.4a** passed the **intermediate 4a gate** (JSON ≥98%, supported h-001–h-010 ≥8/10) and beat **v1.4b**, so it is the adapter checkpoint to build from. **v1.10 12B Q6_K** passes Tier 2 §10 on the hardened harness (see §5 scorecard). **Ouroboros loop UI** ships in-app; legacy `AuditView` tab layout stays retired.
 
 **Excerpt scope:** Training and primary eval are **abstract-only**. Sanad compares passage vs text excerpt — it does not read PDFs. PDF → text is **Masdar** (`source_pdf_extract`) + engine extract; the app often falls back to abstract-only today. Do not claim full-paper grounding until Tier 3.
 

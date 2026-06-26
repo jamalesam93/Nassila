@@ -85,14 +85,15 @@ function buildPubMedSearchTerm(item: CslItem): string | null {
 
 export async function resolvePmid(pmid: string): Promise<CslItem | null> {
   try {
-    const url = `${EUTILS_BASE}/esummary.fcgi?db=pubmed&id=${pmid}&retmode=json`
-    if (!/^\d+$/.test(pmid)) return null
+    const cleaned = pmid.replace(/^pmid:?\s*/i, '').replace(/\D/g, '')
+    const url = `${EUTILS_BASE}/esummary.fcgi?db=pubmed&id=${cleaned}&retmode=json`
+    if (!/^\d+$/.test(cleaned)) return null
 
     const response = await fetchWithPolicy(url)
     if (!response.ok) return null
 
     const data = await readJsonResponse<{ result: Record<string, PubMedArticle> }>(response)
-    const article = data.result[pmid]
+    const article = data.result[cleaned]
     if (!article || !article.title) return null
 
     const authors: CslName[] = (article.authors ?? []).map((a) => {
@@ -110,7 +111,7 @@ export async function resolvePmid(pmid: string): Promise<CslItem | null> {
     const pmcid = extractIdFromArticle(article, 'pmc')
 
     const item: CslItem = {
-      id: `pmid-${pmid}`,
+      id: `pmid-${cleaned}`,
       type: 'article-journal',
       title: article.title,
       author: authors,
@@ -119,7 +120,7 @@ export async function resolvePmid(pmid: string): Promise<CslItem | null> {
       issue: article.issue || undefined,
       page: article.pages || undefined,
       DOI: doi,
-      PMID: pmid,
+      PMID: cleaned,
       PMCID: pmcid,
       issued: year ? { 'date-parts': [[year]] } : undefined,
       _sourceFormat: 'pmid',
@@ -127,6 +128,34 @@ export async function resolvePmid(pmid: string): Promise<CslItem | null> {
     }
 
     return item
+  } catch {
+    return null
+  }
+}
+
+/** Look up a PubMed record by DOI when Crossref/OpenAlex miss (common for biomedical articles). */
+export async function resolvePubMedByDoi(doi: string): Promise<CslItem | null> {
+  const normalized = doi
+    .replace(/^https?:\/\/(?:dx\.)?doi\.org\//i, '')
+    .replace(/^doi:\s*/i, '')
+    .trim()
+    .replace(/[.)]+$/, '')
+  if (!/^10\.\d{4,}\//.test(normalized)) return null
+
+  try {
+    const params = new URLSearchParams({
+      db: 'pubmed',
+      term: `${normalized}[doi]`,
+      retmax: '1',
+      retmode: 'json'
+    })
+    const response = await fetchWithPolicy(`${EUTILS_BASE}/esearch.fcgi?${params.toString()}`)
+    if (!response.ok) return null
+
+    const data = await readJsonResponse<PubMedSearchResponse>(response)
+    const pmid = data.esearchresult?.idlist?.[0]
+    if (!pmid) return null
+    return resolvePmid(pmid)
   } catch {
     return null
   }

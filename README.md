@@ -33,10 +33,9 @@ The name **Nassila** is coined, inspired by the idea of a **sanad** (سند): a 
 4. **Verify references** — one action: resolve each row to Crossref, PubMed, or OpenAlex (**L1**), then compare your metadata to the canonical record (**L2**), with safe auto-patches when registries agree (up to **200** prioritized rows per run)  
 5. **Predatory journal scan** — match journal titles against bundled and updatable predatory/pseudo-journal lists  
 6. **Deduplicate** and **export** — formatted bibliography in APA, IEEE, Vancouver, Chicago, Harvard, MLA, Nature (bundled), or any style from the [Zotero CSL repository](https://github.com/citation-style-language/styles)  
+7. **Manuscript loop (Ouroboros)** — upload or paste a manuscript, verify cited references (L1/L2), fetch open-access source text where available, and run **Sanad** passage grounding (L3) with a local LLM — see the [user guide](docs/USER_GUIDE.md)
 
-**Privacy:** list editing and validation work offline. Registry verification, DOI lookup, and predatory-list sync use the network only when you run those actions.
-
-> **Note:** Full-manuscript citation audit (DOCX/PDF integrity UI) is **not** in the current app; related code may return in a future release. See the [user guide](docs/USER_GUIDE.md).
+**Privacy:** list editing and validation work offline. Registry verification, DOI lookup, predatory-list sync, and manuscript source fetch use the network only when you run those actions.
 
 ## Highlights
 
@@ -46,6 +45,7 @@ The name **Nassila** is coined, inspired by the idea of a **sanad** (سند): a 
 | Resolution | DOI, ISBN, PMID, URL → Crossref, PubMed, Open Library |
 | Verification | Unified L1+L2 registry check, up to 200 rows per run |
 | Integrity | Predatory/suspicious journal flags, duplicate groups with merge |
+| Manuscript | Ouroboros loop: L1/L2 verify, OA source fetch, Sanad L3 grounding |
 | Output | CSL formatting, undo/redo, dark/light mode, EN/AR UI |
 
 ## Getting started

@@ -16,7 +16,7 @@ export interface UrlPolicy {
 }
 
 export function validateExternalUrl(rawUrl: string, policy: UrlPolicy = {}): URL {
-  const parsed = new URL(rawUrl)
+  const parsed = new URL(rawUrl.trim())
   const allowHttp = policy.allowHttp === true
 
   if (parsed.protocol !== 'https:' && !(allowHttp && parsed.protocol === 'http:')) {
@@ -43,6 +43,15 @@ export function validateExternalUrl(rawUrl: string, policy: UrlPolicy = {}): URL
   }
 
   return parsed
+}
+
+/** Returns null instead of throwing — for optional OA / publisher URLs that may be malformed. */
+export function tryValidateExternalUrl(rawUrl: string, policy: UrlPolicy = {}): URL | null {
+  try {
+    return validateExternalUrl(rawUrl, policy)
+  } catch {
+    return null
+  }
 }
 
 export async function fetchWithPolicy(

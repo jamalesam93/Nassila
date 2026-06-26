@@ -2,7 +2,9 @@ import type { CslItem, VerificationMismatch } from '../types'
 import type { LayerVerdict } from './types'
 import { THRESHOLDS } from './thresholds'
 import { resolveIdentifier } from '../resolver'
-import { searchOpenAlex } from '../resolver/openalex'
+import { resolveOpenAlexDoi, resolveOpenAlexPmid, searchOpenAlex } from '../resolver/openalex'
+import { resolvePubMedByDoi, resolvePmid } from '../resolver/pubmed'
+import { normalizeDoiFromMeta } from '../resolver/url'
 import { searchCrossRef } from '../resolver/crossref'
 import { verifyAgainstCrossRef } from '../verifier/crossref-verify'
 import { verifyAgainstPubMed } from '../verifier/pubmed-verify'
@@ -22,15 +24,39 @@ export interface MetadataAlignment {
 
 export async function resolveRegistry(item: CslItem): Promise<RegistryResolution> {
   if (item.DOI) {
-    const canonical = await resolveIdentifier(item.DOI)
-    if (canonical) return { source: 'crossref', canonical, l1: { status: 'pass' } }
-    return { source: 'crossref', canonical: null, l1: { status: 'fail', reasons: ['DOI could not be resolved in Crossref/DataCite'] } }
+    const doiResult = await resolveDoiAcrossRegistries(item.DOI)
+    if (doiResult.canonical) return { source: doiResult.source, canonical: doiResult.canonical, l1: { status: 'pass' } }
+
+    if (item.PMID) {
+      const pmidResult = await resolvePmidAcrossRegistries(item.PMID)
+      if (pmidResult.canonical) return { source: pmidResult.source, canonical: pmidResult.canonical, l1: { status: 'pass' } }
+    }
+
+    const titleFallback = await resolveViaOpenAlex(item)
+    if (titleFallback) return { source: 'openalex', canonical: titleFallback, l1: { status: 'pass' } }
+
+    return {
+      source: doiResult.source,
+      canonical: null,
+      l1: {
+        status: 'fail',
+        reasons: ['DOI could not be resolved in Crossref, OpenAlex, or PubMed']
+      }
+    }
   }
 
   if (item.PMID) {
-    const canonical = await resolveIdentifier(item.PMID)
-    if (canonical) return { source: 'pubmed', canonical, l1: { status: 'pass' } }
-    return { source: 'pubmed', canonical: null, l1: { status: 'fail', reasons: ['PMID could not be resolved in PubMed'] } }
+    const pmidResult = await resolvePmidAcrossRegistries(item.PMID)
+    if (pmidResult.canonical) return { source: pmidResult.source, canonical: pmidResult.canonical, l1: { status: 'pass' } }
+
+    const titleFallback = await resolveViaOpenAlex(item)
+    if (titleFallback) return { source: 'openalex', canonical: titleFallback, l1: { status: 'pass' } }
+
+    return {
+      source: pmidResult.source,
+      canonical: null,
+      l1: { status: 'fail', reasons: ['PMID could not be resolved in PubMed or OpenAlex'] }
+    }
   }
 
   // Many legitimate references (reports/web pages/theses) are not consistently indexed in Crossref/OpenAlex.
@@ -71,6 +97,35 @@ export async function resolveRegistry(item: CslItem): Promise<RegistryResolution
     canonical: null,
     l1: { status: 'insufficient_evidence', reason: 'No DOI/PMID and no high-confidence registry match (parsed or whole-reference search)' }
   }
+}
+
+async function resolveDoiAcrossRegistries(rawDoi: string): Promise<{ source: RegistrySource; canonical: CslItem | null }> {
+  const doi = normalizeDoiFromMeta(rawDoi) ?? rawDoi.trim()
+  if (!doi) return { source: 'crossref', canonical: null }
+
+  const crossref = await resolveIdentifier(doi)
+  if (crossref) return { source: 'crossref', canonical: crossref }
+
+  const openalex = await resolveOpenAlexDoi(doi)
+  if (openalex) return { source: 'openalex', canonical: openalex }
+
+  const pubmed = await resolvePubMedByDoi(doi)
+  if (pubmed) return { source: 'pubmed', canonical: pubmed }
+
+  return { source: 'crossref', canonical: null }
+}
+
+async function resolvePmidAcrossRegistries(rawPmid: string): Promise<{ source: RegistrySource; canonical: CslItem | null }> {
+  const pmid = rawPmid.replace(/^pmid:?\s*/i, '').replace(/\D/g, '')
+  if (!/^\d+$/.test(pmid)) return { source: 'pubmed', canonical: null }
+
+  const pubmed = await resolvePmid(pmid)
+  if (pubmed) return { source: 'pubmed', canonical: pubmed }
+
+  const openalex = await resolveOpenAlexPmid(pmid)
+  if (openalex) return { source: 'openalex', canonical: openalex }
+
+  return { source: 'pubmed', canonical: null }
 }
 
 // Score a candidate against the user's full raw reference line. We use the

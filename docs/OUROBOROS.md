@@ -38,7 +38,7 @@ flowchart TD
   sharh --> exportResult["Export bibliography and audit report"]
 ```
 
-**Today:** deterministic cores live under `src/engine/`; the first Ouroboros UI slice may still show a **seven-item worker nav** — treat that as **transitional scaffolding**, not the end-state IA (see [`PRODUCT.md`](./PRODUCT.md)). **When Ouroboros is complete:** UI centers on the loop above; engine code reorganized under module boundaries.
+**Today:** the **Manuscript loop** ships via `OuroborosLoopWorkspace` (upload → audit → per-cite L1/L2/L3). Deterministic cores live under `src/engine/`; a **seven-item worker nav** may still appear as **transitional scaffolding** — not the end-state IA (see [`PRODUCT.md`](./PRODUCT.md)). **When Ouroboros is complete:** Maktab/Masdar/Shahid stubs become automatic pipeline stages; engine code reorganized under module boundaries.
 
 **Agent brief:** [`OUROBOROS_CONTEXT.md`](./OUROBOROS_CONTEXT.md).
 

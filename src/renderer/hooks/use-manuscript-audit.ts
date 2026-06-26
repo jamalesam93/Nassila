@@ -5,7 +5,7 @@ import { buildBibEntriesFromReferencesText, mapInTextToBibliography } from '../.
 import { alignMetadata, resolveRegistry } from '../../engine/manuscript/verify'
 import { referenceIntegrityRiskFromRegistry } from '../../engine/manuscript/integrity-risk'
 import {
-  buildGroundingUserPrompt,
+  buildGroundingLlmMessages,
   evidenceFromGroundingParse,
   GROUNDING_EXCERPT_MAX_CHARS,
   GROUNDING_PASSAGE_MAX_CHARS,
@@ -96,6 +96,8 @@ export function useManuscriptAudit() {
       controllerRef.current = controller
       setError(null)
       setStep('parsing')
+
+      const appVersion = (await window.api?.getAppAbout().catch(() => null))?.version ?? 'unknown'
 
       const seg = segmentManuscriptText(rawText)
       if (!seg.referencesText) {
@@ -256,7 +258,7 @@ export function useManuscriptAudit() {
         })(),
         sources: sourcesAttribution(),
         generatedAt: new Date().toISOString(),
-        appVersion: '1.0.0',
+        appVersion: appVersion,
         networkStatus
       }
 
@@ -274,6 +276,20 @@ function buildPassageWindow(bodyText: string, start: number, end: number): strin
   const s = Math.max(0, start - PASSAGE_PAD)
   const e = Math.min(bodyText.length, end + PASSAGE_PAD)
   return bodyText.slice(s, e)
+}
+
+function sourceExcerptFields(
+  excerpt: string,
+  source: EvidenceSnippet['source'],
+  label: string,
+  url?: string
+): Pick<CiteGroundingSite, 'sourceExcerpt' | 'sourceExcerptSource' | 'sourceExcerptUrl' | 'sourceExcerptLabel'> {
+  return {
+    sourceExcerpt: excerpt,
+    sourceExcerptSource: source,
+    sourceExcerptUrl: url,
+    sourceExcerptLabel: label
+  }
 }
 
 function stripXmlOrHtmlToText(input: string): string {
@@ -312,18 +328,25 @@ async function resolveL3Source(canonical: CanonicalItem, unpaywallEmailRaw: stri
         is_oa?: boolean
         best_oa_location?: { url?: string | null; url_for_pdf?: string | null; url_for_landing_page?: string | null } | null
       }
-      const bestUrl = up.best_oa_location?.url ?? up.best_oa_location?.url_for_pdf ?? up.best_oa_location?.url_for_landing_page
-      if (up.is_oa && bestUrl) {
-        const fetched = await window.api.fetchOaUrl(bestUrl)
-        if ((fetched as { blocked?: boolean }).blocked) {
-          throw new Error(`OA URL blocked by publisher (${(fetched as { status?: number }).status ?? 'unknown'})`)
+      const loc = up.best_oa_location
+      const candidateUrls = [
+        loc?.url_for_pdf,
+        loc?.url,
+        loc?.url_for_landing_page
+      ].filter((u): u is string => typeof u === 'string' && u.trim().length > 0)
+
+      if (up.is_oa && candidateUrls.length > 0) {
+        for (const candidateUrl of candidateUrls) {
+          const fetched = await window.api.fetchOaUrl(candidateUrl)
+          if ((fetched as { blocked?: boolean }).blocked) continue
+          if (fetched.kind === 'pdf') {
+            return { kind: 'pdf_pending', url: candidateUrl }
+          }
+          const rawText = fetched.text ?? ''
+          if (!rawText.trim()) continue
+          const fullText = stripXmlOrHtmlToText(rawText)
+          return { kind: 'full_text', text: fullText, coverage: 'full_text_oa_unpaywall', snippetSource: 'unpaywall', url: candidateUrl }
         }
-        if (fetched.kind === 'pdf') {
-          return { kind: 'pdf_pending', url: bestUrl }
-        }
-        const rawText = fetched.text ?? ''
-        const fullText = stripXmlOrHtmlToText(rawText)
-        return { kind: 'full_text', text: fullText, coverage: 'full_text_oa_unpaywall', snippetSource: 'unpaywall', url: bestUrl }
       }
     } catch {
       /* fall through */
@@ -372,6 +395,7 @@ async function evaluateCiteSite(
 
   if (resolved.kind === 'abstract_only') {
     const excerpt = selectSourceChunksForGrounding(passage, sourceText, GROUNDING_EXCERPT_MAX_CHARS)
+    const excerptMeta = sourceExcerptFields(excerpt, snippetSource, 'abstract', metaUrl)
     const llmOutcome = await runGroundingLlm(passage, excerpt, { source: snippetSource, url: metaUrl, label: 'abstract' }, llm)
     if (llmOutcome.kind === 'parsed') {
       return {
@@ -383,7 +407,8 @@ async function evaluateCiteSite(
         passageVerdict: llmOutcome.verdict,
         claimGrounding: llmOutcome.claims,
         llmParseWarning: llmOutcome.parseWarning,
-        llmRawResponse: storeLlmSlice(llmOutcome.raw)
+        llmRawResponse: storeLlmSlice(llmOutcome.raw),
+        ...excerptMeta
       }
     }
     if (llmOutcome.kind === 'encryption_blocked') {
@@ -393,7 +418,8 @@ async function evaluateCiteSite(
         deterministicScore: scored.score,
         deterministicBucket: scored.bucket === 'high' ? 'medium' : scored.bucket,
         matchedTermsSample: scored.matchedTerms.slice(0, 12),
-        passageVerdict: { status: 'warn', reasons: ['LLM disabled: safeStorage encryption unavailable on this system'] }
+        passageVerdict: { status: 'warn', reasons: ['LLM disabled: safeStorage encryption unavailable on this system'] },
+        ...excerptMeta
       }
     }
     if (llmOutcome.kind === 'llm_error') {
@@ -403,7 +429,8 @@ async function evaluateCiteSite(
         deterministicScore: scored.score,
         deterministicBucket: scored.bucket === 'high' ? 'medium' : scored.bucket,
         matchedTermsSample: scored.matchedTerms.slice(0, 12),
-        passageVerdict: { status: 'warn', reasons: [llmOutcome.message] }
+        passageVerdict: { status: 'warn', reasons: [llmOutcome.message] },
+        ...excerptMeta
       }
     }
 
@@ -422,12 +449,14 @@ async function evaluateCiteSite(
       matchedTermsSample: scored.matchedTerms.slice(0, 12),
       passageVerdict: baseVerdict,
       llmParseWarning: llmOutcome.kind === 'parse_fail' ? llmOutcome.hint : undefined,
-      llmRawResponse: llmOutcome.kind === 'parse_fail' ? storeLlmSlice(llmOutcome.raw) : undefined
+      llmRawResponse: llmOutcome.kind === 'parse_fail' ? storeLlmSlice(llmOutcome.raw) : undefined,
+      ...excerptMeta
     }
   }
 
   const excerpt = selectSourceChunksForGrounding(passage, sourceText, GROUNDING_EXCERPT_MAX_CHARS)
   const label = resolved.kind === 'full_text' ? resolved.coverage.replace(/_/g, ' ') : 'source'
+  const excerptMeta = sourceExcerptFields(excerpt, snippetSource, label, metaUrl)
   const llmOutcome = await runGroundingLlm(passage, excerpt, { source: snippetSource, url: metaUrl, label }, llm)
 
   if (llmOutcome.kind === 'parsed') {
@@ -440,7 +469,8 @@ async function evaluateCiteSite(
       passageVerdict: llmOutcome.verdict,
       claimGrounding: llmOutcome.claims,
       llmParseWarning: llmOutcome.parseWarning,
-      llmRawResponse: storeLlmSlice(llmOutcome.raw)
+      llmRawResponse: storeLlmSlice(llmOutcome.raw),
+      ...excerptMeta
     }
   }
   if (llmOutcome.kind === 'encryption_blocked') {
@@ -450,7 +480,8 @@ async function evaluateCiteSite(
       deterministicScore: scored.score,
       deterministicBucket: scored.bucket,
       matchedTermsSample: scored.matchedTerms.slice(0, 12),
-      passageVerdict: { status: 'warn', reasons: ['LLM disabled: safeStorage encryption unavailable on this system'] }
+      passageVerdict: { status: 'warn', reasons: ['LLM disabled: safeStorage encryption unavailable on this system'] },
+      ...excerptMeta
     }
   }
   if (llmOutcome.kind === 'llm_error') {
@@ -460,7 +491,8 @@ async function evaluateCiteSite(
       deterministicScore: scored.score,
       deterministicBucket: scored.bucket,
       matchedTermsSample: scored.matchedTerms.slice(0, 12),
-      passageVerdict: { status: 'warn', reasons: [llmOutcome.message] }
+      passageVerdict: { status: 'warn', reasons: [llmOutcome.message] },
+      ...excerptMeta
     }
   }
   if (llmOutcome.kind === 'parse_fail') {
@@ -475,7 +507,8 @@ async function evaluateCiteSite(
           ? { status: 'warn', reasons: ['LLM output not parseable; weak passage alignment against OA full text', llmOutcome.hint].filter(Boolean) as string[] }
           : { status: 'pass' },
       llmParseWarning: llmOutcome.hint,
-      llmRawResponse: storeLlmSlice(llmOutcome.raw)
+      llmRawResponse: storeLlmSlice(llmOutcome.raw),
+      ...excerptMeta
     }
   }
 
@@ -485,7 +518,8 @@ async function evaluateCiteSite(
     deterministicScore: scored.score,
     deterministicBucket: scored.bucket,
     matchedTermsSample: scored.matchedTerms.slice(0, 12),
-    passageVerdict: scored.bucket === 'low' ? { status: 'warn', reasons: ['Weak passage alignment against OA full text'] } : { status: 'pass' }
+    passageVerdict: scored.bucket === 'low' ? { status: 'warn', reasons: ['Weak passage alignment against OA full text'] } : { status: 'pass' },
+    ...excerptMeta
   }
 }
 
@@ -525,12 +559,7 @@ async function runGroundingLlm(
     for (let attempt = 0; attempt < GROUNDING_LLM_RETRY_ATTEMPTS; attempt++) {
       const content = await window.api.llmChat(
         { baseUrl: llm.llmBaseUrl, model: llm.llmModel },
-        [
-          {
-            role: 'user',
-            content: buildGroundingUserPrompt(cappedPassage, cappedExcerpt, { label: meta.label, url: meta.url })
-          }
-        ]
+        buildGroundingLlmMessages(cappedPassage, cappedExcerpt, { label: meta.label, url: meta.url })
       )
       lastRaw = content
       const parsed = parseGroundingJson(content)
@@ -574,12 +603,12 @@ async function runGroundingLlm(
 
 function resolvedSourceSnippets(resolved: ResolvedL3Source): EvidenceSnippet[] {
   if (resolved.kind === 'full_text') {
-    const preview = resolved.text.slice(0, 400)
-    return [{ source: resolved.snippetSource, url: resolved.url, text: preview + (resolved.text.length > 400 ? '…' : '') }]
+    const preview = resolved.text.slice(0, 2000)
+    return [{ source: resolved.snippetSource, url: resolved.url, text: preview + (resolved.text.length > 2000 ? '…' : '') }]
   }
   if (resolved.kind === 'abstract_only') {
     return [
-      { source: 'abstract', text: resolved.abstract.slice(0, 500) },
+      { source: 'abstract', text: resolved.abstract.slice(0, 2000) + (resolved.abstract.length > 2000 ? '…' : '') },
       { source: 'abstract', text: 'Note: full text was not available via OA routes; passage check is limited to abstract/metadata.' }
     ]
   }

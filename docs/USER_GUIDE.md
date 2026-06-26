@@ -35,9 +35,40 @@ When editing a manuscript, a **Sanad bar** appears at the top with:
 - **Tier chip** — switch between E4B and 12B
 - **Setup / Configure** links — reopen the Sanad setup modal or Passage grounding settings
 
+### Open-access source fetch (Unpaywall)
+
+For **DOI** references, Nassila can ask [Unpaywall](https://unpaywall.org/products/api) whether open-access full text exists (in addition to Europe PMC and registry abstracts).
+
+1. Open **Settings → General → Manuscript source fetch**.
+2. Enter your email once (Unpaywall API policy). It is saved **only on this computer** and sent **directly to Unpaywall** from the app — not to Nassila servers.
+3. Future manuscript audits reuse it automatically.
+
+If the email is unset, the loop still uses **registry abstracts** and **Europe PMC** where available; only the Unpaywall OA path is skipped.
+
 ## Manuscript loop
 
-The Manuscript view now includes an **integrated loop** that combines audit, grounding, and bibliography tasks in one surface (no separate audit tab).
+The Manuscript view includes an **integrated loop**: paste or upload a manuscript (with a References section), run **Run audit**, then review each cited source on the right.
+
+### What you see after an audit
+
+For each in-text citation, expand **Passage grounding** to review:
+
+| Panel | Meaning |
+|-------|---------|
+| **Your passage** | Text from your manuscript around the cite (what Sanad judges) |
+| **Source excerpt** | Chunk from the cited work (abstract or OA text) actually sent to the model |
+| **Claims + quotes** | Per-claim verdict and verbatim quotes from the excerpt when supported |
+| **Source text** (header) | `Abstract only`, `Open-access full text`, or `Unavailable` — what was fetched |
+
+**L1 / L2 / L3** chips summarize registry match, metadata alignment, and passage grounding for that reference.
+
+### Coverage labels
+
+- **Abstract only** — Full paper not available via OA; Sanad compared against the registry abstract.
+- **Open-access full text** — HTML or JATS from Europe PMC or Unpaywall was used (excerpt may still be chunk-selected).
+- **Source text unavailable** — No abstract and no OA text; passage checks are limited.
+
+Cited **PDF attach** is not used in audits yet (planned **Masdar** worker).
 
 - **Tasnif** (classification) and **Sharh** (explanation) appear inline in the loop detail and bibliography drawer — not as separate tabs.
 - **Raqim** (numbering) works in bibliography mode.
@@ -66,4 +97,4 @@ The Manuscript view now includes an **integrated loop** that combines audit, gro
 
 ## Network and privacy
 
-Outbound calls may include **Crossref**, **PubMed/NCBI**, **OpenAlex**, and (for optional features in retained manuscript code) **Unpaywall** / **Europe PMC**. Do not paste secrets into citation fields.
+Outbound calls may include **Crossref**, **PubMed/NCBI**, **OpenAlex**, **Unpaywall** (when you save an email in Settings → General), and **Europe PMC** for manuscript source fetch. Local LLM grounding (Sanad) runs on your machine via LM Studio, Ollama, vLLM, or a cloud API you configure. Do not paste secrets into citation fields.

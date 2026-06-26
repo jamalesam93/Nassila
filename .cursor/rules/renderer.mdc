@@ -9,6 +9,6 @@ alwaysApply: false
 - No Node.js APIs; use `window.api` from preload IPC only.
 - UI state: Zustand stores under `stores/`; keep components focused.
 - i18n: add EN and AR keys in `i18n/` when adding user-visible copy; Arabic enables RTL on `<html>`.
-- Manuscript audit UI (`ManuscriptAudit/`) is **retired** — do not remount `AuditView` or expose manuscript mode unless explicitly requested.
+- **Manuscript (Ouroboros loop)** ships via [`OuroborosLoopWorkspace`](../components/loop/OuroborosLoopWorkspace.tsx) (`appSurface === 'loop'`). Legacy [`ManuscriptAudit/AuditView`](../components/ManuscriptAudit/) is **retired** — do not remount that layout; extend the loop per `docs/PRODUCT.md`.
 - Engine-heavy work belongs in `src/engine/`, not duplicated in the renderer.
 - Run `npm test` and `npm run lint` after substantive changes.

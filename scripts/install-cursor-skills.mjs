@@ -166,7 +166,13 @@ async function main() {
   }
 
   copyShadcnFromCache()
-  console.log('\nDone. See .cursor/skills/SKILLS-AUDIT.md for review notes.')
+
+  const antigravityInstaller = join(__dirname, 'install-antigravity-skills.mjs')
+  if (existsSync(antigravityInstaller)) {
+    execFileSync(process.execPath, [antigravityInstaller], { stdio: 'inherit' })
+  }
+
+  console.log('\nDone. See .cursor/skills/ANTIGRAVITY-SKILLS.md and docs/SECURITY-FIX-PLAN.md.')
 }
 
 main().catch((e) => {

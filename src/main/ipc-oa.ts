@@ -1,6 +1,8 @@
 import { ipcMain, net } from 'electron'
 import { THRESHOLDS } from '../engine/manuscript/thresholds'
-import { validateExternalUrl } from '../engine/network/http'
+import { tryValidateExternalUrl, type UrlPolicy } from '../engine/network/http'
+import { fetchWithValidatedRedirects } from '../engine/network/redirect-fetch'
+import { HTML_FETCH_URL_POLICY, OA_FETCH_URL_POLICY } from '../engine/network/url-policies'
 
 type OaContentKind = 'jats' | 'html' | 'pdf' | 'unknown'
 
@@ -11,12 +13,24 @@ async function netFetchWithTimeout(url: URL, init: RequestInit = {}): Promise<Re
   init.signal?.addEventListener('abort', abortExternal, { once: true })
 
   try {
-    // net.fetch uses Electron's network stack and bypasses renderer CORS constraints.
     return await net.fetch(url.toString(), { ...init, signal: controller.signal })
   } finally {
     clearTimeout(timeoutId)
     init.signal?.removeEventListener('abort', abortExternal)
   }
+}
+
+async function netFetchValidated(
+  rawUrl: string,
+  init: RequestInit,
+  urlPolicy: UrlPolicy
+): Promise<{ response: Response; finalUrl: URL }> {
+  return fetchWithValidatedRedirects(
+    (parsed, requestInit) => netFetchWithTimeout(parsed, requestInit),
+    rawUrl,
+    init,
+    urlPolicy
+  )
 }
 
 async function readBytesCapped(response: Response, maxBytes: number): Promise<Uint8Array> {
@@ -41,10 +55,8 @@ export function registerOaIpcHandlers(): void {
       url.searchParams.set('email', email.trim())
     }
 
-    const validated = validateExternalUrl(url.toString())
-    const response = await netFetchWithTimeout(validated, { headers: { 'accept': 'application/json' } })
+    const { response } = await netFetchValidated(url.toString(), { headers: { accept: 'application/json' } }, HTML_FETCH_URL_POLICY)
     if (!response.ok) {
-      // Commonly 422 when email is missing/invalid; treat as "no OA info" rather than hard error spam.
       if (response.status === 422) {
         return { doi: doi.trim(), is_oa: false, best_oa_location: null, error: 'unpaywall_422' }
       }
@@ -60,92 +72,128 @@ export function registerOaIpcHandlers(): void {
     if (typeof pmcid !== 'string' || pmcid.trim().length === 0) throw new Error('Invalid PMCID')
     const normalized = pmcid.toUpperCase().startsWith('PMC') ? pmcid.toUpperCase() : `PMC${pmcid}`
     const url = `https://www.ebi.ac.uk/europepmc/webservices/rest/PMC${normalized.replace(/^PMC/, '')}/fullTextXML`
-    const validated = validateExternalUrl(url)
-    const response = await netFetchWithTimeout(validated, { headers: { 'accept': 'application/xml,text/xml' } })
+    const { response, finalUrl } = await netFetchValidated(
+      url,
+      { headers: { accept: 'application/xml,text/xml' } },
+      HTML_FETCH_URL_POLICY
+    )
     if (!response.ok) {
       throw new Error(`Europe PMC request failed: ${response.status}`)
     }
     const bytes = await readBytesCapped(response, THRESHOLDS.http.fullTextMaxBytes)
     const jatsXml = new TextDecoder().decode(bytes)
-    return { source: 'europe_pmc', url: validated.toString(), jatsXml }
+    return { source: 'europe_pmc', url: finalUrl.toString(), jatsXml }
   })
 
-  /**
-   * Fetch an arbitrary article URL as HTML from the main process so we can read
-   * `<meta name="citation_doi">` etc. without renderer-side CORS rejections.
-   * Returns the response text along with the resolved (post-redirect) URL.
-   */
   ipcMain.handle('url:fetchHtml', async (_event, rawUrl: string) => {
     if (typeof rawUrl !== 'string' || rawUrl.trim().length === 0) {
       throw new Error('Invalid URL')
     }
-    let validated: URL
+
+    let response: Response
+    let finalUrl: URL
     try {
-      validated = validateExternalUrl(rawUrl, {
-        allowHttp: false,
-        allowLocalhost: false,
-        allowPrivateHosts: false
-      })
+      const result = await netFetchValidated(
+        rawUrl,
+        {
+          headers: {
+            accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'accept-language': 'en-US,en;q=0.9',
+            'user-agent':
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
+          }
+        },
+        HTML_FETCH_URL_POLICY
+      )
+      response = result.response
+      finalUrl = result.finalUrl
     } catch (e) {
       return { ok: false, status: 0, contentType: null, finalUrl: rawUrl, html: '', error: (e as Error).message }
     }
 
-    let response: Response
-    try {
-      response = await netFetchWithTimeout(validated, {
-        headers: {
-          'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-          'accept-language': 'en-US,en;q=0.9',
-          'user-agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
-        }
-      })
-    } catch (e) {
-      return { ok: false, status: 0, contentType: null, finalUrl: validated.toString(), html: '', error: (e as Error).message }
-    }
-
     const contentType = response.headers.get('content-type')
+    const finalUrlStr = finalUrl.toString()
+
     if (!response.ok) {
       try { await response.body?.cancel() } catch { /* noop */ }
-      return { ok: false, status: response.status, contentType, finalUrl: response.url || validated.toString(), html: '' }
+      return { ok: false, status: response.status, contentType, finalUrl: finalUrlStr, html: '' }
     }
+
     const lower = (contentType ?? '').toLowerCase()
     if (lower && !lower.includes('html') && !lower.includes('xml')) {
       try { await response.body?.cancel() } catch { /* noop */ }
-      return { ok: false, status: response.status, contentType, finalUrl: response.url || validated.toString(), html: '', error: 'non-html-content' }
+      return { ok: false, status: response.status, contentType, finalUrl: finalUrlStr, html: '', error: 'non-html-content' }
     }
 
     try {
       const bytes = await readBytesCapped(response, 2 * 1024 * 1024)
       const html = new TextDecoder().decode(bytes)
-      return { ok: true, status: response.status, contentType, finalUrl: response.url || validated.toString(), html }
+      return { ok: true, status: response.status, contentType, finalUrl: finalUrlStr, html }
     } catch (e) {
-      return { ok: false, status: response.status, contentType, finalUrl: response.url || validated.toString(), html: '', error: (e as Error).message }
+      return { ok: false, status: response.status, contentType, finalUrl: finalUrlStr, html: '', error: (e as Error).message }
     }
   })
 
   ipcMain.handle('oa:fetchOaUrl', async (_event, rawUrl: string) => {
-    if (typeof rawUrl !== 'string' || rawUrl.trim().length === 0) throw new Error('Invalid URL')
-    const validated = validateExternalUrl(rawUrl, { allowHttp: false, allowLocalhost: false, allowPrivateHosts: false })
-
-    const response = await netFetchWithTimeout(validated, {
-      headers: {
-        'accept':
-          'application/pdf,application/xml,text/xml,text/html;q=0.9,*/*;q=0.5',
-        'accept-language': 'en-US,en;q=0.9',
-        'user-agent':
-          'Mozilla/5.0 (compatible; CitationsStyleAuditor/1.0; +https://example.local)'
+    if (typeof rawUrl !== 'string' || rawUrl.trim().length === 0) {
+      return {
+        url: '',
+        contentType: null,
+        kind: 'unknown' as OaContentKind,
+        text: '',
+        blocked: true,
+        status: 0,
+        error: 'invalid_url'
       }
-    })
+    }
+
+    const validated = tryValidateExternalUrl(rawUrl, OA_FETCH_URL_POLICY)
+    if (!validated) {
+      return {
+        url: rawUrl.trim(),
+        contentType: null,
+        kind: 'unknown' as OaContentKind,
+        text: '',
+        blocked: true,
+        status: 0,
+        error: 'url_not_allowed'
+      }
+    }
+
+    let response: Response
+    let finalUrl: URL
+    try {
+      const result = await netFetchValidated(
+        validated.toString(),
+        {
+          headers: {
+            accept: 'application/pdf,application/xml,text/xml,text/html;q=0.9,*/*;q=0.5',
+            'accept-language': 'en-US,en;q=0.9',
+            'user-agent': 'Mozilla/5.0 (compatible; CitationsStyleAuditor/1.0; +https://example.local)'
+          }
+        },
+        OA_FETCH_URL_POLICY
+      )
+      response = result.response
+      finalUrl = result.finalUrl
+    } catch (e) {
+      return {
+        url: validated.toString(),
+        contentType: null,
+        kind: 'unknown' as OaContentKind,
+        text: '',
+        blocked: true,
+        status: 0,
+        error: (e as Error).message
+      }
+    }
+
+    const resolvedUrl = finalUrl.toString()
 
     if (!response.ok) {
-      // Many publisher hosts block non-browser fetches (403), require auth (401),
-      // rate-limit (429), or are unavailable for legal reasons (451). In those cases
-      // we skip OA full-text and let the pipeline fall back to abstract-only —
-      // without spamming the main-process log with unhandled errors.
       if ([401, 403, 404, 410, 429, 451].includes(response.status)) {
         return {
-          url: validated.toString(),
+          url: resolvedUrl,
           contentType: null,
           kind: 'unknown' as OaContentKind,
           text: '',
@@ -165,12 +213,8 @@ export function registerOaIpcHandlers(): void {
     else if (lower.includes('html')) kind = 'html'
 
     if (kind === 'pdf') {
-      // We don't currently extract text from OA PDFs (L3 returns insufficient_evidence
-      // when kind==='pdf'). Downloading the body would pull several MB per ref, then
-      // transfer them over IPC, only to be discarded — which caused the pipeline to
-      // hang on large PDFs. Close the connection after headers and move on.
       try { await response.body?.cancel() } catch { /* noop */ }
-      return { url: validated.toString(), contentType, kind }
+      return { url: resolvedUrl, contentType, kind }
     }
 
     const bytes = await readBytesCapped(response, THRESHOLDS.http.fullTextMaxBytes)
@@ -180,7 +224,6 @@ export function registerOaIpcHandlers(): void {
       else if (/<\/(html|body)>/i.test(text)) kind = 'html'
     }
 
-    return { url: validated.toString(), contentType, kind, text }
+    return { url: resolvedUrl, contentType, kind, text }
   })
 }
-

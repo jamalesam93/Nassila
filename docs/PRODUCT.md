@@ -81,19 +81,19 @@ The shipping app may still expose a **seven-item worker nav** from the first Our
 
 ## Data flow today vs target
 
-**Today (scaffold):**
+**Today (shipping scaffold):**
 
-1. User maintains references in **Raqim** (import, verify, export).
-2. User may triage risk in **Tasnif** or read explanations in **Sharh**.
-3. User runs **Sanad** by pasting passage + excerpt manually.
-4. Engine applies JSON repair + quote-substring guardrails; LLM is advisory.
+1. User opens **Manuscript** (default) or switches to **Bibliography** (Raqim).
+2. In the loop: upload/paste manuscript → **Run audit** → L1/L2 per cite, OA/abstract fetch, L3 Sanad when Passage grounding is enabled.
+3. **Tasnif** / **Sharh** copy appears inline in loop detail; bibliography drawer opens Raqim filters.
+4. **Maktab**, **Masdar** (user PDF attach), and **Shahid** remain honest stubs — not separate peer tabs.
+5. Engine applies JSON repair + quote-substring guardrails; LLM is advisory.
 
-**Target (Ouroboros product):**
+**Target (full Ouroboros):**
 
-1. User uploads manuscript once.
-2. App resolves bibliography and fetches or accepts source PDFs.
-3. **Sanad** runs per cite site without copy-paste between modules.
-4. **Sharh** / **Tasnif** / **Raqim** surface inline in the same audit session; export closes the loop.
+1. User uploads manuscript once; **Maktab** segments and **Masdar** ingests cited PDFs automatically.
+2. **Sanad** runs per cite site without manual paste between modules.
+3. **Sharh** / **Tasnif** / **Raqim** surface inline in the same audit session; export closes the loop.
 
 ## Voice
 

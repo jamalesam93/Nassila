@@ -6,6 +6,7 @@ import { useOuroborosLoopBootstrap } from '../../hooks/use-ouroboros-loop-bootst
 import { useCitationStore } from '../../stores/citation-store'
 import { useManuscriptAuditStore, type AuditStep } from '../../stores/manuscript-audit-store'
 import { useOuroborosLoopStore } from '../../stores/ouroboros-loop-store'
+import { useShellStore } from '../../stores/shell-store'
 import { previewManuscript } from '../../utils/manuscript-preview'
 import LoopAuditDetail from './LoopAuditDetail'
 import ManuscriptSanadBar from './ManuscriptSanadBar'
@@ -35,12 +36,11 @@ export default function OuroborosLoopWorkspace() {
   const step = useManuscriptAuditStore((s) => s.step)
   const error = useManuscriptAuditStore((s) => s.error)
   const networkStatus = useCitationStore((s) => s.networkStatus)
+  const unpaywallEmail = useManuscriptAuditStore((s) => s.unpaywallEmail)
+  const openSettingsModal = useShellStore((s) => s.openSettingsModal)
 
   const selectedBibKey = useOuroborosLoopStore((s) => s.selectedBibKey)
   const setSelectedBibKey = useOuroborosLoopStore((s) => s.setSelectedBibKey)
-  const attachedPdfByBibKey = useOuroborosLoopStore((s) => s.attachedPdfByBibKey)
-  const attachSourcePdf = useOuroborosLoopStore((s) => s.attachSourcePdf)
-  const clearAttachedSourcePdf = useOuroborosLoopStore((s) => s.clearAttachedSourcePdf)
 
   const { importManuscriptFromPath } = useAppCommands()
   const { runAudit, cancel } = useManuscriptAudit()
@@ -67,14 +67,6 @@ export default function OuroborosLoopWorkspace() {
     if (!raw.trim() || running) return
     void runAudit(raw)
   }, [raw, runAudit, running])
-
-  const handleAttachPdf = useCallback(async () => {
-    if (!selectedBibKey) return
-    const paths = await window.api?.openFileDialog({
-      filters: [{ name: 'PDF', extensions: ['pdf'] }]
-    })
-    if (paths?.[0]) attachSourcePdf(selectedBibKey, paths[0])
-  }, [attachSourcePdf, selectedBibKey])
 
   const onDrop = useCallback(
     (e: React.DragEvent) => {
@@ -173,6 +165,18 @@ export default function OuroborosLoopWorkspace() {
           <h3 className="text-sm font-semibold">{t('loop.sourcesTitle')}</h3>
           <p className="text-xs text-muted-foreground">{t('loop.sourcesHint')}</p>
           <p className="mt-1 text-xs text-muted-foreground">{t('loop.pipelineGap')}</p>
+          {!unpaywallEmail.trim() ? (
+            <p className="mt-1 text-xs text-muted-foreground">
+              {t('loop.unpaywallHint')}{' '}
+              <button
+                type="button"
+                className="font-medium text-primary hover:underline"
+                onClick={() => openSettingsModal()}
+              >
+                {t('loop.unpaywallConfigure')}
+              </button>
+            </p>
+          ) : null}
         </div>
 
         {!report && !running ? (
@@ -202,9 +206,6 @@ export default function OuroborosLoopWorkspace() {
                       >
                         <td className="px-3 py-2 align-top">
                           <span className="line-clamp-2 font-medium">{label}</span>
-                          {attachedPdfByBibKey[f.bibKey] ? (
-                            <span className="mt-1 block text-xs text-primary">{t('loop.pdfAttached')}</span>
-                          ) : null}
                         </td>
                         <td className="px-2 py-2 align-top">
                           <span
@@ -220,14 +221,7 @@ export default function OuroborosLoopWorkspace() {
               </table>
             </div>
             <div className="min-h-0 flex-1 overflow-hidden">
-              <LoopAuditDetail
-                finding={selectedFinding}
-                attachedPdfPath={selectedBibKey ? attachedPdfByBibKey[selectedBibKey] : undefined}
-                onAttachPdf={() => void handleAttachPdf()}
-                onClearAttachedPdf={() => {
-                  if (selectedBibKey) clearAttachedSourcePdf(selectedBibKey)
-                }}
-              />
+              <LoopAuditDetail finding={selectedFinding} />
             </div>
           </div>
         )}

@@ -4,6 +4,7 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { registerIpcHandlers } from './ipc-handlers'
 import { buildAppMenu } from './app-menu'
+import { registerContentSecurityPolicy } from './content-security-policy'
 
 function isSafeExternalUrl(url: string): boolean {
   try {
@@ -37,10 +38,12 @@ function createWindow(): BrowserWindow {
     ...(icon ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.mjs'),
-      // ESM preload + sandbox:true left window.api unset in dev (Electron 41).
+      // sandbox:true + ESM preload leaves window.api unset on Electron 41 (SEC-02).
+      // Compensating controls: contextIsolation, webSecurity, production CSP.
       sandbox: false,
       contextIsolation: true,
-      nodeIntegration: false
+      nodeIntegration: false,
+      webSecurity: true
     }
   })
 
@@ -80,6 +83,7 @@ function attachEditableContextMenu(win: BrowserWindow): void {
 app.whenReady().then(() => {
   app.setName('Nassila')
   electronApp.setAppUserModelId('com.nassila.app')
+  registerContentSecurityPolicy()
 
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)

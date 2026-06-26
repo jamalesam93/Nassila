@@ -2,7 +2,7 @@ import type { CslItem } from '../types'
 import { resolveDoi } from './crossref'
 import { resolvePmid } from './pubmed'
 import { resolveIsbn } from './isbn'
-import { resolveUrl } from './url'
+import { resolveUrl, normalizeDoiFromMeta } from './url'
 import { isDataCiteDoi, resolveDataCiteDoi } from './datacite'
 
 export type IdentifierType = 'doi' | 'isbn' | 'pmid' | 'url' | 'unknown'
@@ -20,10 +20,14 @@ export function detectIdentifierType(input: string): IdentifierType {
 export function cleanIdentifier(input: string, type: IdentifierType): string {
   const trimmed = input.trim()
   switch (type) {
-    case 'doi':
-      return trimmed.replace(/^https?:\/\/doi\.org\//i, '')
+    case 'doi': {
+      const normalized = normalizeDoiFromMeta(trimmed)
+      return normalized ?? trimmed.replace(/^https?:\/\/doi\.org\//i, '').replace(/^doi:\s*/i, '').trim()
+    }
     case 'isbn':
       return trimmed.replace(/-/g, '')
+    case 'pmid':
+      return trimmed.replace(/^pmid:?\s*/i, '').replace(/\D/g, '')
     default:
       return trimmed
   }

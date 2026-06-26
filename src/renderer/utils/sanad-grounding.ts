@@ -1,5 +1,5 @@
 import {
-  buildGroundingUserPrompt,
+  buildGroundingLlmMessages,
   GROUNDING_EXCERPT_MAX_CHARS,
   GROUNDING_PASSAGE_MAX_CHARS,
   parseGroundingJson,
@@ -83,12 +83,7 @@ export async function runSanadGrounding(params: {
     for (let attempt = 0; attempt < GROUNDING_LLM_RETRY_ATTEMPTS; attempt++) {
       const content = await window.api.llmChat(
         { baseUrl: llm.baseUrl, model: llm.model },
-        [
-          {
-            role: 'user',
-            content: buildGroundingUserPrompt(cappedPassage, cappedExcerpt, { label, url })
-          }
-        ]
+        buildGroundingLlmMessages(cappedPassage, cappedExcerpt, { label, url })
       )
       lastRaw = content
       const parsed = parseGroundingJson(content)

@@ -1,4 +1,5 @@
 import { ipcMain, safeStorage, app } from 'electron'
+import { buildLlmChatCompletionsUrl } from '../engine/network/llm-url'
 import { readFile, writeFile } from 'fs/promises'
 import { join } from 'path'
 
@@ -81,8 +82,12 @@ export function registerLlmIpcHandlers(): void {
     if (typeof config.baseUrl !== 'string' || typeof config.model !== 'string') throw new Error('Invalid LLM config')
     if (!Array.isArray(messages) || messages.length === 0) throw new Error('Invalid messages')
 
-    const base = config.baseUrl.replace(/\/+$/, '')
-    const url = `${base}/v1/chat/completions`
+    let url: string
+    try {
+      url = buildLlmChatCompletionsUrl(config.baseUrl)
+    } catch (e) {
+      throw new Error(e instanceof Error ? e.message : 'llm_url_not_allowed')
+    }
 
     const response = await fetch(url, {
       method: 'POST',

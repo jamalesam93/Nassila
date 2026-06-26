@@ -1,6 +1,6 @@
 {
   "name": "nassila",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "productName": "Nassila",
   "description": "Nassila — verify references, ground claims, and export submit-ready bibliographies.",
   "type": "module",
@@ -20,6 +20,7 @@
     "test:watch": "vitest",
     "icon:raster": "node scripts/rasterize-icon.mjs",
     "skills:install": "node scripts/install-cursor-skills.mjs",
+    "skills:install:antigravity": "node scripts/install-antigravity-skills.mjs",
     "docs:placeholders": "node -e \"console.log('(removed)')\"",
     "docs:images": "node -e \"console.log('(removed)')\""
   },

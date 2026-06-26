@@ -10,7 +10,7 @@ Guidance for coding agents working on this repository. End-user documentation li
 - **Network on demand:** registry verification, DOI lookup, predatory-list sync, and optional LLM calls only when the user runs those actions.
 - **Canonical model:** `CslItem` in [`src/engine/types.ts`](src/engine/types.ts) — keep engine logic aligned with this shape.
 
-In-app LLM (L3 manuscript grounding, Gemma via LM Studio) is a separate track; training and eval live in **NassilaT** — see [`docs/TRAINING.md`](docs/TRAINING.md) and [`src/renderer/components/ManuscriptAudit/llm-presets.ts`](src/renderer/components/ManuscriptAudit/llm-presets.ts).
+In-app LLM (L3 manuscript grounding, Gemma via LM Studio) powers the **Manuscript** (Ouroboros loop) surface; training and eval live in **NassilaT** — see [`docs/TRAINING.md`](docs/TRAINING.md) and [`src/renderer/components/ManuscriptAudit/llm-presets.ts`](src/renderer/components/ManuscriptAudit/llm-presets.ts).
 
 ## Repository map
 
@@ -63,13 +63,14 @@ Build output: `out/` (electron-vite), `dist/` (installers). Do not edit generate
 
 - Bundled lists plus optional sync; IPC for updates from main process.
 
-### Manuscript / L3 / Ouroboros (engine only for now)
+### Manuscript / L3 / Ouroboros (shipping)
 
 - **Ouroboros, not Hydra** — one manuscript audit loop (upload → sources → audit → explain → export). Workers are **stages**, not seven peer destinations. Read [`docs/PRODUCT.md`](docs/PRODUCT.md) before any UI work. The current seven-item worker nav is **transitional scaffolding**, not end-state IA.
+- **Shipping UI:** [`OuroborosLoopWorkspace`](src/renderer/components/loop/OuroborosLoopWorkspace.tsx) mounts when `appSurface === 'loop'` (default) in [`WorkerShell`](src/renderer/components/workers/WorkerShell.tsx). **Bibliography** mode (`appSurface === 'bibliography'`) is [`RaqimWorkspace`](src/renderer/components/workers/RaqimWorkspace.tsx).
 - **Ouroboros** ([`docs/OUROBOROS.md`](docs/OUROBOROS.md), agent brief [`docs/OUROBOROS_CONTEXT.md`](docs/OUROBOROS_CONTEXT.md)): seven workers as loop stages and code modules. **Sanad** `nassila-sanad-e4b` **v1.12** (default) / `nassila-sanad-12b` **v1.14** (quality); v1.13 **NO-GO** — NassilaT [`POST_V114_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/POST_V114_MAP.md). Task ids: [`src/shared/nassila-agent-tasks.ts`](src/shared/nassila-agent-tasks.ts). **Training:** [`docs/TRAINING.md`](docs/TRAINING.md) → NassilaT.
 - **Impeccable UI rule** — before renderer/UI changes, read [`docs/DESIGN.md`](docs/DESIGN.md) § Impeccable discipline. Reject AI-template tells: purple gradients, nested cards, Inter-only typography, identical card grids, gray-on-tinted muted text, hero metrics, decorative glass, fake progress on stubs.
-- Full-manuscript **audit UI is not mounted** in the shipping app. See [`src/renderer/components/ManuscriptAudit/README.md`](src/renderer/components/ManuscriptAudit/README.md).
-- Engine code under `src/engine/manuscript/` (grounding JSON, PDF extract, etc.) may remain for future releases — do not re-enable audit UI or menu entries unless explicitly requested.
+- **Legacy `ManuscriptAudit/AuditView`** is **not** mounted — retired tab layout. Do not remount it wholesale; extend the loop UI per `PRODUCT.md` / `DESIGN.md`. See [`src/renderer/components/ManuscriptAudit/README.md`](src/renderer/components/ManuscriptAudit/README.md).
+- Engine code under `src/engine/manuscript/` (grounding JSON, PDF extract, segments, verify) backs the loop; security controls SEC-01–06 apply to network + LLM paths in production.
 - Grounding schema and parsing: [`grounding-llm.ts`](src/engine/manuscript/grounding-llm.ts), [`grounding-json-repair.ts`](src/engine/manuscript/grounding-json-repair.ts).
 - Training pack: [`docs/TRAINING.md`](docs/TRAINING.md) → [NassilaT](https://github.com/jamalesam93/NassilaT).
 
@@ -104,6 +105,7 @@ Other: `build:mac`, `build:linux`, `build:unpack`, `preview`.
 ## Optional agent tooling
 
 - **Generic Cursor skills:** `npm run skills:install` (downloads to `.cursor/skills/`, gitignored except project skill below).
+- **Antigravity audit skills (curated):** `npm run skills:install:antigravity` — see `.cursor/skills/ANTIGRAVITY-SKILLS.md` and [SECURITY-FIX-PLAN.md](docs/SECURITY-FIX-PLAN.md).
 - **Nassila engine skill:** [`.cursor/skills/nassila/SKILL.md`](.cursor/skills/nassila/SKILL.md) — use when editing parser, verifier, formatter, or resolver code.
 
 ## Change discipline
@@ -112,7 +114,7 @@ Other: `build:mac`, `build:linux`, `build:unpack`, `preview`.
 - **Ouroboros product:** do not add Hydra-style peer worker tabs or ask users to copy manuscript text between modules; prefer loop-first UI per `PRODUCT.md`.
 - **UI craft:** follow `DESIGN.md` Impeccable discipline; product workstation, not AI SaaS chrome.
 - Run `npm test` and `npm run lint` before considering work done.
-- Add or update unit tests for engine behavior you change.
+- Add or update unit tests for engine behavior you change; **new IPC handlers** need matching validation tests under `tests/unit/` (see `docs/SECURITY-FIX-PLAN.md` preload inventory).
 - Do **not** commit secrets (`.env`, API keys), large model weights, or `out/` / `dist/` artifacts.
 - Do not duplicate README marketing copy here; link to user docs for product behavior.
 
@@ -124,4 +126,5 @@ Other: `build:mac`, `build:linux`, `build:unpack`, `preview`.
 - [Ouroboros local model strategy](docs/OUROBOROS.md) (future-facing)
 - [Ouroboros agent brief](docs/OUROBOROS_CONTEXT.md) — **start here for v1.5+ / worker planning**
 - [Training (NassilaT)](docs/TRAINING.md) — corpus, QLoRA, Vast; not in this repo
+- [Dead code inventory](docs/DEAD-CODE.md) — unmounted UI, debug leftovers, legacy IPC
 - [Webpage citations roadmap](docs/WEBPAGE_ROADMAP.md) (future-facing)

@@ -143,6 +143,25 @@ export async function resolveOpenAlexDoi(doi: string): Promise<CslItem | null> {
   }
 }
 
+export async function resolveOpenAlexPmid(pmid: string): Promise<CslItem | null> {
+  const cleaned = pmid.replace(/\D/g, '')
+  if (!/^\d+$/.test(cleaned)) return null
+
+  try {
+    const url = `${OPENALEX_API}/works/pmid:${encodeURIComponent(cleaned)}?mailto=nassila-app@users.noreply.github.com`
+    const response = await fetchWithPolicy(url, {
+      headers: { 'User-Agent': USER_AGENT, 'Accept': 'application/json' }
+    })
+
+    if (!response.ok) return null
+
+    const data = await readJsonResponse<OpenAlexWork>(response)
+    return workToCsl(data)
+  } catch {
+    return null
+  }
+}
+
 function workToCsl(work: OpenAlexWork): CslItem {
   const doi = (work.doi ?? work.ids?.doi ?? '').replace(/^https?:\/\/doi\.org\//i, '')
 

@@ -30,6 +30,14 @@ describe('cleanIdentifier', () => {
     expect(cleanIdentifier('https://doi.org/10.1038/test', 'doi')).toBe('10.1038/test')
   })
 
+  it('strips doi: prefix and trailing punctuation', () => {
+    expect(cleanIdentifier('doi:10.1038/test.', 'doi')).toBe('10.1038/test')
+  })
+
+  it('strips PMID prefix noise', () => {
+    expect(cleanIdentifier('PMID: 12345678', 'pmid')).toBe('12345678')
+  })
+
   it('strips ISBN hyphens', () => {
     expect(cleanIdentifier('978-0-13-468599-1', 'isbn')).toBe('9780134685991')
   })

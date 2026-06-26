@@ -1,12 +1,11 @@
 import type { CslItem, CslName } from '../types'
 import {
   fetchWithPolicy,
-  readTextResponse,
-  validateExternalUrl
+  readTextResponse
 } from '../network/http'
+import { fetchWithValidatedRedirects } from '../network/redirect-fetch'
 
 const MAX_HTML_BYTES = 2 * 1024 * 1024
-const MAX_REDIRECTS = 3
 
 export async function resolveUrl(url: string): Promise<CslItem | null> {
   try {
@@ -74,26 +73,13 @@ export async function fetchUrlMetadata(url: string): Promise<Partial<CslItem> | 
   }
 }
 
-async function fetchHtmlResponse(url: string, redirectCount = 0): Promise<Response> {
-  const parsedUrl = validateExternalUrl(url, { allowHttp: true })
-  const response = await fetchWithPolicy(parsedUrl, {
-    headers: { 'Accept': 'text/html' },
-    redirect: 'manual'
-  })
-
-  if (response.status >= 300 && response.status < 400) {
-    if (redirectCount >= MAX_REDIRECTS) {
-      throw new Error('Too many redirects')
-    }
-
-    const location = response.headers.get('location')
-    if (!location) {
-      throw new Error('Redirect missing location')
-    }
-
-    const redirectedUrl = new URL(location, parsedUrl)
-    return fetchHtmlResponse(redirectedUrl.toString(), redirectCount + 1)
-  }
+async function fetchHtmlResponse(url: string): Promise<Response> {
+  const { response } = await fetchWithValidatedRedirects(
+    (parsed, init) => fetchWithPolicy(parsed, init),
+    url,
+    { headers: { Accept: 'text/html' } },
+    { allowHttp: true }
+  )
 
   const contentType = response.headers.get('content-type')?.toLowerCase() ?? ''
   if (contentType && !contentType.includes('text/html') && !contentType.includes('application/xhtml+xml')) {

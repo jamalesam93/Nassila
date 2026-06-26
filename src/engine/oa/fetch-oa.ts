@@ -1,4 +1,6 @@
-import { fetchWithPolicy, readTextResponse, validateExternalUrl } from '../network/http'
+import { fetchWithPolicy, readTextResponse, tryValidateExternalUrl } from '../network/http'
+import { fetchWithValidatedRedirects } from '../network/redirect-fetch'
+import { OA_FETCH_URL_POLICY } from '../network/url-policies'
 import { THRESHOLDS } from '../manuscript/thresholds'
 
 export type OaContentKind = 'jats' | 'html' | 'pdf' | 'unknown'
@@ -15,8 +17,18 @@ export async function fetchOaUrlText(
   rawUrl: string,
   signal?: AbortSignal
 ): Promise<OaFetchResult> {
-  const url = validateExternalUrl(rawUrl, { allowHttp: false, allowLocalhost: false, allowPrivateHosts: false })
-  const response = await fetchWithPolicy(url, { signal }, { timeoutMs: THRESHOLDS.http.requestTimeoutMs })
+  const url = tryValidateExternalUrl(rawUrl, OA_FETCH_URL_POLICY)
+  if (!url) {
+    throw new Error('OA URL is not a fetchable HTTP(S) address')
+  }
+
+  const { response, finalUrl } = await fetchWithValidatedRedirects(
+    (parsed, init) => fetchWithPolicy(parsed, init, { timeoutMs: THRESHOLDS.http.requestTimeoutMs }),
+    url.toString(),
+    { signal },
+    OA_FETCH_URL_POLICY
+  )
+
   const contentType = response.headers.get('content-type')
   const lower = (contentType ?? '').toLowerCase()
 
@@ -25,17 +37,16 @@ export async function fetchOaUrlText(
     if (bytes.byteLength > THRESHOLDS.http.fullTextMaxBytes) {
       throw new Error('OA PDF exceeded max size')
     }
-    return { url: url.toString(), contentType, kind: 'pdf', pdfBytes: bytes }
+    return { url: finalUrl.toString(), contentType, kind: 'pdf', pdfBytes: bytes }
   }
 
   const text = await readTextResponse(response, { maxBytes: THRESHOLDS.http.fullTextMaxBytes })
   if (lower.includes('xml') || text.trimStart().startsWith('<?xml')) {
-    return { url: url.toString(), contentType, kind: 'jats', text }
+    return { url: finalUrl.toString(), contentType, kind: 'jats', text }
   }
   if (lower.includes('html') || /<\/(html|body)>/i.test(text)) {
-    return { url: url.toString(), contentType, kind: 'html', text }
+    return { url: finalUrl.toString(), contentType, kind: 'html', text }
   }
 
-  return { url: url.toString(), contentType, kind: 'unknown', text }
+  return { url: finalUrl.toString(), contentType, kind: 'unknown', text }
 }
-
