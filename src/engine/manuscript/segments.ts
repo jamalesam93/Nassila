@@ -20,7 +20,34 @@ export function normalizeManuscriptText(text: string): string {
 const REFERENCE_HEADER_LINE =
   /^(?:references?|bibliography|works?\s+cited|literature\s+cited|cited\s+references?|reference\s+list)\s*[:.]?\s*$/i
 
-const NUMBERED_REF_LINE = /^\s*\[?\d{1,4}[\].)]\s*\S/
+const BRACKET_BIB_LINE = /^\s*\[\d{1,4}\]\s*\S/
+const DOT_NUMBERED_LINE = /^\s*\d{1,4}\.\s+\S/
+
+const SECTION_TITLE_WORDS =
+  /^(introduction|abstract|methods?|materials?|results?|discussion|conclusion|background|references?|bibliography|literature\s+review|acknowledgements?|appendix)(?:\s|$)/i
+
+function isNumberedSectionHeading(line: string): boolean {
+  const t = line.trim()
+  const m = t.match(/^\d{1,2}\.\s+(.+)$/)
+  if (!m) return false
+  const title = m[1].trim()
+  if (title.length > 55) return false
+  if (looksLikeBibliographyLine(t)) return false
+  if (SECTION_TITLE_WORDS.test(title)) return true
+  if (title.length < 45 && !/[;,]/.test(title) && !/\b(19|20)\d{2}\b/.test(title)) return true
+  return false
+}
+
+/** Bibliography entry line — not a numbered section heading like "1. Introduction". */
+function isNumberedBibliographyLine(line: string): boolean {
+  const t = line.trim()
+  if (BRACKET_BIB_LINE.test(line)) return true
+  if (!DOT_NUMBERED_LINE.test(line)) return false
+  if (isNumberedSectionHeading(line)) return false
+  if (looksLikeBibliographyLine(t)) return true
+  if (t.length >= 50 && /[,;]/.test(t)) return true
+  return t.length >= 70
+}
 
 export function findReferencesBoundary(text: string): { start: number; afterHeader: number; kind: 'header' | 'numbered' } | null {
   const normalized = normalizeManuscriptText(text)
@@ -79,7 +106,7 @@ function isWrappedReferenceLine(line: string): boolean {
   if (/^(introduction|abstract|methods|results|discussion|conclusion|background|references?|bibliography)\b/i.test(t)) {
     return false
   }
-  if (NUMBERED_REF_LINE.test(line)) return false
+  if (isNumberedBibliographyLine(line)) return false
   return looksLikeBibliographyLine(t) || /^[a-z(]/.test(t) || /[;,.)]\s*$/.test(t)
 }
 
@@ -103,7 +130,7 @@ function findNumberedReferencesBlock(text: string): { start: number; afterHeader
     const trimmed = line.trim()
     if (!trimmed) continue
 
-    if (NUMBERED_REF_LINE.test(line)) {
+    if (isNumberedBibliographyLine(line)) {
       blockStartIdx = i
       if (blockEndIdx === -1) blockEndIdx = i
       numberedCount++
