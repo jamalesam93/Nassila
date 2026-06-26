@@ -20,7 +20,7 @@ export function normalizeManuscriptText(text: string): string {
 const REFERENCE_HEADER_LINE =
   /^(?:references?|bibliography|works?\s+cited|literature\s+cited|cited\s+references?|reference\s+list)\s*[:.]?\s*$/i
 
-const NUMBERED_REF_LINE = /^\s*\[?\d{1,4}[\].)]\s+\S/
+const NUMBERED_REF_LINE = /^\s*\[?\d{1,4}[\].)]\s*\S/
 
 export function findReferencesBoundary(text: string): { start: number; afterHeader: number; kind: 'header' | 'numbered' } | null {
   const normalized = normalizeManuscriptText(text)
@@ -123,8 +123,16 @@ function findNumberedReferencesBlock(text: string): { start: number; afterHeader
   if (numberedCount < 3) return null
   if (bibLikeCount < Math.min(2, numberedCount)) return null
   const start = lineStarts[blockStartIdx]!
-  const minCharRatio = text.length < 10_000 ? 0.08 : 0.2
-  if (start < text.length * minCharRatio) return null
+
+  // References-only paste (no body): numbered block begins at document start.
+  if (start === 0) {
+    return { start, afterHeader: start }
+  }
+
+  const nonEmptyLines = lines.filter((l) => l.trim().length > 0).length
+  const tailLineRatio = nonEmptyLines > 0 ? (blockEndIdx + 1) / nonEmptyLines : 1
+  const minCharRatio = text.length < 10_000 ? 0.05 : 0.12
+  if (start < text.length * minCharRatio && tailLineRatio < 0.45) return null
   return { start, afterHeader: start }
 }
 

@@ -34,4 +34,42 @@ References:
 Doe J. Paper. 2021.`
     expect(findReferencesBoundary(text)?.kind).toBe('header')
   })
+
+  it('accepts bracket-numbered bibliography at document start (refs-only paste)', () => {
+    const text = `[22] Franc B, et al. Am J Pharm Educ. 2019. https://doi.org/10.5688/ajpe77365
+[23] Awaisu A, et al. Journal. 2020. https://doi.org/10.1234/test.2
+[24] Third author. Journal. 2021. https://doi.org/10.1234/test.3
+[25] Fourth author. Journal. 2022.
+[26] Fifth author. Journal. 2023.
+[27] Ismail NK, et al. Int J Pharm Pract. 2024. https://doi.org/10.2147/IPRP.S464258`
+    const boundary = findReferencesBoundary(text)
+    expect(boundary?.kind).toBe('numbered')
+    expect(boundary?.start).toBe(0)
+    const seg = segmentManuscriptText(text)
+    expect(seg.referencesText).toContain('Franc B')
+    expect(seg.bodyText).toBe('')
+  })
+
+  it('accepts bracket numbers without space after delimiter', () => {
+    const text = `Body with cite [1].
+
+[1]Author A. Paper. 2020. https://doi.org/10.1234/a
+[2]Author B. Paper. 2021. https://doi.org/10.1234/b
+[3]Author C. Paper. 2022. https://doi.org/10.1234/c`
+    expect(segmentManuscriptText(text).referencesText).toContain('Author A')
+  })
+
+  it('splits body from trailing bracket-numbered bibliography', () => {
+    const body = 'Discussion with in-text cite [22]. '.repeat(400)
+    const refs = `[22] Franc B. Am J Pharm Educ. 2019. https://doi.org/10.5688/ajpe77365
+[23] Awaisu A. Journal. 2020. https://doi.org/10.1234/test.2
+[24] Third. Journal. 2021. https://doi.org/10.1234/test.3
+[25] Fourth. 2022.
+[26] Fifth. 2023.
+[27] Sixth. 2024. https://doi.org/10.2147/IPRP.S464258`
+    const text = `${body}\n\n${refs}`
+    const seg = segmentManuscriptText(text)
+    expect(seg.referencesText).toContain('Franc B')
+    expect(seg.bodyText).toContain('Discussion')
+  })
 })
