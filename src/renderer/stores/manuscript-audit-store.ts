@@ -5,6 +5,8 @@ import { LM_STUDIO_DEFAULT_URL } from '../utils/llm-config-utils'
 
 export type AuditStep = 'idle' | 'parsing' | 'l1' | 'l2' | 'oa_fetch' | 'l3' | 'llm' | 'done' | 'error'
 
+export type AuditReferenceSource = 'manuscript' | 'bibliography'
+
 interface ManuscriptAuditState {
   rawManuscriptText: string
   report: AuditReport | null
@@ -18,6 +20,8 @@ interface ManuscriptAuditState {
   unpaywallEmail: string
   llmPrefsHydrated: boolean
   manuscriptSourceFormat: 'docx' | 'pdf' | 'text' | null
+  /** When `bibliography`, audit uses Raqim store rows instead of re-parsing embedded refs. */
+  auditReferenceSource: AuditReferenceSource
 
   selectedTemplateId: string
   templateStrict: boolean
@@ -35,6 +39,7 @@ interface ManuscriptAuditState {
   setUnpaywallEmail: (email: string) => void
   setLlmPrefsHydrated: (hydrated: boolean) => void
   setManuscriptSourceFormat: (format: 'docx' | 'pdf' | 'text' | null) => void
+  setAuditReferenceSource: (source: AuditReferenceSource) => void
   setSelectedTemplateId: (id: string) => void
   setTemplateStrict: (strict: boolean) => void
   setTemplates: (templates: { id: string; name: string; headings: Record<string, string[]> }[]) => void
@@ -54,6 +59,7 @@ export const useManuscriptAuditStore = create<ManuscriptAuditState>((set, get) =
   unpaywallEmail: '',
   llmPrefsHydrated: false,
   manuscriptSourceFormat: null,
+  auditReferenceSource: 'manuscript',
 
   selectedTemplateId: 'imrad',
   templateStrict: false,
@@ -75,6 +81,7 @@ export const useManuscriptAuditStore = create<ManuscriptAuditState>((set, get) =
   setUnpaywallEmail: (unpaywallEmail) => set({ unpaywallEmail }),
   setLlmPrefsHydrated: (llmPrefsHydrated) => set({ llmPrefsHydrated }),
   setManuscriptSourceFormat: (manuscriptSourceFormat) => set({ manuscriptSourceFormat }),
+  setAuditReferenceSource: (auditReferenceSource) => set({ auditReferenceSource }),
   setSelectedTemplateId: (selectedTemplateId) => set({ selectedTemplateId }),
   setTemplateStrict: (templateStrict) => set({ templateStrict }),
   setTemplates: (templates) => set({ templates }),

@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next'
-import type { CitationFinding, CiteGroundingSite, EvidenceSource, L3Coverage } from '../../../engine/manuscript/types'
-import VerdictChip from '../workers/VerdictChip'
-import { claimVerdictI18nKey } from '../../utils/sanad-grounding'
+import type { CitationFinding, CiteGroundingSite, EvidenceSource, L3Coverage, LayerVerdict } from '../../../engine/manuscript/types'
+import { claimVerdictI18nKey, layerVerdictI18nKey, layerVerdictReasons } from '../../utils/sanad-grounding'
 
 function coverageLabelKey(coverage: L3Coverage): string {
   switch (coverage) {
@@ -35,6 +34,56 @@ function sourceProviderKey(source: EvidenceSource | undefined): string {
   }
 }
 
+const STATUS_PILL: Record<LayerVerdict['status'], string> = {
+  pass: 'bg-green-100 text-green-900 dark:bg-green-950/50 dark:text-green-100',
+  fail: 'bg-red-100 text-red-900 dark:bg-red-950/50 dark:text-red-100',
+  warn: 'bg-amber-100 text-amber-900 dark:bg-amber-950/50 dark:text-amber-100',
+  insufficient_evidence: 'bg-slate-200 text-slate-800 dark:bg-slate-800/60 dark:text-slate-100',
+  skipped: 'bg-muted text-muted-foreground'
+}
+
+function StatusPill({ verdict, compact }: { verdict: LayerVerdict; compact?: boolean }) {
+  const { t } = useTranslation()
+  const size = compact ? 'text-[10px] px-1.5 py-0.5' : 'text-xs px-2 py-0.5'
+  return (
+    <span className={`inline-flex shrink-0 rounded font-medium ${size} ${STATUS_PILL[verdict.status]}`}>
+      {t(layerVerdictI18nKey(verdict))}
+    </span>
+  )
+}
+
+function LayerRow({
+  label,
+  verdict,
+  citeCount
+}: {
+  label: string
+  verdict: LayerVerdict
+  citeCount?: number
+}) {
+  const { t } = useTranslation()
+  const reasons = layerVerdictReasons(verdict)
+
+  return (
+    <div className="grid grid-cols-[minmax(0,7.5rem)_1fr] gap-x-3 gap-y-1 border-b border-border/80 py-2.5 last:border-b-0">
+      <p className="text-xs font-medium leading-snug text-muted-foreground">{label}</p>
+      <div className="min-w-0">
+        <StatusPill verdict={verdict} />
+        {reasons.length > 0 ? (
+          <ul className="mt-1.5 space-y-1 text-xs leading-relaxed text-foreground">
+            {reasons.map((reason, i) => (
+              <li key={i}>{reason}</li>
+            ))}
+          </ul>
+        ) : null}
+        {citeCount !== undefined && citeCount > 1 ? (
+          <p className="mt-1 text-[10px] text-muted-foreground">{t('loop.citeSitesSummary', { count: citeCount })}</p>
+        ) : null}
+      </div>
+    </div>
+  )
+}
+
 function ExcerptBlock({ site }: { site: CiteGroundingSite }) {
   const { t } = useTranslation()
   if (!site.sourceExcerpt?.trim()) {
@@ -60,7 +109,7 @@ function ExcerptBlock({ site }: { site: CiteGroundingSite }) {
           {t('loop.sourceExcerptLink')}
         </a>
       ) : null}
-      <p className="mt-1.5 whitespace-pre-wrap rounded-md border border-border/80 bg-background px-2.5 py-2 text-xs leading-relaxed text-foreground">
+      <p className="mt-1.5 whitespace-pre-wrap rounded border border-border/80 bg-background px-2.5 py-2 text-xs leading-relaxed text-foreground">
         {site.sourceExcerpt}
       </p>
     </div>
@@ -73,22 +122,22 @@ function SiteBlock({ site, index, defaultOpen }: { site: CiteGroundingSite; inde
 
   return (
     <details
-      className="rounded-md border border-border bg-muted/15 open:bg-muted/25"
+      className="border-b border-border/80 last:border-b-0 open:bg-muted/10"
       open={defaultOpen}
     >
-      <summary className="cursor-pointer list-none px-3 py-2.5 [&::-webkit-details-marker]:hidden">
+      <summary className="cursor-pointer list-none px-1 py-2.5 [&::-webkit-details-marker]:hidden">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <span className="text-xs font-medium text-foreground">
+          <span className="min-w-0 text-xs font-medium text-foreground">
             {t('loop.siteLabel', { index: index + 1 })} — &ldquo;{site.inTextSpan.raw}&rdquo;
           </span>
-          <VerdictChip verdict={site.passageVerdict} />
+          <StatusPill verdict={site.passageVerdict} compact />
         </div>
-        <p className="mt-1 text-[10px] text-muted-foreground">
+        <p className="mt-0.5 text-[10px] text-muted-foreground">
           {t('loop.overlapHint', { pct: overlapPct, bucket: site.deterministicBucket })}
         </p>
       </summary>
 
-      <div className="space-y-1 border-t border-border px-3 py-3">
+      <div className="space-y-1 border-t border-border/60 px-1 pb-3 pt-2">
         <div>
           <p className="text-xs font-medium text-foreground">{t('loop.passageHeading')}</p>
           <p className="mt-1 whitespace-pre-wrap text-xs leading-relaxed text-foreground">{site.passageWindow}</p>
@@ -99,7 +148,7 @@ function SiteBlock({ site, index, defaultOpen }: { site: CiteGroundingSite; inde
         {site.claimGrounding?.length ? (
           <ul className="mt-3 space-y-2">
             {site.claimGrounding.map((claim, ci) => (
-              <li key={ci} className="rounded-md border border-border/80 bg-background p-2.5 text-sm">
+              <li key={ci} className="rounded border border-border/80 bg-background p-2.5 text-sm">
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <span className="text-xs font-medium leading-snug">{claim.claim}</span>
                   <span className="shrink-0 text-xs font-medium text-muted-foreground">
@@ -163,47 +212,45 @@ export default function LoopAuditDetail({ finding }: LoopAuditDetailProps) {
     finding.evidence[0]?.text?.slice(0, 120) ||
     finding.bibKey
 
+  const citeCount = finding.citeSites?.length ?? 0
+
   return (
-    <div className="flex h-full flex-col overflow-auto p-4">
-      <h3 className="text-base font-semibold leading-snug">{title}</h3>
-      <p className="mt-1 text-xs text-muted-foreground">{finding.bibKey}</p>
+    <div className="flex h-full flex-col overflow-auto">
+      <header className="border-b border-border px-4 py-3">
+        <h3 className="text-sm font-semibold leading-snug text-foreground">{title}</h3>
+        <p className="mt-0.5 text-[11px] text-muted-foreground">{finding.bibKey}</p>
+      </header>
 
-      <div className="mt-4 grid gap-3 sm:grid-cols-3">
-        <div>
-          <p className="text-xs font-medium text-muted-foreground">{t('loop.layers.registry')}</p>
-          <div className="mt-1">
-            <VerdictChip verdict={finding.layers.registry} />
+      <section className="border-b border-border px-4 py-3">
+        <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t('loop.verdictSection')}</h4>
+        <div className="mt-2">
+          <LayerRow label={t('loop.layers.registry')} verdict={finding.layers.registry} />
+          <LayerRow label={t('loop.layers.metadata')} verdict={finding.layers.metadata} />
+          <LayerRow
+            label={t('loop.layers.passage')}
+            verdict={finding.layers.passage}
+            citeCount={citeCount > 1 ? citeCount : undefined}
+          />
+        </div>
+        <p className="mt-3 text-xs text-muted-foreground">
+          {t('loop.sourceCoverage')}: {t(coverageLabelKey(finding.l3Coverage))}
+        </p>
+      </section>
+
+      {citeCount > 0 ? (
+        <section className="min-h-0 flex-1 px-4 py-3">
+          <h4 className="text-xs font-semibold text-foreground">
+            {t('loop.groundingSites')}
+            <span className="ms-1.5 font-normal text-muted-foreground">({citeCount})</span>
+          </h4>
+          <div className="mt-2">
+            {finding.citeSites!.map((site, i) => (
+              <SiteBlock key={i} site={site} index={i} defaultOpen={citeCount === 1} />
+            ))}
           </div>
-        </div>
-        <div>
-          <p className="text-xs font-medium text-muted-foreground">{t('loop.layers.metadata')}</p>
-          <div className="mt-1">
-            <VerdictChip verdict={finding.layers.metadata} />
-          </div>
-        </div>
-        <div>
-          <p className="text-xs font-medium text-muted-foreground">{t('loop.layers.passage')}</p>
-          <div className="mt-1">
-            <VerdictChip verdict={finding.layers.passage} />
-          </div>
-        </div>
-      </div>
-
-      <p className="mt-4 text-xs text-muted-foreground">
-        {t('loop.sourceCoverage')}: {t(coverageLabelKey(finding.l3Coverage))}
-      </p>
-
-      <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">{t('loop.masdarPlanned')}</p>
-
-      {finding.citeSites?.length ? (
-        <div className="mt-6 space-y-3">
-          <h4 className="text-sm font-semibold">{t('loop.groundingSites')}</h4>
-          {finding.citeSites.map((site, i) => (
-            <SiteBlock key={i} site={site} index={i} defaultOpen={finding.citeSites!.length === 1} />
-          ))}
-        </div>
+        </section>
       ) : (
-        <p className="mt-6 text-sm text-muted-foreground">{t('loop.noCiteSites')}</p>
+        <p className="px-4 py-6 text-sm text-muted-foreground">{t('loop.noCiteSites')}</p>
       )}
     </div>
   )

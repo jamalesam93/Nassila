@@ -9,6 +9,7 @@ import { detectStyle } from '../../engine/detector/index'
 import { formatBibliography } from '../../engine/formatter/index'
 import { getStyleXml, listBundledStyles } from '../../engine/formatter/styles'
 import { sortCitations } from '../../engine/sorter/index'
+import { mergeManuscriptRefsIntoCitations } from '../../engine/manuscript/bibliography-bridge'
 import {
   verifyUnifiedRegistryWithPatches
 } from '../../engine/verifier/verify-and-apply'
@@ -184,6 +185,15 @@ export function useCitationEngine() {
     store.addCitations(items)
     const latestStore = useCitationStore.getState()
     applyDerivedState(latestStore.citations, latestStore.selectedStyleId)
+  }, [applyDerivedState])
+
+  const ingestManuscriptReferenceItems = useCallback((items: CslItem[], undoLabel = 'Import manuscript references'): void => {
+    if (items.length === 0) return
+
+    const store = useCitationStore.getState()
+    const merged = mergeManuscriptRefsIntoCitations(store.citations, items)
+    store.setCitations(merged, 'add-citations', undoLabel)
+    applyDerivedState(merged, store.selectedStyleId)
   }, [applyDerivedState])
 
   const processFile = useCallback(async (filePath: string) => {
@@ -380,6 +390,7 @@ export function useCitationEngine() {
     processRawInput,
     processFile,
     ingestItems,
+    ingestManuscriptReferenceItems,
     importFiles,
     resolveId,
     batchResolveIds,

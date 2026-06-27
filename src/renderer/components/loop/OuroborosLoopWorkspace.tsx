@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAppCommands } from '../../hooks/use-app-commands'
+import { useBibliographyBridge } from '../../hooks/use-bibliography-bridge'
 import { useManuscriptAudit } from '../../hooks/use-manuscript-audit'
 import { useOuroborosLoopBootstrap } from '../../hooks/use-ouroboros-loop-bootstrap'
 import { useCitationStore } from '../../stores/citation-store'
 import { useManuscriptAuditStore, type AuditStep } from '../../stores/manuscript-audit-store'
 import { useOuroborosLoopStore } from '../../stores/ouroboros-loop-store'
 import { useShellStore } from '../../stores/shell-store'
+import { segmentManuscriptText } from '../../../engine/manuscript/segments'
 import { previewManuscript } from '../../utils/manuscript-preview'
 import LoopAuditDetail from './LoopAuditDetail'
 import ManuscriptSanadBar from './ManuscriptSanadBar'
@@ -37,19 +39,36 @@ export default function OuroborosLoopWorkspace() {
   const error = useManuscriptAuditStore((s) => s.error)
   const networkStatus = useCitationStore((s) => s.networkStatus)
   const unpaywallEmail = useManuscriptAuditStore((s) => s.unpaywallEmail)
+  const auditReferenceSource = useManuscriptAuditStore((s) => s.auditReferenceSource)
+  const setAuditReferenceSource = useManuscriptAuditStore((s) => s.setAuditReferenceSource)
   const openSettingsModal = useShellStore((s) => s.openSettingsModal)
   const setAppSurface = useShellStore((s) => s.setAppSurface)
+  const bibliographyCount = useCitationStore((s) => s.citations.length)
 
   const selectedBibKey = useOuroborosLoopStore((s) => s.selectedBibKey)
   const setSelectedBibKey = useOuroborosLoopStore((s) => s.setSelectedBibKey)
 
   const { importManuscriptFromPath } = useAppCommands()
   const { runAudit, cancel } = useManuscriptAudit()
+  const { exportManuscriptRefsToBibliography } = useBibliographyBridge()
 
   const [dragOver, setDragOver] = useState(false)
+  const [bridgeMessage, setBridgeMessage] = useState<string | null>(null)
   const running = RUNNING_STEPS.includes(step)
 
-  const preview = useMemo(() => previewManuscript(raw), [raw])
+  const preview = useMemo(
+    () =>
+      previewManuscript(raw, {
+        auditReferenceSource,
+        bibliographyCount
+      }),
+    [auditReferenceSource, bibliographyCount, raw]
+  )
+
+  const hasEmbeddedReferences = useMemo(() => {
+    if (!raw.trim()) return false
+    return Boolean(segmentManuscriptText(raw).referencesText?.trim())
+  }, [raw])
 
   const findings = useMemo(() => report?.findings ?? [], [report?.findings])
   const selectedFinding = findings.find((f) => f.bibKey === selectedBibKey) ?? null
@@ -68,6 +87,20 @@ export default function OuroborosLoopWorkspace() {
     if (!raw.trim() || running) return
     void runAudit(raw)
   }, [raw, runAudit, running])
+
+  const handleExportRefs = useCallback(async () => {
+    setBridgeMessage(null)
+    const result = await exportManuscriptRefsToBibliography(raw)
+    if (!result.ok) {
+      if (result.reason === 'no_references') {
+        setBridgeMessage(t('loop.previewNoReferences'))
+      } else if (result.reason === 'no_parsed_items') {
+        setBridgeMessage(t('loop.exportRefsNoItems'))
+      }
+      return
+    }
+    setBridgeMessage(t('loop.exportRefsDone', { count: result.count }))
+  }, [exportManuscriptRefsToBibliography, raw, t])
 
   const onDrop = useCallback(
     (e: React.DragEvent) => {
@@ -132,6 +165,42 @@ export default function OuroborosLoopWorkspace() {
           </p>
         ) : null}
 
+        {!report && !running && hasEmbeddedReferences ? (
+          <div className="shrink-0 border-b border-border px-3 py-2">
+            <button
+              type="button"
+              className="text-xs font-medium text-primary hover:underline disabled:opacity-50"
+              disabled={running}
+              onClick={() => void handleExportRefs()}
+            >
+              {t('loop.exportRefsToBibliography')}
+            </button>
+            {bridgeMessage ? (
+              <p className="mt-1 text-xs text-muted-foreground">{bridgeMessage}</p>
+            ) : (
+              <p className="mt-1 text-xs text-muted-foreground">{t('loop.exportRefsHint')}</p>
+            )}
+          </div>
+        ) : null}
+
+        {!report && !running && bibliographyCount > 0 ? (
+          <label className="flex shrink-0 cursor-pointer items-start gap-2 border-b border-border px-3 py-2 text-xs">
+            <input
+              type="checkbox"
+              className="mt-0.5"
+              checked={auditReferenceSource === 'bibliography'}
+              disabled={running}
+              onChange={(e) => setAuditReferenceSource(e.target.checked ? 'bibliography' : 'manuscript')}
+            />
+            <span>
+              <span className="font-medium text-foreground">{t('loop.useBibliographyForAudit')}</span>
+              <span className="mt-0.5 block text-muted-foreground">
+                {t('loop.useBibliographyForAuditHint', { count: bibliographyCount })}
+              </span>
+            </span>
+          </label>
+        ) : null}
+
         <div
           className={`relative min-h-0 flex-1 p-3 ${dragOver ? 'bg-accent/40' : ''}`}
           onDragOver={(e) => {
@@ -154,12 +223,16 @@ export default function OuroborosLoopWorkspace() {
           <div className="min-w-0 flex-1 text-xs text-muted-foreground">
             {!preview.ok && preview.reason === 'empty' ? t('loop.previewEmpty') : null}
             {!preview.ok && preview.reason === 'no_references' ? t('loop.previewNoReferences') : null}
+            {!preview.ok && preview.reason === 'no_intext_cites' ? t('loop.previewNoInTextCites') : null}
             {preview.ok ? (
               <span>
                 {t('loop.previewStats', {
                   words: preview.wordCount,
                   cites: preview.inTextCitationCount
                 })}
+                {preview.referenceSource === 'bibliography'
+                  ? ` · ${t('loop.previewBibliographySource')}`
+                  : null}
               </span>
             ) : null}
           </div>
@@ -199,10 +272,10 @@ export default function OuroborosLoopWorkspace() {
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
             <div className="max-h-[40%] min-h-0 shrink-0 overflow-auto border-b border-border lg:max-h-[45%]">
               <table className="w-full text-sm">
-                <thead className="sticky top-0 bg-muted/80 text-start text-xs text-muted-foreground">
+                <thead className="sticky top-0 z-10 border-b border-border bg-background text-start text-xs text-muted-foreground shadow-[0_1px_0_0_hsl(var(--border))]">
                   <tr>
-                    <th className="px-3 py-2 font-medium">{t('loop.colReference')}</th>
-                    <th className="px-2 py-2 font-medium">{t('loop.colPassage')}</th>
+                    <th className="bg-background px-3 py-2 font-medium">{t('loop.colReference')}</th>
+                    <th className="bg-background px-2 py-2 font-medium">{t('loop.colPassage')}</th>
                   </tr>
                 </thead>
                 <tbody>

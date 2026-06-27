@@ -37,6 +37,20 @@ Doe J. Paper. 2021.`
     expect(findReferencesBoundary(text)?.kind).toBe('header')
   })
 
+  it('accepts numbered IMRAD References heading (common in PDF export)', () => {
+    const body = 'Conclusion with cite [1]. '.repeat(80)
+    const refs = `[1] First A. Journal. 2020. https://doi.org/10.1234/a
+[2] Second B. Journal. 2021. https://doi.org/10.1234/b
+[3] Third C. Journal. 2022. https://doi.org/10.1234/c`
+    const text = `${body}\n\n9. References\n${refs}`
+    const boundary = findReferencesBoundary(text)
+    expect(boundary?.kind).toBe('header')
+    const seg = segmentManuscriptText(text)
+    expect(seg.referencesText).toContain('First A.')
+    expect(seg.bodyText).toContain('Conclusion')
+    expect(previewManuscript(text).ok).toBe(true)
+  })
+
   it('accepts bracket-numbered bibliography at document start (refs-only paste)', () => {
     const text = `[22] Franc B, et al. Am J Pharm Educ. 2019. https://doi.org/10.5688/ajpe77365
 [23] Awaisu A, et al. Journal. 2020. https://doi.org/10.1234/test.2

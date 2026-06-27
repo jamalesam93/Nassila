@@ -1,6 +1,6 @@
 import type { LayerVerdict } from '../../../engine/manuscript/types'
 import { useTranslation } from 'react-i18next'
-import { layerVerdictI18nKey } from '../../utils/sanad-grounding'
+import { layerVerdictI18nKey, layerVerdictReasons } from '../../utils/sanad-grounding'
 
 const VERDICT_STYLES: Record<LayerVerdict['status'], string> = {
   pass: 'border-green-500/50 bg-green-50 text-green-900 dark:bg-green-950/40 dark:text-green-100',
@@ -18,13 +18,7 @@ interface VerdictChipProps {
 export default function VerdictChip({ verdict }: VerdictChipProps) {
   const { t } = useTranslation()
   const style = VERDICT_STYLES[verdict.status]
-
-  const reasons =
-    verdict.status === 'fail' || verdict.status === 'warn'
-      ? verdict.reasons
-      : verdict.status === 'insufficient_evidence'
-        ? [verdict.reason]
-        : []
+  const reasons = layerVerdictReasons(verdict)
 
   return (
     <div className={`rounded-md border px-3 py-2 ${style}`}>

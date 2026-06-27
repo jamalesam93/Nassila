@@ -2,6 +2,7 @@ import { useCallback, useRef } from 'react'
 import { segmentManuscriptText } from '../../engine/manuscript/segments'
 import { parseInTextCitations } from '../../engine/manuscript/intext'
 import { buildBibEntriesFromReferencesText, mapInTextToBibliography } from '../../engine/manuscript/mapping'
+import { bibEntriesFromCitationLibrary } from '../../engine/manuscript/bibliography-bridge'
 import { alignMetadata, resolveRegistry } from '../../engine/manuscript/verify'
 import { referenceIntegrityRiskFromRegistry } from '../../engine/manuscript/integrity-risk'
 import {
@@ -78,6 +79,7 @@ export function useManuscriptAudit() {
   const llmModel = useManuscriptAuditStore((s) => s.llmModel)
   const llmPresetId = useManuscriptAuditStore((s) => s.llmPresetId)
   const unpaywallEmail = useManuscriptAuditStore((s) => s.unpaywallEmail)
+  const auditReferenceSource = useManuscriptAuditStore((s) => s.auditReferenceSource)
   const selectedTemplateId = useManuscriptAuditStore((s) => s.selectedTemplateId)
   const templateStrict = useManuscriptAuditStore((s) => s.templateStrict)
   const templates = useManuscriptAuditStore((s) => s.templates)
@@ -100,14 +102,31 @@ export function useManuscriptAudit() {
       const appVersion = (await window.api?.getAppAbout().catch(() => null))?.version ?? 'unknown'
 
       const seg = segmentManuscriptText(rawText)
-      if (!seg.referencesText) {
+      const useBibliography = auditReferenceSource === 'bibliography'
+      const libraryCitations = useCitationStore.getState().citations
+
+      if (!useBibliography && !seg.referencesText) {
         setStep('error')
         setError('Could not locate a References/Bibliography section in this text.')
         return
       }
 
+      if (useBibliography && libraryCitations.length === 0) {
+        setStep('error')
+        setError('Bibliography library is empty. Export references or import in Bibliography mode first.')
+        return
+      }
+
       const inText = parseInTextCitations(seg.bodyText)
-      const bib = await buildBibEntriesFromReferencesText(seg.referencesText)
+      if (useBibliography && inText.citations.length === 0) {
+        setStep('error')
+        setError('No in-text citations detected in the manuscript body.')
+        return
+      }
+
+      const bib = useBibliography
+        ? { entries: bibEntriesFromCitationLibrary(libraryCitations), errors: [] as string[] }
+        : await buildBibEntriesFromReferencesText(seg.referencesText!)
 
       const mappings = mapInTextToBibliography(inText.citations, bib.entries)
       const usedBibKeys = new Set(mappings.flatMap((m) => m.matchedBibKeys))
@@ -266,7 +285,7 @@ export function useManuscriptAudit() {
       setStep('done')
       controllerRef.current = null
     },
-    [llmBaseUrl, llmEnabled, llmModel, llmPresetId, networkStatus, selectedTemplateId, setError, setReport, setStep, templateStrict, templates, unpaywallEmail, userActionsByBibKey]
+    [auditReferenceSource, llmBaseUrl, llmEnabled, llmModel, llmPresetId, networkStatus, selectedTemplateId, setError, setReport, setStep, templateStrict, templates, unpaywallEmail, userActionsByBibKey]
   )
 
   return { runAudit, cancel }

@@ -20,6 +20,14 @@ export function normalizeManuscriptText(text: string): string {
 const REFERENCE_HEADER_LINE =
   /^(?:references?|bibliography|works?\s+cited|literature\s+cited|cited\s+references?|reference\s+list)\s*[:.]?\s*$/i
 
+/** IMRAD-style numbered headings from PDF/Word (e.g. "9. References"). */
+const NUMBERED_REFERENCE_HEADER_LINE =
+  /^\d{1,2}\.\s*(?:references?|bibliography|works?\s+cited|literature\s+cited|cited\s+references?|reference\s+list)\s*[:.]?\s*$/i
+
+function isReferenceHeaderLine(trimmed: string): boolean {
+  return REFERENCE_HEADER_LINE.test(trimmed) || NUMBERED_REFERENCE_HEADER_LINE.test(trimmed)
+}
+
 const BRACKET_BIB_LINE = /^\s*\[\d{1,4}\]\s*\S/
 const DOT_NUMBERED_LINE = /^\s*\d{1,4}\.\s+\S/
 
@@ -81,7 +89,7 @@ function findReferenceHeader(text: string): { start: number; afterHeader: number
   let offset = 0
   for (const line of lines) {
     const trimmed = line.trim().replace(/\uFEFF/g, '')
-    if (REFERENCE_HEADER_LINE.test(trimmed)) {
+    if (isReferenceHeaderLine(trimmed)) {
       const start = offset
       const afterHeader = offset + line.length + 1
       return { start, afterHeader }

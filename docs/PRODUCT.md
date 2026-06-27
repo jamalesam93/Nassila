@@ -62,9 +62,9 @@ Manuscript audit parses the **embedded References section** inline. If that bloc
 
 1. Open **Bibliography** — import the reference list (DOCX, `.bib`, RIS, or paste).
 2. **Verify** (L1/L2), autocorrect, dedupe, and attach missing DOIs in Raqim.
-3. Return to **Manuscript** and run audit once the reference section matches your curated library.
+3. Return to **Manuscript** — **Send references to Bibliography** (or import manually), verify in Raqim, enable **Audit from Bibliography library**, then run audit.
 
-Automated **export refs → Raqim** and **audit from Bibliography store** are P1 backlog; today the switch is manual but intentional.
+The loop ships **export refs → Raqim** and **audit from Bibliography store** (numeric cite keys preserved via `manuscript-ref:N` ids). Author–year cites can match manually imported rows without export.
 
 **Unpaywall email** (Settings → General) enables **open-access** full-text lookup only — not university paywall login. Subscription PDFs: attach when **Masdar** ships, or Tier 3 institutional access.
 

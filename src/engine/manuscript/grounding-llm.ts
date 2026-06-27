@@ -313,7 +313,8 @@ export function rollupPassageFromSites(sites: { passageVerdict: LayerVerdict }[]
 
   const ins = list.filter((v): v is Extract<LayerVerdict, { status: 'insufficient_evidence' }> => v.status === 'insufficient_evidence')
   if (ins.length) {
-    return { status: 'insufficient_evidence', reason: ins.map((i) => i.reason).join('; ') }
+    const unique = [...new Set(ins.map((i) => i.reason.trim()).filter(Boolean))]
+    return { status: 'insufficient_evidence', reason: unique.join('; ') }
   }
 
   const skips = list.filter((v): v is Extract<LayerVerdict, { status: 'skipped' }> => v.status === 'skipped')

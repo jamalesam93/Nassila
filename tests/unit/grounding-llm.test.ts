@@ -112,6 +112,19 @@ describe('rollupPassageFromSites', () => {
   it('handles all pass', () => {
     expect(rollupPassageFromSites([{ passageVerdict: { status: 'pass' } }]).status).toBe('pass')
   })
+
+  it('dedupes identical insufficient_evidence reasons across cite sites', () => {
+    const reason = 'No OA full text and no abstract available'
+    const v = rollupPassageFromSites([
+      { passageVerdict: { status: 'insufficient_evidence', reason } },
+      { passageVerdict: { status: 'insufficient_evidence', reason } },
+      { passageVerdict: { status: 'insufficient_evidence', reason } }
+    ])
+    expect(v.status).toBe('insufficient_evidence')
+    if (v.status === 'insufficient_evidence') {
+      expect(v.reason).toBe(reason)
+    }
+  })
 })
 
 describe('buildGroundingLlmMessages', () => {

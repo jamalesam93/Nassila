@@ -39,6 +39,30 @@ export function claimVerdictI18nKey(verdict: ClaimGroundingRow['verdict']): stri
   return `sanad.claimVerdict.${verdict}`
 }
 
+/** Split semicolon-joined rollup strings and drop duplicates (stable order). */
+export function uniqueVerdictReasons(parts: string[]): string[] {
+  const seen = new Set<string>()
+  const out: string[] = []
+  for (const part of parts) {
+    for (const chunk of part.split(';').map((s) => s.trim()).filter(Boolean)) {
+      if (seen.has(chunk)) continue
+      seen.add(chunk)
+      out.push(chunk)
+    }
+  }
+  return out
+}
+
+export function layerVerdictReasons(verdict: LayerVerdict): string[] {
+  if (verdict.status === 'fail' || verdict.status === 'warn') {
+    return uniqueVerdictReasons(verdict.reasons)
+  }
+  if (verdict.status === 'insufficient_evidence') {
+    return uniqueVerdictReasons([verdict.reason])
+  }
+  return []
+}
+
 export function layerVerdictI18nKey(verdict: LayerVerdict): string {
   switch (verdict.status) {
     case 'pass':

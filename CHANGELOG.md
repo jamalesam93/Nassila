@@ -4,6 +4,23 @@ All notable changes to **Nassila** are documented here.
 
 ## [Unreleased]
 
+## [1.1.2] — 2026-06-21
+
+### Added
+
+- **Bibliography bridge** — send manuscript References to Raqim; audit from Bibliography library with `manuscript-ref:N` cite-key preservation.
+- Unit tests: `bibliography-bridge`, `manuscript-preview-bridge`.
+
+### Fixed
+
+- **PDF `9. References` heading** — IMRAD-style numbered reference headings detected on PDF export.
+- **L3 rollup** — deduplicated insufficient-evidence reasons across cite sites.
+- **Cited-sources table** — opaque sticky header (no row bleed-through on scroll).
+
+### Changed
+
+- **Loop audit detail** — compact layer summary and cite-site list (`LoopAuditDetail`).
+
 ## [1.1.1] — 2026-06-28
 
 ### Added
