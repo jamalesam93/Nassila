@@ -4,7 +4,7 @@ All notable changes to **Nassila** are documented here.
 
 ## [Unreleased]
 
-## [1.1.2] — 2026-06-21
+## [1.1.2] — 2026-06-27
 
 ### Added
 
@@ -21,7 +21,7 @@ All notable changes to **Nassila** are documented here.
 
 - **Loop audit detail** — compact layer summary and cite-site list (`LoopAuditDetail`).
 
-## [1.1.1] — 2026-06-28
+## [1.1.1] — 2026-06-27
 
 ### Added
 
