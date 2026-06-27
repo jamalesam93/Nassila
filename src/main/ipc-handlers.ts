@@ -1,6 +1,5 @@
 import { ipcMain, dialog, nativeTheme, BrowserWindow, app } from 'electron'
 import { buildAppMenu } from './app-menu'
-import type { AppMode } from '../shared/app-mode'
 import type { MainMenuLocale } from './menu-i18n'
 import { readFile, writeFile } from 'fs/promises'
 import { homedir } from 'os'
@@ -11,6 +10,7 @@ import { registerLlmIpcHandlers } from './ipc-llm'
 import { registerTemplateIpcHandlers } from './ipc-templates'
 import { registerManuscriptAuditPrefsHandlers } from './ipc-manuscript-audit-prefs'
 import { registerPredatoryIpcHandlers } from './ipc-predatory-updates'
+import { registerRegistryIpcHandlers } from './ipc-registry'
 
 const PRESETS_DIR = join(homedir(), '.citations-style')
 const PRESETS_FILE = join(PRESETS_DIR, 'presets.json')
@@ -106,11 +106,6 @@ function serializeConfigPayload(payload: unknown, label: string): string {
   return serialized
 }
 
-function validateAppMode(mode: unknown): AppMode {
-  void mode
-  return 'references'
-}
-
 function validateThemeMode(mode: unknown): 'light' | 'dark' | 'system' {
   if (mode === 'light' || mode === 'dark' || mode === 'system') {
     return mode
@@ -131,6 +126,7 @@ export function registerIpcHandlers(): void {
   registerManuscriptAuditPrefsHandlers()
   registerTemplateIpcHandlers()
   registerPredatoryIpcHandlers()
+  registerRegistryIpcHandlers()
 
   // ── File Dialogs ────────────────────────────────────────────────────────
   ipcMain.handle('dialog:open-file', async (_event, options: OpenDialogOptions) => {
@@ -255,12 +251,6 @@ export function registerIpcHandlers(): void {
     if (!win) return
     const next: MainMenuLocale = locale === 'ar' ? 'ar' : 'en'
     buildAppMenu(win, next)
-  })
-
-  ipcMain.handle('app:set-app-mode', (event, mode: unknown) => {
-    const win = BrowserWindow.fromWebContents(event.sender)
-    if (!win) return
-    buildAppMenu(win, undefined, validateAppMode(mode))
   })
 
   // ── Network Status ─────────────────────────────────────────────────────

@@ -83,6 +83,7 @@
       "unpaywallEmail": "Unpaywall email",
       "unpaywallPlaceholder": "you@institution.edu",
       "privacy": "Saved once on this computer only. Sent to api.unpaywall.org when auditing DOIs — not to Nassila servers.",
+      "institutionalNote": "This is not university paywall login. It only enables Unpaywall to find legally open copies. Subscription PDFs require Masdar (attach PDFs) or future institutional access.",
       "savedHint": "Saved. Open-access lookups will use this address on future audits."
     },
     "localModels": {
@@ -322,6 +323,7 @@
     "resolveStatusOneFail": "Could not resolve identifier",
     "resolveStatusError": "Resolve error: {{message}}",
     "importStatus": "Imported {{count}} citation(s) from {{file}}",
+    "importMultiFiles": "{{count}} files",
     "importDocxFail": "Could not import {{file}}",
     "importReadError": "Error reading {{file}}: {{message}}",
     "idleComposeHint": "Drop bibliography files onto this pane or paste a column of references. Line count updates live.",
@@ -608,6 +610,8 @@
     "running": "Auditing…",
     "settings": "Settings…",
     "offlineHint": "Registry and source fetch need a network connection. Bibliography editing still works offline.",
+    "bibliographyFirstHint": "If your reference list is messy or unverified, organize it in Bibliography first (import, verify, fix DOIs), then return to audit.",
+    "openBibliography": "Open Bibliography",
     "previewEmpty": "Paste or upload a manuscript with a References section.",
     "previewNoReferences": "Could not find a References or Bibliography section.",
     "previewStats": "{{words}} words · {{cites}} in-text citations detected",

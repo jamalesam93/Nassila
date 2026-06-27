@@ -1,5 +1,6 @@
 import type { CslItem, CslItemType, CslName, InputFormat } from '../types'
 import type { ParseResult } from './index'
+import { normalizeDoiFromMeta } from '../resolver/url'
 
 export async function parsePlainText(raw: string): Promise<ParseResult> {
   const lines = raw
@@ -217,6 +218,12 @@ function parseSingleCitation(text: string, index: number): CslItem | null {
     if (pathDoi) {
       item.DOI = canonicalize1101PreprintDoi(pathDoi)
       confidence += 0.1
+    } else if (!item.DOI) {
+      const fromDoiUrl = normalizeDoiFromMeta(rawUrl)
+      if (fromDoiUrl) {
+        item.DOI = canonicalize1101PreprintDoi(fromDoiUrl)
+        confidence += 0.1
+      }
     }
     remaining = remaining.replace(matchToStrip, '')
     if (detected.type === 'webpage' || detected.type === 'software' || detected.type === 'dataset') {

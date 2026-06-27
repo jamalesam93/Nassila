@@ -4,7 +4,7 @@ import type { ManuscriptAuditPrefsV1 } from '../../shared/manuscript-audit-prefs
 
 import { NASSILA_MODEL_ARTIFACTS } from '../../shared/nassila-agent-tasks'
 
-import { resolveLlmPreset } from '../components/ManuscriptAudit/llm-presets'
+import { resolveLlmPreset } from '../settings/llm-presets'
 
 import { useManuscriptAuditStore } from '../stores/manuscript-audit-store'
 

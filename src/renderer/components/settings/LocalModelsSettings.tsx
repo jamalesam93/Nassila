@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { useTranslation } from 'react-i18next'
 
-import { findPresetByBaseUrl } from '../ManuscriptAudit/llm-presets'
+import { findPresetByBaseUrl } from '../../settings/llm-presets'
 
 import { Button } from '../ui/button'
 

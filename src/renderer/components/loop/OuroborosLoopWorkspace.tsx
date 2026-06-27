@@ -38,6 +38,7 @@ export default function OuroborosLoopWorkspace() {
   const networkStatus = useCitationStore((s) => s.networkStatus)
   const unpaywallEmail = useManuscriptAuditStore((s) => s.unpaywallEmail)
   const openSettingsModal = useShellStore((s) => s.openSettingsModal)
+  const setAppSurface = useShellStore((s) => s.setAppSurface)
 
   const selectedBibKey = useOuroborosLoopStore((s) => s.selectedBibKey)
   const setSelectedBibKey = useOuroborosLoopStore((s) => s.setSelectedBibKey)
@@ -115,6 +116,19 @@ export default function OuroborosLoopWorkspace() {
         {!report && !running && !raw.trim() ? (
           <p className="shrink-0 border-b border-border px-3 py-2 text-sm text-muted-foreground">
             {t('loop.intro')}
+          </p>
+        ) : null}
+
+        {!report && !running && preview.ok ? (
+          <p className="shrink-0 border-b border-border bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
+            {t('loop.bibliographyFirstHint')}{' '}
+            <button
+              type="button"
+              className="font-medium text-primary hover:underline"
+              onClick={() => setAppSurface('bibliography')}
+            >
+              {t('loop.openBibliography')}
+            </button>
           </p>
         ) : null}
 

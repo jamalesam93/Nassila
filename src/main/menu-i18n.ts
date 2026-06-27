@@ -9,7 +9,6 @@ type MenuLabelSet = {
   help: string
   newSession: string
   importReferences: string
-  importManuscript: string
   exportBibliography: string
   exportCslJson: string
   undo: string
@@ -29,9 +28,6 @@ type MenuLabelSet = {
   themeLight: string
   themeDark: string
   toggleTheme: string
-  switchMode: string
-  modeReferences: string
-  modeManuscriptAudit: string
   alwaysOnTop: string
   helpExternalGroup: string
   cslDocs: string
@@ -62,7 +58,6 @@ const EN: MenuLabelSet = {
   help: 'Help',
   newSession: 'New Session',
   importReferences: 'Import References...',
-  importManuscript: 'Import Manuscript...',
   exportBibliography: 'Export Bibliography...',
   exportCslJson: 'Export CSL JSON...',
   undo: 'Undo',
@@ -82,9 +77,6 @@ const EN: MenuLabelSet = {
   themeLight: 'Light',
   themeDark: 'Dark',
   toggleTheme: 'Toggle Theme',
-  switchMode: 'Switch Mode',
-  modeReferences: 'References',
-  modeManuscriptAudit: 'Manuscript',
   alwaysOnTop: 'Always on Top',
   helpExternalGroup: 'Citation style websites',
   cslDocs: 'Citation Style Language documentation',
@@ -115,7 +107,6 @@ const AR: MenuLabelSet = {
   help: 'مساعدة',
   newSession: 'جلسة جديدة',
   importReferences: 'استيراد مراجع…',
-  importManuscript: 'استيراد مخطوطة…',
   exportBibliography: 'تصدير قائمة المراجع…',
   exportCslJson: 'تصدير CSL JSON…',
   undo: 'تراجع',
@@ -135,9 +126,6 @@ const AR: MenuLabelSet = {
   themeLight: 'فاتح',
   themeDark: 'داكن',
   toggleTheme: 'تبديل المظهر',
-  switchMode: 'تبديل الوضع',
-  modeReferences: 'المراجع',
-  modeManuscriptAudit: 'المخطوطة',
   alwaysOnTop: 'فوق كل النوافذ',
   helpExternalGroup: 'مواقع أنماط الاقتباس',
   cslDocs: 'توثيق Citation Style Language',

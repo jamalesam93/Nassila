@@ -104,4 +104,4 @@ Before shipping renderer changes:
 
 ## Implementation note
 
-Renderer lives under `src/renderer/`; reuse existing i18n JSON (`en` / `ar`). Do not import legacy `ManuscriptAudit/` layout wholesale — rebuild against this spec and the Ouroboros loop in `PRODUCT.md`.
+Renderer lives under `src/renderer/`; reuse existing i18n JSON (`en` / `ar`). Extend the Ouroboros loop per this spec and `PRODUCT.md`.

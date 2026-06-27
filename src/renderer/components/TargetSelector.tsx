@@ -2,8 +2,10 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { useCitationStore } from '../stores/citation-store'
 import { useCitationEngine } from '../hooks/use-citation-engine'
 import { findJournalByName, getStyleForJournal } from '../../engine/target/journal-database'
-import { searchJournalsCrossRef } from '../../engine/resolver/journal-search'
 import { useTranslation } from 'react-i18next'
+
+const LOCAL_JOURNAL_CAP = 8
+const CROSSREF_JOURNAL_ROWS = 20
 
 type Tab = 'style' | 'journal'
 
@@ -73,7 +75,9 @@ export default function TargetSelector() {
     }
 
     const localResults = findJournalByName(query)
-    const localSuggestions: JournalSuggestion[] = localResults.map((entry) => ({
+    const localSuggestions: JournalSuggestion[] = localResults
+      .slice(0, LOCAL_JOURNAL_CAP)
+      .map((entry) => ({
       name: entry.name,
       publisher: entry.publisher,
       styleId: entry.styleId,
@@ -84,10 +88,10 @@ export default function TargetSelector() {
 
     setSuggestions(localSuggestions)
 
-    if (networkStatus === 'online' && localResults.length < 5) {
+    if (networkStatus === 'online') {
       setSearching(true)
       try {
-        const crossrefResults = await searchJournalsCrossRef(query, 10)
+        const crossrefResults = await window.api.searchJournals(query, CROSSREF_JOURNAL_ROWS)
         const localNames = new Set(localResults.map((r) => r.name.toLowerCase()))
 
         const crossrefSuggestions: JournalSuggestion[] = crossrefResults

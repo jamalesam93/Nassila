@@ -112,7 +112,6 @@ function createApiMock(overrides: Partial<ElectronApi> = {}): ElectronApi {
     deleteTemplate: vi.fn().mockResolvedValue(undefined),
     getAppAbout: vi.fn().mockResolvedValue({ name: 'Test', version: '0' }),
     setMenuLocale: vi.fn().mockResolvedValue(undefined),
-    setAppMode: vi.fn().mockResolvedValue(undefined),
     predatory: {
       getList: vi.fn().mockResolvedValue(bundledPredatory),
       getStatus: vi.fn().mockResolvedValue(defaultPredatoryMeta()),

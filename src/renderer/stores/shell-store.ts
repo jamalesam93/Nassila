@@ -17,7 +17,9 @@ interface ShellState {
   raqimListFilter: OutputListFilter | null
   bibliographyDrawerOpen: boolean
   bibliographyBusy: boolean
-  /** Normalizes persisted settings to references-only and syncs main process menu. */
+  /** File → Import References feedback (Bibliography tab). */
+  bibliographyImportStatus: string
+  /** Migrates legacy settings keys on startup. */
   hydrateAppSettings: () => Promise<void>
   setRawInput: (text: string) => void
   setIdentifierInput: (text: string) => void
@@ -32,6 +34,7 @@ interface ShellState {
   setBibliographyDrawerOpen: (open: boolean) => void
   toggleBibliographyDrawer: () => void
   setBibliographyBusy: (busy: boolean) => void
+  setBibliographyImportStatus: (status: string) => void
 }
 
 export const useShellStore = create<ShellState>((set) => ({
@@ -45,15 +48,17 @@ export const useShellStore = create<ShellState>((set) => ({
   raqimListFilter: null,
   bibliographyDrawerOpen: false,
   bibliographyBusy: false,
+  bibliographyImportStatus: '',
   hydrateAppSettings: async () => {
     try {
       const prev = (await window.api?.loadSettings()) as Record<string, unknown> | undefined
-      if (prev && prev.appMode !== 'references') {
-        await window.api?.saveSettings({ ...prev, appMode: 'references' })
+      if (prev && 'appMode' in prev) {
+        const next = { ...prev }
+        delete next.appMode
+        await window.api?.saveSettings(next)
       }
-      await window.api?.setAppMode('references')
     } catch {
-      await window.api?.setAppMode('references')
+      /* noop */
     }
   },
   setRawInput: (rawInput) => set({ rawInput }),
@@ -71,5 +76,6 @@ export const useShellStore = create<ShellState>((set) => ({
   setBibliographyDrawerOpen: (bibliographyDrawerOpen) => set({ bibliographyDrawerOpen }),
   toggleBibliographyDrawer: () =>
     set((s) => ({ bibliographyDrawerOpen: !s.bibliographyDrawerOpen })),
-  setBibliographyBusy: (bibliographyBusy) => set({ bibliographyBusy })
+  setBibliographyBusy: (bibliographyBusy) => set({ bibliographyBusy }),
+  setBibliographyImportStatus: (bibliographyImportStatus) => set({ bibliographyImportStatus })
 }))

@@ -330,10 +330,22 @@ export function useCitationEngine() {
     return log
   }, [applyDerivedState])
 
-  const importFiles = useCallback(async (filePaths: string[]): Promise<void> => {
+  const importFiles = useCallback(async (filePaths: string[]) => {
+    let totalItems = 0
+    const errors: string[] = []
     for (const filePath of filePaths) {
-      await processFile(filePath)
+      const result = await processFile(filePath)
+      if (!result) {
+        errors.push(`Could not read ${filePath.split(/[/\\]/).pop() ?? filePath}`)
+        continue
+      }
+      totalItems += result.items.length
+      if (result.errors.length > 0) errors.push(...result.errors)
+      if (result.items.length === 0 && result.errors.length === 0) {
+        errors.push(`No citations found in ${filePath.split(/[/\\]/).pop() ?? filePath}`)
+      }
     }
+    return { totalItems, errors, fileCount: filePaths.length }
   }, [processFile])
 
   const exportCitations = useCallback(async (format: ExportFormat): Promise<string> => {

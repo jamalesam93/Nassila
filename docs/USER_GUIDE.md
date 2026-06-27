@@ -45,6 +45,16 @@ For **DOI** references, Nassila can ask [Unpaywall](https://unpaywall.org/produc
 
 If the email is unset, the loop still uses **registry abstracts** and **Europe PMC** where available; only the Unpaywall OA path is skipped.
 
+**This is not university login.** Your `@institution.edu` address is only an Unpaywall API contact. It does **not** unlock paywalled publisher PDFs through your library subscription. For those papers, use open-access copies when Unpaywall finds them, or attach PDFs you download yourself (Masdar, planned). Tier 3 may add library proxy or institutional login — separate from this field.
+
+## Bibliography before manuscript audit
+
+If your **References** section is messy or never verified, audit results will be weak (bad cite→ref mapping, false L1 flags, poor Sanad input). **Organize in Bibliography first:**
+
+1. Switch to **Bibliography** in the header.
+2. Import or paste references; run **Verify references** and fix issues in **Output**.
+3. Return to **Manuscript**, ensure the embedded reference list matches your curated library, then **Run audit**.
+
 ## Manuscript loop
 
 The Manuscript view includes an **integrated loop**: paste or upload a manuscript (with a References section), run **Run audit**, then review each cited source on the right.

@@ -1,11 +1,9 @@
 import { BrowserWindow, Menu, shell, type MenuItemConstructorOptions } from 'electron'
 import { APP_MENU_COMMANDS, type AppMenuCommand } from '../shared/app-menu-commands'
-import type { AppMode } from '../shared/app-mode'
 import { type MainMenuLocale, mainMenuLabels } from './menu-i18n'
 
 /** Last UI locale used to build the app menu (for new windows without an explicit locale). */
 let currentMenuLocale: MainMenuLocale = 'en'
-let currentAppMode: AppMode = 'references'
 
 function sendCommand(window: BrowserWindow, command: AppMenuCommand): void {
   const target = BrowserWindow.getFocusedWindow() ?? window
@@ -14,14 +12,10 @@ function sendCommand(window: BrowserWindow, command: AppMenuCommand): void {
   }
 }
 
-export function buildAppMenu(window: BrowserWindow, locale?: MainMenuLocale, mode?: AppMode): void {
+export function buildAppMenu(window: BrowserWindow, locale?: MainMenuLocale): void {
   if (locale) {
     currentMenuLocale = locale
   }
-  if (mode !== undefined) {
-    currentAppMode = mode
-  }
-  void currentAppMode
   const loc = currentMenuLocale
   const m = mainMenuLabels(loc)
   const command = (id: AppMenuCommand) => () => sendCommand(window, id)

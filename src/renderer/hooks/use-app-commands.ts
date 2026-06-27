@@ -35,10 +35,28 @@ export function useAppCommands() {
 
   const importReferences = useCallback(async () => {
     const paths = await window.api?.openFileDialog({ multiSelections: true })
-    if (paths && paths.length > 0) {
-      await importFiles(paths)
+    if (!paths?.length) return
+
+    const setBibliographyImportStatus = useShellStore.getState().setBibliographyImportStatus
+    setBibliographyImportStatus('')
+    const summary = await importFiles(paths)
+    const fileLabel =
+      paths.length === 1
+        ? (paths[0].split(/[/\\]/).pop() ?? paths[0])
+        : t('inputPanel.importMultiFiles', { count: paths.length })
+
+    if (summary.totalItems > 0) {
+      setBibliographyImportStatus(
+        t('inputPanel.importStatus', { count: summary.totalItems, file: fileLabel })
+      )
+    } else if (summary.errors.length > 0) {
+      setBibliographyImportStatus(
+        t('inputPanel.parseStatusErrors', { errors: summary.errors.join('; ') })
+      )
+    } else {
+      setBibliographyImportStatus(t('inputPanel.parseStatusNone'))
     }
-  }, [importFiles])
+  }, [importFiles, t])
 
   const importManuscriptFromPath = useCallback(
     async (first: string) => {

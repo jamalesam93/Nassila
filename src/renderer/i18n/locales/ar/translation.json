@@ -83,6 +83,7 @@
       "unpaywallEmail": "البريد لـ Unpaywall",
       "unpaywallPlaceholder": "you@institution.edu",
       "privacy": "يُحفظ مرة واحدة على هذا الجهاز فقط. يُرسَل إلى api.unpaywall.org عند تدقيق DOI — وليس إلى خوادم ناسيلا.",
+      "institutionalNote": "هذا ليس تسجيل دخول لمكتبة الجامعة. يفعّل فقط بحث Unpaywall عن نسخ مفتوحة قانونياً. ملفات PDF باشتراك تتطلب مصدر (Masdar) أو وصول مؤسسي لاحقاً.",
       "savedHint": "تم الحفظ. عمليات البحث عن الوصول المفتوح ستستخدم هذا العنوان في التدقيقات القادمة."
     },
     "localModels": {
@@ -322,6 +323,7 @@
     "resolveStatusOneFail": "تعذّر حلّ المعرف",
     "resolveStatusError": "خطأ أثناء الحلّ: {{message}}",
     "importStatus": "تم استيراد {{count}} مرجعًا من {{file}}",
+    "importMultiFiles": "{{count}} ملفات",
     "importDocxFail": "تعذّر استيراد {{file}}",
     "importReadError": "خطأ في قراءة {{file}}: {{message}}",
     "idleComposeHint": "أفلِت ملفات القائمة المرجعية هنا أو ألصِق عمود مراجع؛ يُحدَّث عدد الأسطر.",
@@ -607,6 +609,8 @@
     "running": "جارٍ التدقيق…",
     "settings": "الإعدادات…",
     "offlineHint": "حل السجل وجلب المصادر يتطلب اتصالاً. تحرير المراجع يعمل دون اتصال.",
+    "bibliographyFirstHint": "إذا كانت قائمة مراجعك غير مرتبة أو لم تُتحقَّق، نظّمها في المراجع أولاً (استيراد، تحقق، إصلاح معرّفات DOI) ثم عُد للتدقيق.",
+    "openBibliography": "فتح المراجع",
     "previewEmpty": "الصق أو ارفع مخطوطة تتضمن قسم المراجع.",
     "previewNoReferences": "تعذّر العثور على قسم المراجع أو الببليوغرافيا.",
     "previewStats": "{{words}} كلمة · {{cites}} اقتباساً داخل النص",

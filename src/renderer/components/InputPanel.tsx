@@ -20,6 +20,8 @@ export default function InputPanel() {
   const setRawInput = useShellStore((s) => s.setRawInput)
   const identifierInput = useShellStore((s) => s.identifierInput)
   const setIdentifierInput = useShellStore((s) => s.setIdentifierInput)
+  const bibliographyImportStatus = useShellStore((s) => s.bibliographyImportStatus)
+  const setBibliographyImportStatus = useShellStore((s) => s.setBibliographyImportStatus)
   const [isDragOver, setIsDragOver] = useState(false)
   const [parsing, setParsing] = useState(false)
   const [resolving, setResolving] = useState(false)
@@ -31,6 +33,7 @@ export default function InputPanel() {
     if (!rawInput.trim()) return
     setParsing(true)
     setParseStatus('')
+    setBibliographyImportStatus('')
     try {
       const result = await processRawInput(rawInput)
       if (result.items.length > 0) {
@@ -195,9 +198,11 @@ export default function InputPanel() {
           {!rawInput.trim() ? (
             <span className="text-[11px] text-muted-foreground/70 truncate rtl:text-right">{t('inputPanel.idleComposeHint')}</span>
           ) : null}
-          {parseStatus && (
-            <span className="text-xs text-primary truncate">{parseStatus}</span>
-          )}
+          {parseStatus || bibliographyImportStatus ? (
+            <span className="text-xs text-primary truncate">
+              {parseStatus || bibliographyImportStatus}
+            </span>
+          ) : null}
         </div>
         <Button onClick={handleParse} disabled={!rawInput.trim() || parsing} size="sm" className="shrink-0">
           {parsing ? t('inputPanel.parsing') : t('inputPanel.parseProcess')}

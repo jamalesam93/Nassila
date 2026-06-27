@@ -3,6 +3,7 @@ import type { CslItem } from '../types'
 import type { ParseResult } from './index'
 import { parsePlainText } from './plain-text'
 import { resolveDoi, searchCrossRef } from '../resolver/crossref'
+import { segmentManuscriptText } from '../manuscript/segments'
 
 const MAX_DOCUMENT_BYTES = 15 * 1024 * 1024
 const MAX_PDF_PAGES = 150
@@ -125,43 +126,11 @@ export async function parsePdf(buffer: ArrayBuffer): Promise<ParseResult> {
   return { items, errors, format: 'pdf' }
 }
 
-const REFERENCE_HEADERS = [
-  /^references?\s*$/im,
-  /^bibliography\s*$/im,
-  /^works?\s+cited\s*$/im,
-  /^literature\s+cited\s*$/im,
-  /^cited\s+references?\s*$/im,
-  /^reference\s+list\s*$/im
-]
 
+/** Shared with manuscript audit — numbered [22] / 53. blocks, refs-only paste, section-heading guard. */
 export function extractReferenceSection(text: string): string | null {
-  for (const pattern of REFERENCE_HEADERS) {
-    const match = text.match(pattern)
-    if (match && match.index != null) {
-      const startIdx = match.index + match[0].length
-      const remaining = text.slice(startIdx).trim()
-
-      // Try to find the end of references (next major heading or end of doc)
-      const nextHeading = remaining.match(
-        /\n\s*(?:appendix|supplementary|acknowledgment|funding|conflict|author\s+contribution|figure|table)\s*\n/i
-      )
-      if (nextHeading?.index != null) {
-        return remaining.slice(0, nextHeading.index).trim()
-      }
-      return remaining
-    }
-  }
-
-  // Fallback: look for a block of numbered references near the end
-  const lastQuarter = text.slice(Math.floor(text.length * 0.6))
-  const numberedBlock = lastQuarter.match(
-    /(?:^|\n)\s*\[?1[\].)][\s\S]*?(?:\n\s*\[?\d+[\].)][\s\S]*?){2,}/
-  )
-  if (numberedBlock) {
-    return numberedBlock[0].trim()
-  }
-
-  return null
+  const seg = segmentManuscriptText(text)
+  return seg.referencesText?.trim() || null
 }
 
 export function splitReferenceEntries(text: string): string[] {
@@ -169,8 +138,7 @@ export function splitReferenceEntries(text: string): string[] {
   const entries: string[] = []
   let current = ''
 
-  // Detect if entries are numbered
-  const numberedPattern = /^\s*\[?\d+[\].)]\s/
+  const numberedPattern = /^\s*\[?\d+[\].)]\s*/
   const isNumbered = lines.filter((l) => numberedPattern.test(l)).length >= 2
 
   for (const line of lines) {

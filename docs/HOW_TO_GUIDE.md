@@ -10,7 +10,7 @@ This guide walks through the main window, how to add and fix references, how ver
 
 ## 1. Overview
 
-The app opens to a single workspace: **Input** (left), **Output** (center), and **Issues** plus style controls (right). The **toolbar** at the top shows counts and global actions; the **status bar** at the bottom shows progress and connectivity hints.
+The app opens to **Manuscript** (Ouroboros loop) or **Bibliography** mode via the header. In Bibliography mode: **Input** (left), **Output** (center), and **Issues** plus style controls (right). The **header** (`AppHeader`) shows counts and global actions; the **status bar** at the bottom shows progress and connectivity hints.
 
 **Typical flow:** paste or import → resolve IDs if needed → fix validation/duplicate issues → **Verify** (online) → pick a CSL style → **Export**.
 
@@ -20,7 +20,7 @@ The app opens to a single workspace: **Input** (left), **Output** (center), and 
 
 | Area | Role |
 |------|------|
-| **Toolbar** | Branding, citation/issue/style summary, **Import**, **Export**, **Verify**, **Autocorrect**, theme, **About**, and related actions. |
+| **Header** | Mode switch (Manuscript / Bibliography), citation/issue summary, **Import**, **Export**, **Verify**, **Autocorrect**, theme, **About**, and related actions. |
 | **Input** | Paste plain text, BibTeX, RIS, or CSL-JSON; resolve DOI / PMID / URL from the top row; triggers parsing into rows. |
 | **Output** | One row per reference: formatted preview, type badge, status chips (DOI, Find DOI, etc.), and inline validation lines. |
 | **Issues** | Validation errors, duplicate groups, and (after verify) **registry mismatch** cards with jump-to-row. |

@@ -165,17 +165,19 @@ Re-enable renderer sandbox when tooling allows, without breaking `window.api`.
 
 **Fix approach:**
 
-1. Set a strict CSP for production loads (`default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'` — tune for Vite hashed assets).
-2. Dev mode: relax only what electron-vite HMR requires; keep production strict.
-3. `connect-src`: restrict to none in renderer (all network via IPC) except dev WS for HMR.
+1. Set a strict CSP for **production packaged loads** via `src/main/content-security-policy.ts` (session header on `mainFrame` only).
+2. **Dev:** no CSP (electron-vite HMR breaks under dual or strict meta policies).
+3. **Do not** use a static `<meta>` CSP in `index.html` — it applied in dev and conflicted with the session header.
+4. `connect-src 'self'` in production; `worker-src 'self' blob:` for pdf.js.
 
 **Tests:**
-- Manual: app UI loads, no CSP console violations in production build.
-- Document expected dev violations.
+- Manual: `npm run dev` — no CSP header; UI + HMR work.
+- Manual: `npm run build:unpack` — app loads; DevTools console free of CSP violations on core paths.
 
 **Acceptance criteria:**
-- [ ] Production renderer has explicit CSP.
-- [ ] No renderer `fetch` to external URLs required for core flows (already true).
+- [x] Production renderer has explicit CSP (main process only).
+- [x] Dev skips CSP; no meta tag in `index.html`.
+- [x] No renderer `fetch` to external URLs required for core flows (IPC only).
 
 ---
 
@@ -260,7 +262,7 @@ Phase P0 (security) — implemented 2026-06-27
 [x] SEC-02  webSecurity: true; sandbox:true reverted — breaks ESM preload/`window.api` on Electron 41 (About crash); compensating: contextIsolation, CSP (SEC-06), narrowed preload (SEC-04)
 
 Phase P1 — implemented 2026-06-27
-[x] SEC-06  production CSP (session header + index.html meta)
+[x] SEC-06  production CSP via main only (dev skipped); meta tag removed; worker-src for pdf.js
 [x] SEC-05  grounding prompt delimiters + system/user split
 [x] SEC-04  IPC validation unit tests (llm-url, redirect-policy, ipc-url-policy) + preload inventory below
 
@@ -269,7 +271,7 @@ Phase P2 — implemented 2026-06-27 (Option A: shipping Ouroboros)
 
 Future backlog
 [ ] SEC-02b  sandbox:true — CJS preload investigation + smoke gate (see SEC-02b section)
-[ ] DEAD-CODE  inventory cleanup per docs/DEAD-CODE.md (optional hygiene)
+[x] DEAD-CODE  Tier 1+3 removed 2026-06-27 — see docs/DEAD-CODE.md
 ```
 
 **Verification gate (every PR touching these areas):**
@@ -318,7 +320,7 @@ These were noted in the audit and should not regress during fixes:
 | `loadManuscriptAuditPrefs` / `saveManuscriptAuditPrefs` | `manuscriptAudit:*` | `ipc-manuscript-audit-prefs.ts` |
 | `listTemplates` / `saveTemplate` / `deleteTemplate` | `templates:*` | `ipc-templates.ts` |
 | `predatory.*` | `predatory:*` | `ipc-predatory-updates.ts` |
-| `getAppAbout` / `setMenuLocale` / `setAppMode` | `app:*` | `ipc-handlers.ts` |
+| `getAppAbout` / `setMenuLocale` | `app:*` | `ipc-handlers.ts` |
 
 Validation tests: `tests/unit/llm-url.test.ts`, `tests/unit/redirect-policy.test.ts`, `tests/unit/ipc-url-policy.test.ts`.
 

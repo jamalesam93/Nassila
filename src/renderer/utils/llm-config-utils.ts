@@ -1,4 +1,4 @@
-import { findPresetByBaseUrl, LLM_PRESETS, type LlmPreset } from '../components/ManuscriptAudit/llm-presets'
+import { findPresetByBaseUrl, LLM_PRESETS, type LlmPreset } from '../settings/llm-presets'
 import { NASSILA_MODEL_ARTIFACTS } from '../../shared/nassila-agent-tasks'
 
 export const LM_STUDIO_DEFAULT_URL = 'http://localhost:1234'

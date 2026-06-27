@@ -66,6 +66,6 @@ Phase 0–1 pack was superseded by **NassilaT**. Do not duplicate; use NassilaT 
 | Grounding prompt + schema | `src/engine/manuscript/grounding-llm.ts` |
 | JSON repair | `src/engine/manuscript/grounding-json-repair.ts` |
 | Task ids + workers | `src/shared/nassila-agent-tasks.ts` |
-| LM Studio presets | `src/renderer/components/ManuscriptAudit/llm-presets.ts` |
+| LM Studio presets | `src/renderer/settings/llm-presets.ts` |
 
 Prompt format aligned with engine (system/user split, SEC-05); loop UI ships per `PRODUCT.md`.

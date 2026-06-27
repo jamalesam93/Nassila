@@ -8,7 +8,7 @@ import {
 } from '../../engine/manuscript/grounding-llm'
 import type { ClaimGroundingRow, LayerVerdict } from '../../engine/manuscript/types'
 import { scorePassageAgainstSource } from '../../engine/relevance/deterministic'
-import { findPresetByBaseUrl } from '../components/ManuscriptAudit/llm-presets'
+import { findPresetByBaseUrl } from '../settings/llm-presets'
 import { ensureLlmKeyReady } from './llm-config-utils'
 
 const GROUNDING_LLM_RETRY_ATTEMPTS = 2

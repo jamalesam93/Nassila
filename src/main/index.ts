@@ -39,7 +39,7 @@ function createWindow(): BrowserWindow {
     webPreferences: {
       preload: join(__dirname, '../preload/index.mjs'),
       // sandbox:true + ESM preload leaves window.api unset on Electron 41 (SEC-02).
-      // Compensating controls: contextIsolation, webSecurity, production CSP.
+      // Compensating controls: contextIsolation, webSecurity, production CSP (dev skips CSP).
       sandbox: false,
       contextIsolation: true,
       nodeIntegration: false,

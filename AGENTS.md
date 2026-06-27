@@ -10,7 +10,7 @@ Guidance for coding agents working on this repository. End-user documentation li
 - **Network on demand:** registry verification, DOI lookup, predatory-list sync, and optional LLM calls only when the user runs those actions.
 - **Canonical model:** `CslItem` in [`src/engine/types.ts`](src/engine/types.ts) — keep engine logic aligned with this shape.
 
-In-app LLM (L3 manuscript grounding, Gemma via LM Studio) powers the **Manuscript** (Ouroboros loop) surface; training and eval live in **NassilaT** — see [`docs/TRAINING.md`](docs/TRAINING.md) and [`src/renderer/components/ManuscriptAudit/llm-presets.ts`](src/renderer/components/ManuscriptAudit/llm-presets.ts).
+In-app LLM (L3 manuscript grounding, Gemma via LM Studio) powers the **Manuscript** (Ouroboros loop) surface; training and eval live in **NassilaT** — see [`docs/TRAINING.md`](docs/TRAINING.md) and [`src/renderer/settings/llm-presets.ts`](src/renderer/settings/llm-presets.ts).
 
 ## Repository map
 
@@ -69,7 +69,6 @@ Build output: `out/` (electron-vite), `dist/` (installers). Do not edit generate
 - **Shipping UI:** [`OuroborosLoopWorkspace`](src/renderer/components/loop/OuroborosLoopWorkspace.tsx) mounts when `appSurface === 'loop'` (default) in [`WorkerShell`](src/renderer/components/workers/WorkerShell.tsx). **Bibliography** mode (`appSurface === 'bibliography'`) is [`RaqimWorkspace`](src/renderer/components/workers/RaqimWorkspace.tsx).
 - **Ouroboros** ([`docs/OUROBOROS.md`](docs/OUROBOROS.md), agent brief [`docs/OUROBOROS_CONTEXT.md`](docs/OUROBOROS_CONTEXT.md)): seven workers as loop stages and code modules. **Sanad** `nassila-sanad-e4b` **v1.12** (default) / `nassila-sanad-12b` **v1.14** (quality); v1.13 **NO-GO** — NassilaT [`POST_V114_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/POST_V114_MAP.md). Task ids: [`src/shared/nassila-agent-tasks.ts`](src/shared/nassila-agent-tasks.ts). **Training:** [`docs/TRAINING.md`](docs/TRAINING.md) → NassilaT.
 - **Impeccable UI rule** — before renderer/UI changes, read [`docs/DESIGN.md`](docs/DESIGN.md) § Impeccable discipline. Reject AI-template tells: purple gradients, nested cards, Inter-only typography, identical card grids, gray-on-tinted muted text, hero metrics, decorative glass, fake progress on stubs.
-- **Legacy `ManuscriptAudit/AuditView`** is **not** mounted — retired tab layout. Do not remount it wholesale; extend the loop UI per `PRODUCT.md` / `DESIGN.md`. See [`src/renderer/components/ManuscriptAudit/README.md`](src/renderer/components/ManuscriptAudit/README.md).
 - Engine code under `src/engine/manuscript/` (grounding JSON, PDF extract, segments, verify) backs the loop; security controls SEC-01–06 apply to network + LLM paths in production.
 - Grounding schema and parsing: [`grounding-llm.ts`](src/engine/manuscript/grounding-llm.ts), [`grounding-json-repair.ts`](src/engine/manuscript/grounding-json-repair.ts).
 - Training pack: [`docs/TRAINING.md`](docs/TRAINING.md) → [NassilaT](https://github.com/jamalesam93/NassilaT).

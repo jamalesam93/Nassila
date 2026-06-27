@@ -1,6 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import type { AppMenuCommand } from '../shared/app-menu-commands'
-import type { AppMode } from '../shared/app-mode'
 import type { ManuscriptAuditPrefsV1 } from '../shared/manuscript-audit-prefs'
 import type { PredatoryList, PredatoryListMeta, UpdateCheckResult } from '../shared/predatory'
 
@@ -12,6 +11,14 @@ export type StructureTemplate = { id: string; name: string; headings: Record<str
 
 export type { ManuscriptAuditPrefsV1 }
 export type { PredatoryList, PredatoryListMeta, UpdateCheckResult }
+export type JournalSearchResult = {
+  title: string
+  publisher: string
+  issn: string[]
+  subjects: string[]
+  totalDois: number
+}
+
 const api = {
   // ── File Dialogs ──────────────────────────────────────────────────────
   openFileDialog: (options?: {
@@ -80,6 +87,9 @@ const api = {
   checkNetwork: (): Promise<NetworkStatus> =>
     ipcRenderer.invoke('network:check'),
 
+  searchJournals: (query: string, rows?: number): Promise<JournalSearchResult[]> =>
+    ipcRenderer.invoke('registry:searchJournals', query, rows),
+
   // ── Open Access (main-process only) ────────────────────────────────────
   unpaywall: (doi: string, email?: string): Promise<unknown> =>
     ipcRenderer.invoke('oa:unpaywall', doi, email),
@@ -147,8 +157,6 @@ const api = {
 
   setMenuLocale: (locale: 'en' | 'ar'): Promise<void> =>
     ipcRenderer.invoke('app:set-menu-locale', locale),
-
-  setAppMode: (mode: AppMode): Promise<void> => ipcRenderer.invoke('app:set-app-mode', mode),
 
   predatory: {
     getList: (): Promise<PredatoryList> => ipcRenderer.invoke('predatory:getList'),

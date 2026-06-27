@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { findPresetByBaseUrl } from '../../src/renderer/components/ManuscriptAudit/llm-presets'
+import { findPresetByBaseUrl } from '../../src/renderer/settings/llm-presets'
 import {
   applyLlmPreset,
   allowsShortLlmKey,

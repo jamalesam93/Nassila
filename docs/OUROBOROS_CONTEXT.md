@@ -89,9 +89,9 @@ Full vision: [`OUROBOROS.md`](./OUROBOROS.md). Web path: [`WEBPAGE_ROADMAP.md`](
 - `src/engine/manuscript/grounding-llm.ts` — prompt + schema
 - `src/engine/manuscript/grounding-json-repair.ts` — repair layer
 - `src/shared/nassila-agent-tasks.ts` — task ids + worker codenames
-- `src/renderer/components/ManuscriptAudit/llm-presets.ts` — LM Studio preset
+- `src/renderer/settings/llm-presets.ts` — LM Studio preset
 
-**Legacy `ManuscriptAudit/AuditView`:** code remains; **not** mounted. Production manuscript UX is the Ouroboros loop above.
+Production manuscript UX is the Ouroboros loop above.
 
 ## 5. Training arc (Sanad / E4B)
 

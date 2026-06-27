@@ -4,6 +4,24 @@ All notable changes to **Nassila** are documented here.
 
 ## [Unreleased]
 
+## [1.1.1] — 2026-06-28
+
+### Added
+
+- **Bibliography-first workflow** — loop hint + link to Bibliography when references should be curated before audit; documented in `PRODUCT.md` / `USER_GUIDE.md`.
+- **Bibliography DOCX import** — shared `segmentManuscriptText` extraction; import status feedback on File → Import References.
+- **Journal search (CrossRef)** — main-process IPC (`registry:searchJournals`); always queries online when connected; bundled list capped at 8 matches.
+- Unit tests: `document-parser`, `plain-text-doi-url`, `journal-target-search`, `content-security-policy`.
+
+### Fixed
+
+- **DOI from `https://doi.org/...` URLs** — plain-text parser populates `DOI` when only a doi.org link is present.
+- Manuscript segmentation — numbered section headings no longer swallowed as bibliography.
+
+### Changed
+
+- Settings clarifies Unpaywall email is **not** university paywall login.
+
 ## [1.1.0] — 2026-06-27
 
 ### Added — Sanad & Ouroboros loop

@@ -54,6 +54,20 @@ flowchart TD
 
 **Secondary mode:** bibliography-only work (import `.bib` / RIS, verify, export) without a manuscript — still **Raqim** + **Tasnif**, but not the primary Ouroboros entry.
 
+## Bibliography-first workflow (operator rule)
+
+Manuscript audit parses the **embedded References section** inline. If that block is messy (wrong numbering, missing DOIs, bad plain-text parse, cite–ref mismatches), L1 and Sanad inherit the chaos.
+
+**Recommended path when references are chaotic or unverified:**
+
+1. Open **Bibliography** — import the reference list (DOCX, `.bib`, RIS, or paste).
+2. **Verify** (L1/L2), autocorrect, dedupe, and attach missing DOIs in Raqim.
+3. Return to **Manuscript** and run audit once the reference section matches your curated library.
+
+Automated **export refs → Raqim** and **audit from Bibliography store** are P1 backlog; today the switch is manual but intentional.
+
+**Unpaywall email** (Settings → General) enables **open-access** full-text lookup only — not university paywall login. Subscription PDFs: attach when **Masdar** ships, or Tier 3 institutional access.
+
 ## Workers as loop stages (not nav destinations)
 
 Seven workers map to stages in the loop. Maturity varies; honest gaps only — no fake progress.

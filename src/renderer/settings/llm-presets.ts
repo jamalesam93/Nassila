@@ -1,4 +1,4 @@
-import { NASSILA_MODEL_ARTIFACTS } from '../../../shared/nassila-agent-tasks'
+import { NASSILA_MODEL_ARTIFACTS } from '../../shared/nassila-agent-tasks'
 
 export interface LlmPreset {
   id: string

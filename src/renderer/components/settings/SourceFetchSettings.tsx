@@ -29,6 +29,7 @@ export default function SourceFetchSettings() {
         className="mt-1.5 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
       />
       <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">{t('settings.sourceFetch.privacy')}</p>
+      <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">{t('settings.sourceFetch.institutionalNote')}</p>
       {unpaywallEmail.trim() ? (
         <p className="mt-2 text-[11px] text-muted-foreground">{t('settings.sourceFetch.savedHint')}</p>
       ) : null}
