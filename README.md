@@ -11,13 +11,24 @@ Import or paste your bibliography, fix common errors, verify rows against Crossr
 
 | | |
 |---|---|
-| **Download (Windows)** | [**Latest release**](https://github.com/jamalesam93/Nassila/releases/latest) — `Nassila Setup 1.0.1.exe` |
-| **Documentation** | [How-to guide](docs/HOW_TO_GUIDE.md) · [User guide](docs/USER_GUIDE.md) · [Brand](docs/BRAND.md) · [Changelog](CHANGELOG.md) |
+| **Download (Windows)** | [**v1.1.2**] · [Latest release](https://github.com/jamalesam93/Nassila/releases/latest) |
+| **Sanad models (HF)** | [`nassila-sanad-e4b`](https://huggingface.co/QinEmPeRoR93/nassila-sanad-e4b) · [`nassila-sanad-12b`](https://huggingface.co/QinEmPeRoR93/nassila-sanad-12b) — setup on the [website](https://nassila-web.vercel.app/en/docs/manuscript) |
+| **Website & docs** | [nassila-web.vercel.app](https://nassila-web.vercel.app) — [How-to](https://nassila-web.vercel.app/en/docs/how-to) · [User guide](https://nassila-web.vercel.app/en/docs/user-guide) · [Changelog](https://nassila-web.vercel.app/en/changelog) |
+| **Documentation (repo)** | [How-to guide](docs/HOW_TO_GUIDE.md) · [User guide](docs/USER_GUIDE.md) · [Brand](docs/BRAND.md) · [Changelog](CHANGELOG.md) |
 | **License** | [MIT](LICENSE) |
 
-> End users: install from **Releases**. Developers: clone this repo and see [Getting started](#getting-started).
+> End users: install from **Releases** ([**v1.1.2**](https://github.com/jamalesam93/Nassila/releases/tag/v1.1.2)) or visit the [**website**](https://nassila-web.vercel.app). Developers: clone this repo and see [Getting started](#getting-started).
 
 The name **Nassila** is coined, inspired by the idea of a **sanad** (سند): a clear chain from what you write to where it came from.
+
+## What's new in v1.1.2
+
+- **Bibliography bridge** — send manuscript references to Bibliography (Raqim) and optionally audit from your curated library (`manuscript-ref:N` cite keys preserved).
+- **Bibliography PDF import** — manuscript-grade PDF text extraction so numbered reference lists import at DOCX parity (not a handful of merged entries).
+- **Verify references (packaged app)** — unified L1+L2 registry checks run in the main process so verification works in release builds, not only dev.
+- **Loop polish** — PDF `9. References` heading detection, deduped L3 rollup, cited-sources sticky header, compact audit detail.
+
+Full notes: [CHANGELOG.md](CHANGELOG.md) · [v1.1.2 release notes](release-artifacts/v1.1.2-RELEASE_NOTES.md).
 
 ## Who is this for?
 
@@ -33,7 +44,7 @@ The name **Nassila** is coined, inspired by the idea of a **sanad** (سند): a 
 4. **Verify references** — one action: resolve each row to Crossref, PubMed, or OpenAlex (**L1**), then compare your metadata to the canonical record (**L2**), with safe auto-patches when registries agree (up to **200** prioritized rows per run)  
 5. **Predatory journal scan** — match journal titles against bundled and updatable predatory/pseudo-journal lists  
 6. **Deduplicate** and **export** — formatted bibliography in APA, IEEE, Vancouver, Chicago, Harvard, MLA, Nature (bundled), or any style from the [Zotero CSL repository](https://github.com/citation-style-language/styles)  
-7. **Manuscript loop (Ouroboros)** — upload or paste a manuscript, verify cited references (L1/L2), fetch open-access source text where available, and run **Sanad** passage grounding (L3) with a local LLM — see the [user guide](docs/USER_GUIDE.md)
+7. **Manuscript loop (Ouroboros)** — upload or paste a manuscript, verify cited references (L1/L2), fetch open-access source text where available, and optional **Sanad** passage grounding (L3) — [manuscript guide](https://nassila-web.vercel.app/en/docs/manuscript)
 
 **Privacy:** list editing and validation work offline. Registry verification, DOI lookup, predatory-list sync, and manuscript source fetch use the network only when you run those actions.
 
@@ -41,11 +52,11 @@ The name **Nassila** is coined, inspired by the idea of a **sanad** (سند): a 
 
 | Area | Capability |
 |------|------------|
-| Parsing | BibTeX, RIS, CSL-JSON, plain text, URL-only webpages, DOCX/PDF reference extraction |
+| Parsing | BibTeX, RIS, CSL-JSON, plain text, URL-only webpages, DOCX/PDF reference extraction (PDF uses column-aware layout) |
 | Resolution | DOI, ISBN, PMID, URL → Crossref, PubMed, Open Library |
-| Verification | Unified L1+L2 registry check, up to 200 rows per run |
+| Verification | Unified L1+L2 registry check (main-process IPC in packaged app), up to 200 rows per run |
 | Integrity | Predatory/suspicious journal flags, duplicate groups with merge |
-| Manuscript | Ouroboros loop: L1/L2 verify, OA source fetch, Sanad L3 grounding |
+| Manuscript | Ouroboros loop: L1/L2 verify, OA source fetch, optional Sanad L3 ([HF models](https://huggingface.co/QinEmPeRoR93/nassila-sanad-e4b)) |
 | Output | CSL formatting, undo/redo, dark/light mode, EN/AR UI |
 
 ## Getting started
@@ -77,10 +88,6 @@ Other targets: `npm run build:mac`, `npm run build:linux`, `npm run build:unpack
 ```bash
 npm test
 ```
-
-### How-to guide
-
-See [docs/HOW_TO_GUIDE.md](docs/HOW_TO_GUIDE.md).
 
 ## Tech stack
 
