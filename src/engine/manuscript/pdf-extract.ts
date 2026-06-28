@@ -1,9 +1,7 @@
 /**
- * Manuscript-grade PDF text extraction.
- *
- * The existing `parsePdf` in `engine/parser/document.ts` is tuned for
- * extracting the *references section only* for citation parsing. Manuscript
- * audit needs the *whole document* preserving:
+ * Manuscript-grade PDF text extraction (column-aware, line breaks, de-hyphenation).
+ * Bibliography PDF import (`parsePdf` in `engine/parser/document.ts`) uses this
+ * extractor so reference entry splitting matches DOCX quality.
  *   - reading order (single column AND two-column layouts)
  *   - de-hyphenated line breaks ("antimicrob-\nial" -> "antimicrobial")
  *   - superscript citation markers where detected (mostly numeric in-text cites

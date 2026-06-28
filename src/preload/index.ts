@@ -90,6 +90,15 @@ const api = {
   searchJournals: (query: string, rows?: number): Promise<JournalSearchResult[]> =>
     ipcRenderer.invoke('registry:searchJournals', query, rows),
 
+  verifyUnifiedRegistry: (
+    citations: unknown[],
+    maxItems: number
+  ): Promise<{
+    nextCitations: unknown[]
+    remainingMismatches: unknown[]
+    layersByCitationId: Record<string, unknown>
+  }> => ipcRenderer.invoke('registry:verifyUnified', citations, maxItems),
+
   // ── Open Access (main-process only) ────────────────────────────────────
   unpaywall: (doi: string, email?: string): Promise<unknown> =>
     ipcRenderer.invoke('oa:unpaywall', doi, email),

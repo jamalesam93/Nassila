@@ -35,4 +35,12 @@ describe('document parser reference extraction', () => {
     expect(section).toContain('Franc B')
     expect(section).not.toContain('Discussion with in-text')
   })
+
+  it('splits newline-separated numbered entries but not space-joined PDF-like text', () => {
+    const refs = `[1] Author A. Paper. 2020. https://doi.org/10.1234/a
+[2] Author B. Paper. 2021. https://doi.org/10.1234/b
+[3] Author C. Paper. 2022. https://doi.org/10.1234/c`
+    expect(splitReferenceEntries(refs)).toHaveLength(3)
+    expect(splitReferenceEntries(refs.replace(/\n/g, ' '))).toHaveLength(1)
+  })
 })

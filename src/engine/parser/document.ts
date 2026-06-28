@@ -4,9 +4,9 @@ import type { ParseResult } from './index'
 import { parsePlainText } from './plain-text'
 import { resolveDoi, searchCrossRef } from '../resolver/crossref'
 import { segmentManuscriptText } from '../manuscript/segments'
+import { extractManuscriptFromPdf } from '../manuscript/pdf-extract'
 
 const MAX_DOCUMENT_BYTES = 15 * 1024 * 1024
-const MAX_PDF_PAGES = 150
 const MAX_EXTRACTED_TEXT_CHARS = 2_000_000
 
 export async function parseDocx(buffer: ArrayBuffer): Promise<ParseResult> {
@@ -64,33 +64,19 @@ export async function parsePdf(buffer: ArrayBuffer): Promise<ParseResult> {
       return { items: [], errors: ['PDF file is too large to parse safely'], format: 'pdf' }
     }
 
-    const pdfjsLib = await import('pdfjs-dist')
-    if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
-      pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-        'pdfjs-dist/build/pdf.worker.min.mjs',
-        import.meta.url
-      ).href
-    }
-
-    const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(buffer) })
-    const pdf = await loadingTask.promise
-
-    if (pdf.numPages > MAX_PDF_PAGES) {
-      return { items: [], errors: ['PDF has too many pages to parse safely'], format: 'pdf' }
-    }
-
-    let fullText = ''
-    for (let i = 1; i <= pdf.numPages; i++) {
-      const page = await pdf.getPage(i)
-      const content = await page.getTextContent()
-      const pageText = content.items
-        .map((item: { str?: string }) => item.str ?? '')
-        .join(' ')
-      fullText += pageText + '\n'
-
-      if (fullText.length > MAX_EXTRACTED_TEXT_CHARS) {
-        return { items: [], errors: ['PDF text extraction exceeded the safe size limit'], format: 'pdf' }
+    let fullText: string
+    try {
+      const extraction = await extractManuscriptFromPdf(buffer)
+      fullText = extraction.text
+      if (extraction.warnings.length > 0) {
+        errors.push(...extraction.warnings)
       }
+    } catch (e) {
+      return { items: [], errors: [(e as Error).message], format: 'pdf' }
+    }
+
+    if (fullText.length > MAX_EXTRACTED_TEXT_CHARS) {
+      return { items: [], errors: ['PDF text extraction exceeded the safe size limit'], format: 'pdf' }
     }
 
     if (!fullText.trim()) {

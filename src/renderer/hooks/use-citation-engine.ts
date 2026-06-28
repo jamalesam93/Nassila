@@ -104,8 +104,12 @@ export function useCitationEngine() {
     }
 
     try {
-      const { nextCitations, remainingMismatches, layersByCitationId } =
-        await verifyUnifiedRegistryWithPatches(items, MAX_VERIFICATION_ITEMS)
+      const verificationResult = window.api?.verifyUnifiedRegistry
+        ? await window.api.verifyUnifiedRegistry(items, MAX_VERIFICATION_ITEMS)
+        : await verifyUnifiedRegistryWithPatches(items, MAX_VERIFICATION_ITEMS)
+      const { nextCitations, remainingMismatches, layersByCitationId } = verificationResult as Awaited<
+        ReturnType<typeof verifyUnifiedRegistryWithPatches>
+      >
       if (requestId !== verificationRequestIdRef.current) return
 
       const changedInner = nextCitations.some((c, i) => c !== items[i])

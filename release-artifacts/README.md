@@ -6,7 +6,7 @@ Built on this machine for [GitHub Releases](https://github.com/jamalesam93/Nassi
 |---------|-----------|--------|---------------|
 | **1.1.0** | `Nassila Setup 1.1.0.exe` | `f9c4ff5` | [v1.1.0-RELEASE_NOTES.md](./v1.1.0-RELEASE_NOTES.md) |
 | **1.1.1** | `Nassila Setup 1.1.1.exe` | `977442a` | [v1.1.1-RELEASE_NOTES.md](./v1.1.1-RELEASE_NOTES.md) |
-| **1.1.2** | `Nassila Setup 1.1.2.exe` | `3a7af75` | [v1.1.2-RELEASE_NOTES.md](./v1.1.2-RELEASE_NOTES.md) |
+| **1.1.2** | `Nassila Setup 1.1.2.exe` | `3a7af75`+ | [v1.1.2-RELEASE_NOTES.md](./v1.1.2-RELEASE_NOTES.md) · **on GitHub** |
 
 **Latest:** use **1.1.2**. Older installers are for release history and documentation; upgrading from **1.0.1** directly to **1.1.2** is fine.
 
