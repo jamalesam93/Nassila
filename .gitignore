@@ -17,3 +17,6 @@ coverage/
 
 # Cursor skill installer cache (large zips / extracted trees)
 .cursor/.skills-vendor/
+
+# Local multi-root workspace (paths are machine-specific)
+Nassila-Ouroboros.code-workspace
