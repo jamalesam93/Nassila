@@ -1,7 +1,7 @@
 # Ouroboros context brief
 
 > **For agents.** Single entry point for Nassila + NassilaT. Last updated: 2026-06-21.
-> **Ship checkpoints:** `nassila-sanad-e4b` **v1.12** (default-tier) · `nassila-sanad-12b` **v1.14** (Tier 2). **v1.13 NO-GO.** **Laptop smoke PASS** (RTX 4060 8 GB, 2026-06-21). Operator map: NassilaT [`training/POST_V114_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/POST_V114_MAP.md). Sign-off: [`outputs/LAPTOP_SMOKE_SIGNOFF.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/outputs/LAPTOP_SMOKE_SIGNOFF.md).
+> **Ship checkpoints:** `nassila-sanad-e4b` **S12** (default-tier, legacy v1.12) · `nassila-sanad-12b` **S14** (Tier 2, legacy v1.14). **v1.13 NO-GO.** **Laptop smoke PASS** (RTX 4060 8 GB, 2026-06-21). Operator map: NassilaT [`training/POST_V114_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/POST_V114_MAP.md). Sign-off: [`outputs/LAPTOP_SMOKE_SIGNOFF.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/outputs/LAPTOP_SMOKE_SIGNOFF.md).
 > Training pack: [`TRAINING.md`](./TRAINING.md) → NassilaT repo. Do not read every historical walkthrough — use this brief, then drill into linked paths only.
 
 ## 1. Mission
@@ -47,7 +47,7 @@ Codenames: `docs/BRAND.md`, `src/shared/nassila-agent-tasks.ts`. Forge **one LLM
 
 | # | Worker | Arabic | `task` id | Future module (user-facing) | Deterministic core (no LLM replacement) | LLM facet | Phase | Status |
 |---|--------|--------|-----------|----------------------------|----------------------------------------|-----------|-------|--------|
-| 1 | **Sanad** | سند | `l3_grounding` | Ground claims to sources | JSON repair, quote substring checks, caps | Passage vs excerpt → grounding JSON | 1 | **E4B default-tier PASS** (v1.12 ship); **Tier 2 PASS** (12B v1.10 optional) |
+| 1 | **Sanad** | سند | `l3_grounding` | Ground claims to sources | JSON repair, quote substring checks, caps | Passage vs excerpt → grounding JSON | 1 | **E4B default-tier PASS** (S12 ship); **Tier 2 PASS** (12B S14) |
 | 2 | **Maktab** | مكتب | `doc_extract` | Bring in the manuscript | File I/O, DOCX/PDF routing, plain-text ingest | Structured text/chunks from PDF/DOCX | 2 | Planned |
 | 3 | **Masdar** | مصدر | `source_pdf_extract` | Get source text for citations | OA fetch, chunking, secure desktop I/O | Cited OA PDF → text for Sanad | 2 | Planned |
 | 4 | **Shahid** | شاهد | `table_figure_grounding` | Tables & figures as evidence | Region detection (future) | Claims vs table/figure regions | 3+ | Planned (12B) |
@@ -133,7 +133,7 @@ Production manuscript UX is the Ouroboros loop above.
 
 **HF adapter (checkpoint):** [`QinEmPeRoR93/nassila-grounding-e4b-v1.4a-adapter`](https://huggingface.co/QinEmPeRoR93/nassila-grounding-e4b-v1.4a-adapter) (legacy name; v1.4a only)
 
-**HF Sanad GGUF:** [`QinEmPeRoR93/nassila-sanad-e4b`](https://huggingface.co/QinEmPeRoR93/nassila-sanad-e4b) (E4B Q6_K, **checkpoint v1.12**) · [`QinEmPeRoR93/nassila-sanad-12b`](https://huggingface.co/QinEmPeRoR93/nassila-sanad-12b) (12B Q6_K, **checkpoint v1.14**). Upload: [`PHASE2_9_AB_PILOT_WALKTHROUGH.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/PHASE2_9_AB_PILOT_WALKTHROUGH.md) Part 9 · Verify: [`HF_RELEASE_VERIFY.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/HF_RELEASE_VERIFY.md)
+**HF Sanad GGUF:** [`QinEmPeRoR93/nassila-sanad-e4b`](https://huggingface.co/QinEmPeRoR93/nassila-sanad-e4b) (E4B Q6_K, **checkpoint S12**, legacy v1.12) · [`QinEmPeRoR93/nassila-sanad-12b`](https://huggingface.co/QinEmPeRoR93/nassila-sanad-12b) (12B Q6_K, **checkpoint S14**, legacy v1.14). Upload: [`PHASE2_9_AB_PILOT_WALKTHROUGH.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/PHASE2_9_AB_PILOT_WALKTHROUGH.md) Part 9 · Verify: [`HF_RELEASE_VERIFY.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/HF_RELEASE_VERIFY.md)
 
 ## 6. v1.4 fixes (what worked)
 
@@ -214,8 +214,8 @@ Manual Sanad paste does **not** satisfy Tier 3 product ship; it is a bridge unti
 
 ## 11. Model tier policy (A/B pilot — recorded)
 
-- **Default tier:** Gemma 4 **E4B** Q6_K — **`nassila-sanad-e4b` v1.12** = 89.27% combined, E4B default-tier **PASS**
-- **Quality tier:** Gemma 4 **12B** Q6_K — **v1.14 selected** = 90.43% combined, quote 100%, Tier 2 **PASS** (h-045/h-088 fixed); v1.12 = 94.20% higher-combined fallback
+- **Default tier:** Gemma 4 **E4B** Q6_K — **`nassila-sanad-e4b` S12** = 89.27% combined, E4B default-tier **PASS**
+- **Quality tier:** Gemma 4 **12B** Q6_K — **S14 selected** = 90.43% combined, quote 100%, Tier 2 **PASS** (h-045/h-088 fixed); v1.12 12B = 94.20% higher-combined fallback
 - **v1.13:** **NO-GO** — do not publish ([`POST_V114_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/POST_V114_MAP.md))
 - **Shahid:** 12B when multimodal worker forges (unchanged)
 - **v1.11:** trained, **NO-GO** (80.58% regression) — do not publish

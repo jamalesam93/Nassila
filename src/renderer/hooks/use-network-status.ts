@@ -1,28 +1,22 @@
 import { useEffect } from 'react'
 import { useCitationStore } from '../stores/citation-store'
+import { refreshNetworkStatus } from '../lib/network-status'
 
 export function useNetworkStatus(): void {
   const setNetworkStatus = useCitationStore((s) => s.setNetworkStatus)
 
   useEffect(() => {
-    const update = () => setNetworkStatus(navigator.onLine ? 'online' : 'offline')
+    const probe = () => void refreshNetworkStatus(setNetworkStatus)
 
-    window.addEventListener('online', update)
-    window.addEventListener('offline', update)
-    update()
+    window.addEventListener('online', probe)
+    window.addEventListener('offline', probe)
 
-    const interval = setInterval(async () => {
-      try {
-        const status = await window.api?.checkNetwork()
-        if (status) setNetworkStatus(status)
-      } catch {
-        setNetworkStatus('offline')
-      }
-    }, 30_000)
+    const interval = setInterval(probe, 30_000)
+    void probe()
 
     return () => {
-      window.removeEventListener('online', update)
-      window.removeEventListener('offline', update)
+      window.removeEventListener('online', probe)
+      window.removeEventListener('offline', probe)
       clearInterval(interval)
     }
   }, [setNetworkStatus])

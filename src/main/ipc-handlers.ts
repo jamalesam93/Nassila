@@ -11,6 +11,8 @@ import { registerTemplateIpcHandlers } from './ipc-templates'
 import { registerManuscriptAuditPrefsHandlers } from './ipc-manuscript-audit-prefs'
 import { registerPredatoryIpcHandlers } from './ipc-predatory-updates'
 import { registerRegistryIpcHandlers } from './ipc-registry'
+import { registerNotificationHandlers } from './notification'
+import { checkNetworkStatus, resetNetworkStatusState } from './network-status'
 
 const PRESETS_DIR = join(homedir(), '.citations-style')
 const PRESETS_FILE = join(PRESETS_DIR, 'presets.json')
@@ -254,15 +256,10 @@ export function registerIpcHandlers(): void {
   })
 
   // ── Network Status ─────────────────────────────────────────────────────
-  ipcMain.handle('network:check', async () => {
-    try {
-      const controller = new AbortController()
-      const timeout = setTimeout(() => controller.abort(), 5000)
-      await fetch('https://api.crossref.org/works?rows=0', { signal: controller.signal })
-      clearTimeout(timeout)
-      return 'online'
-    } catch {
-      return 'offline'
-    }
+  registerNotificationHandlers()
+
+  ipcMain.handle('network:check', async (_event, opts?: { reset?: boolean }) => {
+    if (opts?.reset) resetNetworkStatusState()
+    return checkNetworkStatus()
   })
 }

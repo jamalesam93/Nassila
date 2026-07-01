@@ -67,7 +67,7 @@ Build output: `out/` (electron-vite), `dist/` (installers). Do not edit generate
 
 - **Ouroboros, not Hydra** — one manuscript audit loop (upload → sources → audit → explain → export). Workers are **stages**, not seven peer destinations. Read [`docs/PRODUCT.md`](docs/PRODUCT.md) before any UI work. The current seven-item worker nav is **transitional scaffolding**, not end-state IA.
 - **Shipping UI:** [`OuroborosLoopWorkspace`](src/renderer/components/loop/OuroborosLoopWorkspace.tsx) mounts when `appSurface === 'loop'` (default) in [`WorkerShell`](src/renderer/components/workers/WorkerShell.tsx). **Bibliography** mode (`appSurface === 'bibliography'`) is [`RaqimWorkspace`](src/renderer/components/workers/RaqimWorkspace.tsx).
-- **Ouroboros** ([`docs/OUROBOROS.md`](docs/OUROBOROS.md), agent brief [`docs/OUROBOROS_CONTEXT.md`](docs/OUROBOROS_CONTEXT.md)): seven workers as loop stages and code modules. **Sanad** `nassila-sanad-e4b` **v1.12** (default) / `nassila-sanad-12b` **v1.14** (quality); v1.13 **NO-GO** — NassilaT [`POST_V114_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/POST_V114_MAP.md). Task ids: [`src/shared/nassila-agent-tasks.ts`](src/shared/nassila-agent-tasks.ts). **Training:** [`docs/TRAINING.md`](docs/TRAINING.md) → NassilaT.
+- **Ouroboros** ([`docs/OUROBOROS.md`](docs/OUROBOROS.md), agent brief [`docs/OUROBOROS_CONTEXT.md`](docs/OUROBOROS_CONTEXT.md)): seven workers as loop stages and code modules. **Sanad** `nassila-sanad-e4b` **S12** (default) / `nassila-sanad-12b` **S14** (quality); v1.13 **NO-GO** — NassilaT [`POST_V114_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/POST_V114_MAP.md) (app release train + FEATURES backlog in § G). Task ids: [`src/shared/nassila-agent-tasks.ts`](src/shared/nassila-agent-tasks.ts). **Training:** [`docs/TRAINING.md`](docs/TRAINING.md) → NassilaT.
 - **Impeccable UI rule** — before renderer/UI changes, read [`docs/DESIGN.md`](docs/DESIGN.md) § Impeccable discipline. Reject AI-template tells: purple gradients, nested cards, Inter-only typography, identical card grids, gray-on-tinted muted text, hero metrics, decorative glass, fake progress on stubs.
 - Engine code under `src/engine/manuscript/` (grounding JSON, PDF extract, segments, verify) backs the loop; security controls SEC-01–06 apply to network + LLM paths in production.
 - Grounding schema and parsing: [`grounding-llm.ts`](src/engine/manuscript/grounding-llm.ts), [`grounding-json-repair.ts`](src/engine/manuscript/grounding-json-repair.ts).
@@ -100,6 +100,8 @@ Other: `build:mac`, `build:linux`, `build:unpack`, `preview`.
 - **Renderer:** [`src/renderer/i18n/`](src/renderer/i18n/) — English and Arabic; RTL on `<html>` when Arabic is active.
 - **Native menus:** [`src/main/menu-i18n.ts`](src/main/menu-i18n.ts).
 - New user-visible strings usually need **both** renderer JSON and menu entries where applicable.
+- **Arabic governance:** [docs/AR_I18N_GLOSSARY.md](docs/AR_I18N_GLOSSARY.md); agent skill [`.cursor/skills/nassila-arabic/SKILL.md`](.cursor/skills/nassila-arabic/SKILL.md); rule [`.cursor/rules/arabic-i18n.mdc`](.cursor/rules/arabic-i18n.mdc). **Ask the user before applying Arabic wording changes** — present EN, proposed AR, and rationale.
+- **Key parity:** `tests/unit/i18n-key-parity.test.ts` — EN and AR `translation.json` must share the same key tree.
 
 ## Optional agent tooling
 

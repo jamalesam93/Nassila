@@ -14,12 +14,18 @@ import { useShellStore } from './stores/shell-store'
 import AboutModal from './components/AboutModal'
 import SanadSetupModal from './components/SanadSetupModal'
 import SettingsModal from './components/SettingsModal'
+import ToastContainer from './components/ui/toast'
+import { useTaskNotifier } from './hooks/use-task-notifier'
 import { readStoredLocale } from './i18n/config'
+import { useAppSettingsStore } from './stores/app-settings-store'
 
 export default function App() {
   const initializeTheme = useThemeStore((s) => s.initialize)
   const hydrateAppSettings = useShellStore((s) => s.hydrateAppSettings)
+  const initializeAppSettings = useAppSettingsStore((s) => s.initialize)
   const { executeCommand } = useAppCommands()
+
+  useTaskNotifier()
 
   useEffect(() => {
     void initializeTheme()
@@ -31,7 +37,8 @@ export default function App() {
       void window.api.setMenuLocale(lang)
     }
     void hydrateAppSettings()
-  }, [hydrateAppSettings])
+    void initializeAppSettings()
+  }, [hydrateAppSettings, initializeAppSettings])
 
   useEffect(() => {
     let cancelled = false
@@ -73,6 +80,7 @@ export default function App() {
       <SanadSetupModal />
       <SettingsModal />
       <ConfirmDialog />
+      <ToastContainer />
 
       <div className="flex flex-1 overflow-hidden">
         <WorkerShell />

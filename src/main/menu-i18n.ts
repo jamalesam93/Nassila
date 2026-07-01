@@ -140,7 +140,7 @@ const AR: MenuLabelSet = {
   zoom: 'تكبير النافذة',
   close: 'إغلاق',
   reload: 'إعادة التحميل',
-  forceReload: 'إعادة تحميل قسرية',
+  forceReload: 'إعادة التحميل بالكامل',
   resetZoom: 'الحجم الفعلي',
   zoomIn: 'تكبير',
   zoomOut: 'تصغير',

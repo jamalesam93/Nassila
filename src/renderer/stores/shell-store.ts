@@ -3,6 +3,7 @@ import type { OutputListFilter } from '../utils/output-filters'
 
 export type AppSurface = 'loop' | 'bibliography'
 export type SettingsFocus = 'localModels' | null
+export type BibliographyTask = 'idle' | 'verify' | 'autocorrect' | 'doi'
 
 interface ShellState {
   rawInput: string
@@ -16,7 +17,7 @@ interface ShellState {
   /** When set, Raqim OutputPanel applies this list filter (e.g. from Tasnif triage in drawer). */
   raqimListFilter: OutputListFilter | null
   bibliographyDrawerOpen: boolean
-  bibliographyBusy: boolean
+  bibliographyTask: BibliographyTask
   /** File → Import References feedback (Bibliography tab). */
   bibliographyImportStatus: string
   /** Migrates legacy settings keys on startup. */
@@ -33,7 +34,7 @@ interface ShellState {
   clearRaqimListFilter: () => void
   setBibliographyDrawerOpen: (open: boolean) => void
   toggleBibliographyDrawer: () => void
-  setBibliographyBusy: (busy: boolean) => void
+  setBibliographyTask: (task: BibliographyTask) => void
   setBibliographyImportStatus: (status: string) => void
 }
 
@@ -47,7 +48,7 @@ export const useShellStore = create<ShellState>((set) => ({
   appSurface: 'loop',
   raqimListFilter: null,
   bibliographyDrawerOpen: false,
-  bibliographyBusy: false,
+  bibliographyTask: 'idle',
   bibliographyImportStatus: '',
   hydrateAppSettings: async () => {
     try {
@@ -76,6 +77,6 @@ export const useShellStore = create<ShellState>((set) => ({
   setBibliographyDrawerOpen: (bibliographyDrawerOpen) => set({ bibliographyDrawerOpen }),
   toggleBibliographyDrawer: () =>
     set((s) => ({ bibliographyDrawerOpen: !s.bibliographyDrawerOpen })),
-  setBibliographyBusy: (bibliographyBusy) => set({ bibliographyBusy }),
+  setBibliographyTask: (bibliographyTask) => set({ bibliographyTask }),
   setBibliographyImportStatus: (bibliographyImportStatus) => set({ bibliographyImportStatus })
 }))

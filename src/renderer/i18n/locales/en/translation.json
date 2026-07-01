@@ -137,7 +137,7 @@
   },
   "sanadSetup": {
     "title": "Set up Sanad",
-    "subtitle": "Sanad checks manuscript passages against source excerpts using a local model you run. Download a Nassila GGUF, load it in a runner, then configure Passage grounding in Settings.",
+    "subtitle": "Sanad checks manuscript passages against source excerpts using a local model you run. For the full step-by-step setup, open the guide below.",
     "modelsTitle": "Download models",
     "models": {
       "e4b": "Default — nassila-sanad-e4b (E4B v1.12, Q6_K)",
@@ -171,7 +171,27 @@
     "dontShowAgain": "Don't show this again",
     "openSettings": "Open Passage grounding settings",
     "close": "Close",
+    "fullGuide": "Full setup guide",
     "copyCommand": "Copy",
+    "copied": "Copied"
+  },
+  "notifications": {
+    "settingsTitle": "Notifications",
+    "settingsHint": "In-app toasts always appear for short actions. OS notifications fire when a long task finishes while the window is in the background.",
+    "notifyOnLongTasks": "Notify when long tasks finish (OS notification)",
+    "auditCompleteTitle": "Manuscript audit complete",
+    "auditCompleteBody": "{{findings}} references · {{pass}} pass · {{warn}} warn · {{fail}} fail",
+    "auditCompleteToast": "Audit complete · {{findings}} references · {{pass}} pass · {{warn}} warn · {{fail}} fail",
+    "verifyComplete": "Verified {{verified}} references · {{mismatches}} mismatches",
+    "verifyFailed": "Verification failed: {{message}}",
+    "autocorrectComplete": "Autocorrected {{count}} field(s)",
+    "autocorrectNone": "No autocorrect changes",
+    "doiFound": "Found DOIs for {{found}} of {{total}} references",
+    "exported": "Exported {{file}}",
+    "exportFailed": "Export failed: {{message}}",
+    "bridgeComplete": "Sent {{count}} references to Bibliography",
+    "keySaved": "API key saved",
+    "offline": "This action needs a network connection",
     "copied": "Copied"
   },
   "tabs": {
@@ -218,6 +238,10 @@
     "importBridgeMissing": "File import is unavailable (the app bridge is not loaded). Try restarting the app or use a production build.",
     "importEmpty": "Imported file is empty or could not be read.",
     "importFailed": "Import failed: {{message}}",
+    "pdfWarning": {
+      "scan": "This PDF contains no extractable text — it is likely a scan. Run it through OCR (e.g. ocrmypdf, Adobe Acrobat) and re-import.",
+      "littleText": "Very little text was extracted. The PDF may be partially scanned or use embedded fonts without a Unicode map."
+    },
     "phase": {
       "idle": "Idle",
       "parsing": "Parsing manuscript",
@@ -342,6 +366,12 @@
     "findingDoi": "Finding…",
     "findDoiTitleOnline": "Search Crossref, PubMed, and OpenAlex for this DOI",
     "findDoiTitleOffline": "Offline",
+    "doiTitleConflictField": "Title does not match this DOI",
+    "doiTitleConflictHint": "This DOI resolves to a different article. Your title may be correct — search for the right DOI, or accept the DOI's title.",
+    "findDoiForTitle": "Find DOI for title",
+    "replaceDoiBusy": "Searching…",
+    "useRegistryTitle": "Use DOI's title",
+    "applyingRegistryTitle": "Applying…",
     "vol": "Vol. {{vol}}",
     "versionChip": "v{{v}}",
     "accessed": "Accessed",
@@ -353,7 +383,12 @@
     "searchPlaceholder": "Search title, author, DOI…",
     "filteredCount": "{{shown}} / {{total}} shown",
     "emptyFilter": "No references match this filter or search.",
-    "busyOverlay": "Working on references…",
+    "task": {
+      "verify": "Verifying {{count}} references against Crossref / PubMed / OpenAlex…",
+      "verifyCapped": "Verifying {{count}} references (up to {{max}} per run)…",
+      "autocorrect": "Autocorrecting fields…",
+      "doi": "Finding missing DOIs…"
+    },
     "labelDoi": "DOI",
     "labelUrl": "URL",
     "registryMismatchBadge": "Registry ×{{count}}",
@@ -436,6 +471,8 @@
     "target": "Target: {{id}}",
     "online": "● Online",
     "offline": "○ Offline",
+    "retryConnection": "Retry connection",
+    "retrying": "Checking…",
     "fixed": "{{count}} fixed",
     "partial": "{{count}} partial",
     "needsFix": "{{count}} need fix",
@@ -665,6 +702,24 @@
     "pdfAttached": "PDF attached",
     "groundingSites": "Passage grounding",
     "citeSitesSummary": "{{count}} in-text citations share this verdict",
+    "error": {
+      "noReferencesSection": "Could not locate a References section in this text.",
+      "bibliographyEmpty": "Bibliography library is empty. Export references or import in Bibliography mode first.",
+      "noInTextCites": "No in-text citations detected in the manuscript body."
+    },
+    "grounding": {
+      "repairedNotice": "Model JSON was auto-repaired before parsing.",
+      "retryNotice": "Recovered on a second LLM attempt.",
+      "overallUnrelated": "Model flagged passage as unrelated overall: {{detail}}",
+      "modelUnrelatedOverall": "Model flagged unrelated overall: {{detail}}",
+      "modelWeakOverall": "Model overall weak: {{detail}}",
+      "verifyManually": "verify manually",
+      "weakPassageAlignment": "Weak passage alignment against OA full text",
+      "checkFailed": "LLM check failed: {{message}}",
+      "invalidJson": "Invalid JSON from model",
+      "unparsed": "unparsed",
+      "evidenceSnippet": "LLM ({{warning}}): {{snippet}}"
+    },
     "layers": {
       "registry": "Registry (L1)",
       "metadata": "Metadata (L2)",

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '../ui/button'
+import { pushToast } from '../../lib/notify'
 import { useCitationStore } from '../../stores/citation-store'
 import { setPredatoryListCache } from '../../../engine/predatory/list-store'
 
@@ -23,7 +24,6 @@ export default function PredatoryListSettings() {
   const setPredatoryUpdateAvailable = useCitationStore((s) => s.setPredatoryUpdateAvailable)
 
   const [busy, setBusy] = useState<'idle' | 'check' | 'update'>('idle')
-  const [message, setMessage] = useState<string | null>(null)
 
   const refreshMeta = useCallback(async () => {
     if (!window.api?.predatory) return
@@ -42,14 +42,18 @@ export default function PredatoryListSettings() {
   const onCheck = async () => {
     if (!window.api?.predatory || networkStatus !== 'online') return
     setBusy('check')
-    setMessage(null)
     try {
       const res = await window.api.predatory.checkForUpdates()
       setPredatoryUpdateAvailable(res.updateAvailable === true)
-      setMessage(res.message ?? (res.updateAvailable ? t('predatoryUpdates.newerAvailable', { version: res.remoteVersion ?? '?' }) : t('predatoryUpdates.upToDate')))
+      const message =
+        res.message ??
+        (res.updateAvailable
+          ? t('predatoryUpdates.newerAvailable', { version: res.remoteVersion ?? '?' })
+          : t('predatoryUpdates.upToDate'))
+      pushToast(res.updateAvailable ? 'info' : 'success', message)
       await refreshMeta()
     } catch (e) {
-      setMessage(e instanceof Error ? e.message : t('predatoryUpdates.errorGeneric'))
+      pushToast('error', e instanceof Error ? e.message : t('predatoryUpdates.errorGeneric'))
     } finally {
       setBusy('idle')
     }
@@ -58,15 +62,14 @@ export default function PredatoryListSettings() {
   const onUpdate = async () => {
     if (!window.api?.predatory || networkStatus !== 'online') return
     setBusy('update')
-    setMessage(null)
     try {
       const { meta, list } = await window.api.predatory.applyUpdate()
       setPredatoryListCache(list)
       setPredatoryListMeta(meta)
       setPredatoryUpdateAvailable(false)
-      setMessage(t('predatoryUpdates.updateApplied', { version: meta.version }))
+      pushToast('success', t('predatoryUpdates.updateApplied', { version: meta.version }))
     } catch (e) {
-      setMessage(e instanceof Error ? e.message : t('predatoryUpdates.errorGeneric'))
+      pushToast('error', e instanceof Error ? e.message : t('predatoryUpdates.errorGeneric'))
     } finally {
       setBusy('idle')
     }
@@ -113,11 +116,6 @@ export default function PredatoryListSettings() {
           {busy === 'update' ? t('predatoryUpdates.checking') : t('predatoryUpdates.updateButton')}
         </Button>
       </div>
-      {message && (
-        <p className="mt-2 text-[11px] leading-snug text-foreground/85" role="status">
-          {message}
-        </p>
-      )}
     </div>
   )
 }

@@ -1,7 +1,7 @@
 import { app, BrowserWindow, shell, Menu, nativeImage, type NativeImage } from 'electron'
-import { existsSync } from 'fs'
-import { join } from 'path'
-import { electronApp, optimizer, is } from '@electron-toolkit/utils'
+import { existsSync, readFileSync } from 'fs'
+import { join, resolve } from 'path'
+import { optimizer, is } from '@electron-toolkit/utils'
 import { registerIpcHandlers } from './ipc-handlers'
 import { buildAppMenu } from './app-menu'
 import { registerContentSecurityPolicy } from './content-security-policy'
@@ -15,12 +15,38 @@ function isSafeExternalUrl(url: string): boolean {
   }
 }
 
+function loadIconFromFile(filePath: string): NativeImage | undefined {
+  if (!existsSync(filePath)) return undefined
+  const fromPath = nativeImage.createFromPath(filePath)
+  if (!fromPath.isEmpty()) return fromPath
+  try {
+    const fromBuffer = nativeImage.createFromBuffer(readFileSync(filePath))
+    if (!fromBuffer.isEmpty()) return fromBuffer
+  } catch {
+    /* unsupported format */
+  }
+  return undefined
+}
+
 function resolveWindowIcon(): NativeImage | undefined {
-  const devPath = join(__dirname, '../../build/icon.png')
-  const packagedPath = join(app.getAppPath(), 'build', 'icon.png')
-  for (const p of [devPath, packagedPath]) {
-    if (existsSync(p)) {
-      return nativeImage.createFromPath(p)
+  const isWin = process.platform === 'win32'
+  const names = isWin ? ['icon.ico', 'icon.png'] : ['icon.png', 'icon.ico']
+  const bases = [
+    join(__dirname, 'assets'),
+    join(__dirname, '../../build'),
+    join(app.getAppPath(), 'build'),
+    join(process.cwd(), 'build')
+  ]
+  for (const base of bases) {
+    for (const name of names) {
+      const image = loadIconFromFile(resolve(join(base, name)))
+      if (image) {
+        if (isWin && name.endsWith('.png')) {
+          const resized = image.resize({ width: 256, height: 256 })
+          if (!resized.isEmpty()) return resized
+        }
+        return image
+      }
     }
   }
   return undefined
@@ -46,6 +72,10 @@ function createWindow(): BrowserWindow {
       webSecurity: true
     }
   })
+
+  if (icon) {
+    mainWindow.setIcon(icon)
+  }
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
@@ -82,7 +112,9 @@ function attachEditableContextMenu(win: BrowserWindow): void {
 
 app.whenReady().then(() => {
   app.setName('Nassila')
-  electronApp.setAppUserModelId('com.nassila.app')
+  // electron-toolkit uses process.execPath in dev on Windows, which pins the Electron globe
+  // on the taskbar/title bar. Use our app id so BrowserWindow icon is honored.
+  app.setAppUserModelId('com.nassila.app')
   registerContentSecurityPolicy()
 
   app.on('browser-window-created', (_, window) => {

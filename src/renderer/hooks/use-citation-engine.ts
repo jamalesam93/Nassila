@@ -13,6 +13,8 @@ import { mergeManuscriptRefsIntoCitations } from '../../engine/manuscript/biblio
 import {
   verifyUnifiedRegistryWithPatches
 } from '../../engine/verifier/verify-and-apply'
+import { applyVerificationMismatches } from '../../engine/verifier/apply-mismatches'
+import { partitionMismatches } from '../../engine/verifier/mismatch-kind'
 import { checkPredatory, predatoryFlagsToByCitation } from '../../engine/predatory'
 import type { CorrectionLog } from '../../engine/autocorrect/index'
 import type { CslItem, ExportFormat, InputFormat, ValidationIssue } from '../../engine/types'
@@ -289,6 +291,33 @@ export function useCitationEngine() {
       return allLog
     }
 
+    const pendingMismatches = useCitationStore.getState().verificationMismatches
+    if (pendingMismatches.length > 0) {
+      const { cosmetic, doiConflicts } = partitionMismatches(allCorrected, pendingMismatches)
+      if (cosmetic.length > 0) {
+        allCorrected = applyVerificationMismatches(allCorrected, cosmetic)
+      }
+      if (doiConflicts.length > 0 && useOnline) {
+        const { resolveDoiForTitle } = await import('../../engine/autocorrect/enhance')
+        const conflictIds = new Set(doiConflicts.map((m) => m.citationId))
+        const resolved: CslItem[] = []
+        for (const item of allCorrected) {
+          if (!conflictIds.has(item.id)) {
+            resolved.push(item)
+            continue
+          }
+          const result = await resolveDoiForTitle(item)
+          if (result) {
+            allLog.push(...result.log)
+            resolved.push(result.item)
+          } else {
+            resolved.push(item)
+          }
+        }
+        allCorrected = resolved
+      }
+    }
+
     const latestStore = useCitationStore.getState()
     latestStore.setCitations(allCorrected, 'autocorrect', `Autocorrect ${allLog.length} fix(es)`)
     const postIssues = validateCitations(allCorrected, latestStore.selectedStyleId ?? undefined)
@@ -343,6 +372,52 @@ export function useCitationEngine() {
 
     return log
   }, [applyDerivedState])
+
+  const resolveDoiForCitation = useCallback(async (citationId: string): Promise<CorrectionLog[]> => {
+    const store = useCitationStore.getState()
+    if (store.networkStatus !== 'online') return []
+
+    const target = store.citations.find((item) => item.id === citationId)
+    if (!target?.title?.trim()) return []
+
+    const { resolveDoiForTitle } = await import('../../engine/autocorrect/enhance')
+    const result = await resolveDoiForTitle(target)
+    if (!result) return []
+
+    const latestStore = useCitationStore.getState()
+    const nextItems = latestStore.citations.map((item) =>
+      item.id === citationId ? result.item : item
+    )
+
+    latestStore.setCitations(nextItems, 'autocorrect', 'Resolve DOI for title')
+    const postIssues = validateCitations(nextItems, latestStore.selectedStyleId ?? undefined)
+    applyDerivedState(nextItems, latestStore.selectedStyleId, {
+      issues: postIssues,
+      statuses: buildValidationStatuses(nextItems, postIssues)
+    })
+
+    return result.log
+  }, [applyDerivedState])
+
+  const applyRegistryTitleForMismatch = useCallback(
+    async (citationId: string, mismatchId: string): Promise<void> => {
+      const store = useCitationStore.getState()
+      const mismatch = store.verificationMismatches.find((m) => m.id === mismatchId)
+      if (!mismatch || mismatch.citationId !== citationId || mismatch.field !== 'title') return
+
+      const nextItems = applyVerificationMismatches(store.citations, [mismatch], {
+        applyConflictingTitlePatch: true
+      })
+
+      store.setCitations(nextItems, 'accept-verification', 'Apply registry title')
+      const postIssues = validateCitations(nextItems, store.selectedStyleId ?? undefined)
+      applyDerivedState(nextItems, store.selectedStyleId, {
+        issues: postIssues,
+        statuses: buildValidationStatuses(nextItems, postIssues)
+      })
+    },
+    [applyDerivedState]
+  )
 
   const importFiles = useCallback(async (filePaths: string[]) => {
     let totalItems = 0
@@ -402,6 +477,8 @@ export function useCitationEngine() {
     clearStyleTarget,
     runAutocorrect,
     findMissingDoi,
+    resolveDoiForCitation,
+    applyRegistryTitleForMismatch,
     refreshVerification,
     exportCitations,
     exportWithDialog,

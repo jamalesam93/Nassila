@@ -76,20 +76,20 @@
     "close": "إغلاق",
     "tabsAria": "أقسام الإعدادات",
     "tabGeneral": "عام",
-    "tabLocalModels": "ربط المقاطع",
+    "tabLocalModels": "توثيق الادعاءات بالمصدر",
     "sourceFetch": {
       "title": "جلب مصادر المخطوطة",
       "subtitle": "يُستخدم أثناء تدقيق المخطوطة للعثور على النص الكامل المفتوح لمعرّفات DOI. ملخصات السجل تعمل دون هذا الإعداد.",
       "unpaywallEmail": "البريد لـ Unpaywall",
       "unpaywallPlaceholder": "you@institution.edu",
       "privacy": "يُحفظ مرة واحدة على هذا الجهاز فقط. يُرسَل إلى api.unpaywall.org عند تدقيق DOI — وليس إلى خوادم ناسيلا.",
-      "institutionalNote": "هذا ليس تسجيل دخول لمكتبة الجامعة. يفعّل فقط بحث Unpaywall عن نسخ مفتوحة قانونياً. ملفات PDF باشتراك تتطلب مصدر (Masdar) أو وصول مؤسسي لاحقاً.",
+      "institutionalNote": "هذا ليس تسجيل دخول لمكتبة الجامعة. يفعّل فقط بحث Unpaywall عن نسخ مفتوحة قانونياً. ملفات PDF باشتراك تتطلب عامل مصدر أو وصول مؤسسي لاحقاً.",
       "savedHint": "تم الحفظ. عمليات البحث عن الوصول المفتوح ستستخدم هذا العنوان في التدقيقات القادمة."
     },
     "localModels": {
-      "title": "ربط المقاطع",
-      "subtitle": "ربط Sanad اختياري أثناء تدقيق المخطوطة. استخدم مشغّلًا محليًا مع GGUF من Nassila، أو مفتاح API سحابي (تجريبي).",
-      "enable": "تفعيل ربط مقاطع Sanad",
+      "title": "توثيق الادعاءات بالمصدر",
+      "subtitle": "توثيق سند اختياري أثناء تدقيق المخطوطة. استخدم مشغّلًا محليًا مع GGUF من ناسيلا، أو مفتاح API سحابي (تجريبي).",
+      "enable": "تفعيل توثيق سند",
       "providerLabel": "المزوّد",
       "groupLocal": "محلي",
       "groupCloud": "سحابي",
@@ -97,28 +97,28 @@
         "lmstudio": "LM Studio",
         "ollama": "Ollama",
         "vllm": "vLLM",
-        "custom": "نقطة نهاية مخصصة",
+        "custom": "عنوان خادم مخصص",
         "cloud": "API سحابي"
       },
       "runnerHint": {
         "lmstudio": "شغّل الخادم المحلي في LM Studio. ناسيلا تستدعي /v1/chat/completions على عنوان الأساس.",
-        "ollama": "حمّل GGUF Sanad من Nassila في Ollama. يجب أن يطابق معرّف النموذج ما يظهر في ollama list.",
+        "ollama": "حمّل GGUF سند من ناسيلا في Ollama. يجب أن يطابق معرّف النموذج ما يظهر في ollama list.",
         "vllm": "وجّه إلى خادم متوافق مع OpenAI. طابق معرّف النموذج مع ما يعرضه الخادم.",
-        "custom": "أي نقطة نهاية محلية متوافقة مع OpenAI. يجب أن يطابق معرّف النموذج خادمك."
+        "custom": "أي خادم محلي متوافق مع OpenAI. يجب أن يطابق معرّف النموذج خادمك."
       },
-      "cloudDisclaimer": "نماذج السحابة ليست Nassila Sanad — جودة الربط تجريبية. الصق مفتاح API؛ يُستنتج عنوان الأساس عند الإمكان.",
+      "cloudDisclaimer": "نماذج السحابة ليست نماذج سند من ناسيلا — جودة التوثيق تجريبية. الصق مفتاح API؛ يُستنتج عنوان الأساس عند الإمكان.",
       "cloudDetected": {
         "openrouter": "تم التعرف على OpenRouter",
         "openai": "تم التعرف على OpenAI"
       },
-      "nassilaTierTitle": "نماذج Nassila Sanad",
-      "nassilaTierHint": "مدرّبة لربط الاقتباس بالمصدر. حمّل GGUF في مشغّلك المحلي ثم اختر المستوى.",
+      "nassilaTierTitle": "نماذج سند من ناسيلا",
+      "nassilaTierHint": "مدرّبة لتوثيق الادعاءات بالمصدر. حمّل GGUF في مشغّلك المحلي ثم اختر المستوى.",
       "tierLabel": "مستوى النموذج",
       "tier": {
         "e4b": "افتراضي (E4B v1.12)",
         "12b": "جودة (12B v1.14)"
       },
-      "showAdvanced": "نقطة نهاية متقدمة…",
+      "showAdvanced": "إعدادات خادم متقدمة…",
       "hideAdvanced": "إخفاء المتقدم",
       "endpointLabel": "عنوان الأساس",
       "endpointPlaceholder": "https://api.example.com أو http://localhost:1234",
@@ -131,13 +131,13 @@
       "testing": "جارٍ الاختبار…",
       "testOk": "الاتصال ناجح.",
       "testFailed": "فشل الاتصال",
-      "privacy": "يعمل الربط عند تدقيق المخطوطة. يُرسل النص فقط إلى نقطة النهاية التي تضبطها — وليس إلى ناسيلا.",
-      "setupGuide": "دليل إعداد Sanad…"
+      "privacy": "يعمل التوثيق عند تدقيق المخطوطة. يُرسل النص فقط إلى عنوان الخادم الذي تضبطه — وليس إلى ناسيلا.",
+      "setupGuide": "دليل إعداد سند…"
     }
   },
   "sanadSetup": {
-    "title": "إعداد Sanad",
-    "subtitle": "Sanad يتحقق من مقاطع المخطوطة مقابل مقتطفات المصدر عبر نموذج محلي تشغّله أنت. حمّل GGUF من Nassila، ثم اضبط ربط المقاطع في الإعدادات.",
+    "title": "إعداد سند",
+    "subtitle": "يتحقق سند من مقاطع المخطوطة مقابل مقتطفات المصدر عبر نموذج محلي تشغّله أنت. للدليل الكامل خطوة بخطوة، افتح الرابط أدناه.",
     "modelsTitle": "تنزيل النماذج",
     "models": {
       "e4b": "افتراضي — nassila-sanad-e4b (E4B v1.12، Q6_K)",
@@ -149,7 +149,7 @@
       "lmstudio": {
         "title": "LM Studio",
         "link": "lmstudio.ai",
-        "step1": "حمّل GGUF Sanad من Hugging Face (الروابط أعلاه).",
+        "step1": "حمّل GGUF سند من Hugging Face (الروابط أعلاه).",
         "step2": "حمّل النموذج في LM Studio وشغّل الخادم المحلي.",
         "step3": "في ناسيلا: عنوان الأساس {{url}}، معرّف النموذج {{model}} (أو ما يظهر في LM Studio)."
       },
@@ -163,15 +163,35 @@
       "vllm": {
         "title": "vLLM / llama.cpp",
         "link": "وثائق vLLM",
-        "step1": "قدّم GGUF Sanad عبر خادم متوافق مع OpenAI (مثل {{model}}).",
+        "step1": "قدّم GGUF سند عبر خادم متوافق مع OpenAI (مثل {{model}}).",
         "step2": "وجّه ناسيلا إلى عنوان الخادم ومعرّف النموذج الذي يعرضه."
       }
     },
-    "privacy": "يُرسل نص المقطع فقط إلى نقطة النهاية التي تضبطها — وليس إلى ناسيلا.",
+    "privacy": "يُرسل نص المقطع فقط إلى عنوان الخادم الذي تضبطه — وليس إلى ناسيلا.",
     "dontShowAgain": "لا تُظهر هذا مجددًا",
-    "openSettings": "فتح إعدادات ربط المقاطع",
+    "openSettings": "فتح إعدادات توثيق سند",
     "close": "إغلاق",
+    "fullGuide": "دليل الإعداد الكامل",
     "copyCommand": "نسخ",
+    "copied": "تم النسخ"
+  },
+  "notifications": {
+    "settingsTitle": "الإشعارات",
+    "settingsHint": "تظهر إشعارات داخل التطبيق دائماً للإجراءات القصيرة. إشعارات النظام تُرسل عند انتهاء مهمة طويلة والنافذة في الخلفية.",
+    "notifyOnLongTasks": "إشعار عند انتهاء المهام الطويلة (إشعار النظام)",
+    "auditCompleteTitle": "اكتمل تدقيق المخطوطة",
+    "auditCompleteBody": "{{findings}} مراجع · {{pass}} سليم · {{warn}} تحذير · {{fail}} فشل",
+    "auditCompleteToast": "اكتمل التدقيق · {{findings}} مراجع · {{pass}} سليم · {{warn}} تحذير · {{fail}} فشل",
+    "verifyComplete": "تم التحقق من {{verified}} مرجع · {{mismatches}} عدم تطابق",
+    "verifyFailed": "فشل التحقق: {{message}}",
+    "autocorrectComplete": "تم تصحيح {{count}} حقل",
+    "autocorrectNone": "لا تغييرات في التصحيح التلقائي",
+    "doiFound": "وُجد DOI لـ {{found}} من {{total}} مراجع",
+    "exported": "تم التصدير: {{file}}",
+    "exportFailed": "فشل التصدير: {{message}}",
+    "bridgeComplete": "أُرسل {{count}} مرجع إلى رقيم",
+    "keySaved": "تم حفظ مفتاح API",
+    "offline": "يتطلب هذا الإجراء اتصالاً بالشبكة",
     "copied": "تم النسخ"
   },
   "tabs": {
@@ -187,7 +207,7 @@
     "subtitle": "تحقق من مراجعك. اربط ما تكتبه بالمصدر.",
     "versionLabel": "الإصدار",
     "close": "إغلاق",
-    "shortBody": "{{name}} تدقيق سريع لقائمة المراجع لديك: تنظيف، تحقق، ثم تصدير.",
+    "shortBody": "مراجعة أخيرة قبل التسليم — القائمة، السجلات، والمطابقة مع نص المصدر.",
     "shortWorkflow": "التدفق: استيراد → تحليل وتصحيح → تحقق (Crossref / PubMed / OpenAlex) → تصدير.",
     "privacyShort": "الخصوصية: لا يُرفع شيء إلى خوادم ناسيلا. الاتصالات تذهب فقط إلى واجهات علمية عامة (وإلى نقطة LLM التي تختارها إن فعّلتها).",
     "oss": "يعتمد على citeproc-js وCitation.js وأنماط CSL المجتمعية."
@@ -218,6 +238,10 @@
     "importBridgeMissing": "استيراد الملف غير متاح (لم يُحمَّل جسر التطبيق). أعد تشغيل التطبيق أو استخدم الإصدار المُنشأ.",
     "importEmpty": "ملف فارغ أو تعذرت قراءته.",
     "importFailed": "فشل الاستيراد: {{message}}",
+    "pdfWarning": {
+      "scan": "لا يحتوي هذا PDF على نص قابل للاستخراج — غالباً مسح ضوئي. مرّره عبر OCR (مثل ocrmypdf أو Adobe Acrobat) ثم أعد الاستيراد.",
+      "littleText": "استُخرج نص قليل جداً. قد يكون PDF مسحاً جزئياً أو يستخدم خطوطاً مضمّنة دون خريطة Unicode."
+    },
     "phase": {
       "idle": "خامل",
       "parsing": "تحليل المخطوطة",
@@ -282,7 +306,7 @@
   },
   "panels": {
     "targetStyle": "الأسلوب المستهدف",
-    "output": "المخرجات",
+    "output": "قائمة المراجع",
     "input": "الإدخال",
     "issues": "المشكلات",
     "journalGuidelines": "إرشادات المجلة"
@@ -330,7 +354,7 @@
     "citationsPlaceholder": "ألصق المراجع هنا، سطرًا واحدًا لكل مرجع…\n\nأو اسحب وأفلت ملفات ‎.bib‎ أو ‎.ris‎ أو ‎.json‎ أو ‎.docx‎ أو ‎.pdf‎.\n\nالصيغ المدعومة:\n  - BibTeX (@article{…})\n  - RIS (TY  - JUR …)\n  - CSL-JSON ([{\"type\":\"article-journal\",…}])\n  - نص عادي (Smith, J. (2024). A study…)"
   },
   "outputPanel": {
-    "panelSubtitle": "المكتبة المباشرة: عدّل الصفوف، أضف DOI، وراقب التحقق من الأسلوب.",
+    "panelSubtitle": "قائمة المراجع المباشرة: عدّل الصفوف، أضف DOI، وراقب التحقق من الأسلوب.",
     "emptyTitle": "لم تُعالج أي مراجع بعد.",
     "emptyHint": "استورد المراجع أو ألصقها في لوحة الإدخال، ثم اختر أسلوبًا مستهدفًا.",
     "emptyHeroLine": "تتحدَّث المعاينة عند وجود DOI.",
@@ -342,6 +366,12 @@
     "findingDoi": "جارٍ البحث…",
     "findDoiTitleOnline": "بحث Crossref وPubMed وOpenAlex عن DOI",
     "findDoiTitleOffline": "غير متصل",
+    "doiTitleConflictField": "العنوان لا يطابق رمز DOI هذا",
+    "doiTitleConflictHint": "رمز DOI هذا يشير إلى مقال مختلف. قد يكون عنوانك صحيحًا — ابحث عن DOI المناسب أو اقبل عنوان السجل.",
+    "findDoiForTitle": "ابحث عن DOI للعنوان",
+    "replaceDoiBusy": "جارٍ البحث…",
+    "useRegistryTitle": "استخدم عنوان السجل",
+    "applyingRegistryTitle": "جارٍ التطبيق…",
     "vol": "المجلد {{vol}}",
     "versionChip": "إصدار {{v}}",
     "accessed": "تاريخ الزيارة",
@@ -353,7 +383,12 @@
     "searchPlaceholder": "بحث في العنوان أو المؤلف أو DOI…",
     "filteredCount": "{{shown}} / {{total}} معروض",
     "emptyFilter": "لا توجد مراجع تطابق هذا الفلتر أو البحث.",
-    "busyOverlay": "جارٍ معالجة المراجع…",
+    "task": {
+      "verify": "جارٍ التحقق من {{count}} مرجع في Crossref / PubMed / OpenAlex…",
+      "verifyCapped": "جارٍ التحقق من {{count}} مرجع (حد أقصى {{max}} لكل تشغيل)…",
+      "autocorrect": "جارٍ التصحيح التلقائي للحقول…",
+      "doi": "جارٍ البحث عن DOI المفقود…"
+    },
     "labelDoi": "DOI",
     "labelUrl": "URL",
     "registryMismatchBadge": "سجل ×{{count}}",
@@ -408,6 +443,7 @@
     "queueEmptyTitle": "لم تُسجَّل إشارات بعد",
     "queueEmptyHint": "التصحيح التلقائي أو التحقق من السجل أو التكرارات قد تعبئ هذه المنطقة عند ظهورها.",
     "registryLegend": "L1 = التحليل إلى Crossref أو PubMed أو OpenAlex. L2 = مقارنة حقولك مع سجل المرجع القياسي (عندما يعثر L1 على صف).",
+    "registryTitle": "فحص السجل (آخر تشغيل)",
     "registrySource": "المصدر: {{source}}",
     "layerPass": "مقبول",
     "layerFail": "فشل",
@@ -418,7 +454,7 @@
     "fieldLabel": "الحقل: {{field}}",
     "mismatchField": "عدم تطابق في «{{field}}»",
     "mismatchUnknownCitation": "المرجع غير موجود (ربما حُذف)",
-    "mismatchJumpHint": "انقر للانتقال إلى هذا المرجع في المخرجات",
+    "mismatchJumpHint": "انقر للانتقال إلى هذا المرجع في قائمة المراجع",
     "mismatchJumpAria": "الانتقال إلى المرجع: {{title}}. عدم تطابق في {{field}}",
     "yours": "المحتوى لديك: {{value}}",
     "canonical": "القياسي ({{source}}): {{value}}",
@@ -435,6 +471,8 @@
     "target": "الهدف: {{id}}",
     "online": "● متصل",
     "offline": "○ غير متصل",
+    "retryConnection": "أعد محاولة الاتصال",
+    "retrying": "جارٍ التحقق…",
     "fixed": "{{count}} مُصلَح",
     "partial": "{{count}} جزئي",
     "needsFix": "{{count}} يحتاج إصلاح",
@@ -501,7 +539,7 @@
     },
     "sanad": {
       "name": "سند",
-      "tagline": "ربط مقطع بنص مصدر"
+      "tagline": "توثيق الادعاءات بالمصدر"
     },
     "sharh": {
       "name": "شرح",
@@ -516,7 +554,7 @@
     "masdar": {
       "name": "مصدر",
       "tagline": "نص المصدر المقتبس كاملاً (مخطط)",
-      "stubBody": "جلب وتقسيم النص المفتوح للأوراق المقتبسة ليتمكن سند من الربط بأكثر من الملخصات."
+      "stubBody": "جلب وتقسيم النص المفتوح للأوراق المقتبسة ليتمكن سند من التوثيق بأكثر من الملخصات."
     },
     "shahid": {
       "name": "شاهد",
@@ -548,19 +586,19 @@
     "excerptLabel": "مقتطف المصدر",
     "excerptPlaceholder": "الصق الملخص أو الفقرة من الورقة المقتبسة…",
     "modelConfig": "النموذج المحلي",
-    "customEndpoint": "نقطة نهاية مخصصة",
-    "llmEnabled": "تفعيل الربط بالنموذج",
+    "customEndpoint": "عنوان خادم مخصص",
+    "llmEnabled": "تفعيل توثيق سند",
     "openSettings": "الإعدادات…",
     "tier": {
       "e4b": "افتراضي (E4B v1.12)",
       "12b": "جودة (12B v1.14)"
     },
-    "tier2LimitNote": "المستوى 2: ربط بالمقتطف فقط. أدلة النص الكامل والجداول تتطلب المستوى 3 (مصدر، شاهد).",
-    "run": "تشغيل الربط",
-    "running": "جارٍ التشغيل…",
-    "resultsTitle": "نتيجة الربط",
-    "resultsEmpty": "شغّل الربط لعرض الحكم ودعم كل ادعاء.",
-    "disabled": "ربط النموذج معطّل. فعّله أعلاه أو في الإعدادات.",
+    "tier2LimitNote": "المستوى 2: توثيق بالمقتطف فقط. أدلة النص الكامل والجداول تتطلب المستوى 3 (مصدر، شاهد).",
+    "run": "تشغيل التوثيق",
+    "running": "جارٍ التوثيق…",
+    "resultsTitle": "نتيجة التوثيق",
+    "resultsEmpty": "شغّل التوثيق لعرض الحكم ودعم كل ادعاء.",
+    "disabled": "توثيق سند معطّل. فعّله أعلاه أو في الإعدادات.",
     "encryptionBlocked": "التخزين الآمن غير متاح؛ لا يمكن حفظ مفاتيح API لاستدعاءات النموذج.",
     "parseError": "تعذّر تحليل JSON من النموذج: {{error}}",
     "repairedNotice": "تم إصلاح JSON تلقائياً قبل التحليل.",
@@ -595,7 +633,7 @@
     "intro": "ارفع مخطوطتك، وحلّ المراجع المقتبسة عبر قواعد البيانات أو أرفق PDF، ثم راجع الادعاءات والمراجع في مسار واحد.",
     "importManuscript": "رفع مخطوطة…",
     "sanadBar": {
-      "grounding": "ربط Sanad",
+      "grounding": "توثيق سند",
       "tier": {
         "e4b": "E4B",
         "12b": "12B"
@@ -603,7 +641,7 @@
       "statusOn": "مفعّل",
       "statusOff": "معطّل",
       "configure": "إعداد…",
-      "setup": "إعداد Sanad…"
+      "setup": "إعداد سند…"
     },
     "runAudit": "تشغيل التدقيق",
     "running": "جارٍ التدقيق…",
@@ -612,40 +650,40 @@
     "bibliographyFirstHint": "إذا كانت قائمة مراجعك غير مرتبة أو لم تُتحقَّق، نظّمها في المراجع أولاً (استيراد، تحقق، إصلاح معرّفات DOI) ثم عُد للتدقيق.",
     "openBibliography": "فتح المراجع",
     "previewEmpty": "الصق أو ارفع مخطوطة تتضمن قسم المراجع.",
-    "previewNoReferences": "تعذّر العثور على قسم المراجع أو الببليوغرافيا.",
+    "previewNoReferences": "تعذّر العثور على قسم المراجع أو قائمة المراجع في النص.",
     "previewNoInTextCites": "لم يُعثر على اقتباسات داخل النص لتدقيق يعتمد على المراجع.",
     "previewBibliographySource": "باستخدام مكتبة المراجع",
-    "exportRefsToBibliography": "إرسال المراجع إلى المراجع",
+    "exportRefsToBibliography": "نقل المراجع إلى رقيم",
     "exportRefsHint": "حلّل قائمة المراجع المضمّنة في رقيم لتتمكن من التحقق وإصلاح معرّفات DOI وإزالة التكرار قبل إعادة التدقيق.",
-    "exportRefsDone": "أُرسلت {{count}} مرجعاً إلى المراجع. تحقّق منها هناك ثم شغّل التدقيق مع تفعيل مكتبة المراجع.",
+    "exportRefsDone": "أُرسلت {{count}} مرجعاً إلى رقيم. تحقّق منها هناك ثم شغّل التدقيق مع تفعيل مكتبة المراجع.",
     "exportRefsNoItems": "تعذّر تحليل أي صفوف مراجع من المخطوطة.",
     "exportRefsStatus": "استُوردت {{count}} مراجع من المخطوطة ({{errors}} تحذيرات تحليل).",
     "exportRefsUndoLabel": "استيراد مراجع المخطوطة",
     "useBibliographyForAudit": "التدقيق من مكتبة المراجع",
     "useBibliographyForAuditHint": "استخدم {{count}} صفاً مُنسّقاً في رقيم بدلاً من إعادة تحليل قسم المراجع المضمّن. تُحفَظ مفاتيح الاقتباس الرقمية بعد التصدير.",
     "previewStats": "{{words}} كلمة · {{cites}} اقتباساً داخل النص",
-    "llmOn": "ربط سند مفعّل",
-    "llmOff": "ربط سند معطّل",
+    "llmOn": "توثيق سند مفعّل",
+    "llmOff": "توثيق سند معطّل",
     "sourcesTitle": "المصادر المقتبسة",
-    "sourcesHint": "يُحلّ عبر Crossref وPubMed وOpenAlex وواجهات الوصول المفتوح. اختر صفاً لعرض تفاصيل الربط.",
+    "sourcesHint": "يُحلّ عبر Crossref وPubMed وOpenAlex وواجهات الوصول المفتوح. اختر صفاً لعرض تفاصيل التوثيق.",
     "pipelineGap": "PDF للمصادر: إرفاق يدوي متاح · جلب تلقائي مخطط (مصدر).",
     "unpaywallHint": "أضف بريد Unpaywall مرة واحدة من الإعدادات → عام لتفعيل جلب النص الكامل المفتوح لمعرّفات DOI.",
     "unpaywallConfigure": "فتح الإعدادات",
     "statusFindings": "{{count}} مصادر مُدقَّقة",
     "sourcesEmpty": "شغّل التدقيق لملء المصادر المقتبسة وأحكام سند.",
-    "selectSource": "اختر مصدراً مقتبساً لمراجعة السجل والبيانات الوصفية ونتائج الربط.",
+    "selectSource": "اختر مصدراً مقتبساً لمراجعة السجل والبيانات الوصفية ونتائج التوثيق.",
     "verdictSection": "أحكام سند وشروحات عدم التطابق",
     "colReference": "المرجع",
-    "colPassage": "الربط",
+    "colPassage": "التوثيق",
     "siteLabel": "اقتباس داخل النص {{index}}",
     "sourceCoverage": "نص المصدر",
     "passageHeading": "مقطعك",
-    "sourceExcerptHeading": "مقتطف المصدر (المستخدم في الربط)",
+    "sourceExcerptHeading": "مقتطف المصدر (المستخدم في التوثيق)",
     "sourceExcerptLink": "فتح رابط المصدر",
     "noSourceExcerpt": "لم يُسترجَع مقتطف مصدر لهذا الاقتباس.",
     "overlapHint": "تداخل لفظي {{pct}}٪ ({{bucket}})",
     "claimQuotes": "اقتباسات حرفية من المصدر",
-    "noClaims": "لا تفصيل لكل ادّعاء (الربط معطّل أو متخطّى أو فشل التحليل).",
+    "noClaims": "لا تفصيل لكل ادّعاء (التوثيق معطّل أو متخطّى أو فشل التحليل).",
     "noCiteSites": "لم تُقيَّم اقتباسات داخل النص لهذا المرجع.",
     "masdarPlanned": "استيراد PDF للمصادر ومقتطفات النص الكامل مخطط (عامل مصدر). اليوم يستخدم سند ملخصات السجل ونص الوصول المفتوح من Europe PMC / Unpaywall.",
     "sourceProvider": {
@@ -662,8 +700,26 @@
     "attachPdfAction": "إرفاق PDF…",
     "attachPdfClear": "إزالة",
     "pdfAttached": "PDF مرفق",
-    "groundingSites": "ربط المقاطع",
+    "groundingSites": "توثيق الادعاءات",
     "citeSitesSummary": "{{count}} اقتباسات داخل النص تشترك في هذا الحكم",
+    "error": {
+      "noReferencesSection": "تعذّر العثور على قسم المراجع في هذا النص.",
+      "bibliographyEmpty": "مكتبة المراجع فارغة. صدّر المراجع أو استوردها في وضع المراجع أولاً.",
+      "noInTextCites": "لم يُعثر على استشهادات داخل النص في متن المخطوطة."
+    },
+    "grounding": {
+      "repairedNotice": "تم إصلاح JSON تلقائياً قبل التحليل.",
+      "retryNotice": "تمت الاستعادة في محاولة ثانية.",
+      "overallUnrelated": "أشار النموذج إلى أن المقطع غير مرتبط إجمالاً: {{detail}}",
+      "modelUnrelatedOverall": "أشار النموذج إلى عدم ارتباط إجمالي: {{detail}}",
+      "modelWeakOverall": "أشار النموذج إلى ضعف إجمالي: {{detail}}",
+      "verifyManually": "راجع يدوياً",
+      "weakPassageAlignment": "ضعف مطابقة المقطع مع النص الكامل المفتوح",
+      "checkFailed": "فشل فحص النموذج: {{message}}",
+      "invalidJson": "JSON غير صالح من النموذج",
+      "unparsed": "غير محلّل",
+      "evidenceSnippet": "نموذج ({{warning}}): {{snippet}}"
+    },
     "layers": {
       "registry": "السجل (L1)",
       "metadata": "البيانات الوصفية (L2)",

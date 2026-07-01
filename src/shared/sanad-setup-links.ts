@@ -1,5 +1,12 @@
 import { NASSILA_MODEL_ARTIFACTS } from './nassila-agent-tasks'
 
+export const NASSILA_WEB_BASE = 'https://nassila-web.vercel.app'
+
+export function sanadSetupDocsUrl(locale: string): string {
+  const lang = locale === 'ar' ? 'ar' : 'en'
+  return `${NASSILA_WEB_BASE}/${lang}/docs/sanad-setup`
+}
+
 /** Hugging Face GGUF repos (public). */
 export const SANAD_HF_E4B_URL = 'https://huggingface.co/QinEmPeRoR93/nassila-sanad-e4b'
 export const SANAD_HF_12B_URL = 'https://huggingface.co/QinEmPeRoR93/nassila-sanad-12b'

@@ -8,6 +8,9 @@ Source artwork is **`build/nassila-icon.svg`**. Rasterize it to the PNG Electron
 npm run icon:raster
 ```
 
-This runs `sharp` (`npm install`) and writes `build/icon.png` (512×512).
+This runs `sharp` + `to-ico` (`npm install`) and writes:
 
-Windows installers use `dist/.icon-ico/icon.ico` (generated during build). The unpacked `Nassila.exe` icon is applied in `scripts/win-after-pack.mjs` because `signAndEditExecutable: false` skips electron-builder’s built-in rcedit step (avoids code-sign tooling issues).
+- `build/icon.png` (512×512)
+- `build/icon.ico` (multi-size; **use this on Windows** for title bar + taskbar in dev)
+
+`npm run dev` / `npm run build` call `scripts/ensure-icon.mjs` first. Icons are also copied to `out/main/assets/` for the main process bundle.

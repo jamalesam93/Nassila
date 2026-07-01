@@ -18,6 +18,8 @@ import { Tooltip } from '../ui/tooltip'
 
 import { DropdownMenu, DropdownMenuItem, DropdownMenuSeparator } from '../ui/dropdown-menu'
 
+import { NetworkStatusIndicator } from '../NetworkStatusIndicator'
+
 import { MAX_VERIFICATION_ITEMS } from '../../../shared/verification-limits'
 
 
@@ -42,7 +44,7 @@ export default function AppHeader() {
 
   const toggleBibliographyDrawer = useShellStore((s) => s.toggleBibliographyDrawer)
 
-  const setBibliographyBusy = useShellStore((s) => s.setBibliographyBusy)
+  const setBibliographyTask = useShellStore((s) => s.setBibliographyTask)
 
 
 
@@ -108,7 +110,7 @@ export default function AppHeader() {
 
     setAutocorrecting(true)
 
-    setBibliographyBusy(true)
+    setBibliographyTask('autocorrect')
 
     try {
 
@@ -118,7 +120,7 @@ export default function AppHeader() {
 
       setAutocorrecting(false)
 
-      setBibliographyBusy(false)
+      setBibliographyTask('idle')
 
     }
 
@@ -130,7 +132,7 @@ export default function AppHeader() {
 
     setFindingDois(true)
 
-    setBibliographyBusy(true)
+    setBibliographyTask('doi')
 
     try {
 
@@ -140,7 +142,7 @@ export default function AppHeader() {
 
       setFindingDois(false)
 
-      setBibliographyBusy(false)
+      setBibliographyTask('idle')
 
     }
 
@@ -152,7 +154,7 @@ export default function AppHeader() {
 
     setVerifying(true)
 
-    setBibliographyBusy(true)
+    setBibliographyTask('verify')
 
     try {
 
@@ -162,7 +164,7 @@ export default function AppHeader() {
 
       setVerifying(false)
 
-      setBibliographyBusy(false)
+      setBibliographyTask('idle')
 
     }
 
@@ -460,15 +462,7 @@ export default function AppHeader() {
 
 
 
-        <span
-
-          className={`text-xs font-medium ${networkStatus === 'online' ? 'text-green-600 dark:text-green-400' : 'text-destructive'}`}
-
-        >
-
-          {networkStatus === 'online' ? t('statusBar.online') : t('statusBar.offline')}
-
-        </span>
+        <NetworkStatusIndicator />
 
       </div>
 

@@ -179,6 +179,14 @@ function containmentScore(candidateTitle: string, rawLine: string): number {
   return hits / ct.length
 }
 
+/** True when a registry title plausibly describes the bibliography line (guards wrong-DOI rows). */
+export function bibliographySupportsRegistryTitle(rawLine: string, canonicalTitle?: string): boolean {
+  const title = canonicalTitle?.trim()
+  const raw = rawLine.trim()
+  if (!title || raw.length < 20) return true
+  return containmentScore(title, raw) >= 0.35
+}
+
 export async function alignMetadata(userItem: CslItem, canonical: CslItem, source: RegistrySource): Promise<MetadataAlignment> {
   if (source === 'crossref') {
     const mismatches = await verifyAgainstCrossRef(userItem)

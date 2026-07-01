@@ -14,6 +14,8 @@ import {
 } from '../utils/output-filters'
 import type { CslDate } from '../../engine/types'
 import { authorPreviewLimits } from '../utils/author-preview'
+import { bibliographyTaskMessage } from '../utils/bibliography-task-message'
+import { MismatchResolutionActions, mismatchFieldLabel } from './MismatchResolutionActions'
 
 function formatAccessedForDisplay(accessed: CslDate): string {
   if (accessed.literal) return accessed.literal.trim()
@@ -49,7 +51,7 @@ export default function OutputPanel() {
   const [searchQuery, setSearchQuery] = useState('')
   const raqimListFilter = useShellStore((s) => s.raqimListFilter)
   const clearRaqimListFilter = useShellStore((s) => s.clearRaqimListFilter)
-  const bibliographyBusy = useShellStore((s) => s.bibliographyBusy)
+  const bibliographyTask = useShellStore((s) => s.bibliographyTask)
   const citations = useCitationStore((s) => s.citations)
   const selectedStyleId = useCitationStore((s) => s.selectedStyleId)
   const issues = useCitationStore((s) => s.issues)
@@ -74,6 +76,9 @@ export default function OutputPanel() {
       clearRaqimListFilter()
     }
   }
+
+  const taskMessage = bibliographyTaskMessage(bibliographyTask, t, citations.length)
+  const listBusy = bibliographyTask !== 'idle'
 
   const STATUS_STYLES = useMemo(
     () =>
@@ -217,12 +222,22 @@ export default function OutputPanel() {
         </div>
       )}
 
-      <div className="relative flex-1 overflow-auto px-4 py-3">
-        {bibliographyBusy ? (
-          <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-background/60">
-            <span className="text-sm text-muted-foreground">{t('outputPanel.busyOverlay')}</span>
+      {taskMessage ? (
+        <div className="shrink-0 border-b border-border bg-muted/30" role="status" aria-live="polite">
+          <p className="flex items-center gap-2 px-4 py-2 text-sm text-foreground">
+            <span
+              className="inline-block h-3.5 w-3.5 shrink-0 animate-spin rounded-full border-2 border-muted-foreground/40 border-t-muted-foreground"
+              aria-hidden
+            />
+            {taskMessage}
+          </p>
+          <div className="h-0.5 w-full overflow-hidden bg-muted">
+            <div className="h-full w-1/3 animate-pulse bg-primary/50 motion-reduce:animate-none" />
           </div>
-        ) : null}
+        </div>
+      ) : null}
+
+      <div className="relative flex-1 overflow-auto px-4 py-3" aria-busy={listBusy}>
         {citations.length === 0 ? (
           <div className="flex h-full items-center justify-center">
             <div className="text-center">
@@ -470,7 +485,7 @@ export default function OutputPanel() {
                           {itemMismatches.map((m) => (
                             <div key={m.id} className="text-xs">
                               <p className="font-medium text-yellow-800 dark:text-yellow-300">
-                                {t('issuePanel.mismatchField', { field: m.field })}
+                                {mismatchFieldLabel(item, m, t)}
                               </p>
                               <p className="text-yellow-800/80 dark:text-yellow-300/80">
                                 {t('issuePanel.yours', { value: m.userValue })}
@@ -478,6 +493,11 @@ export default function OutputPanel() {
                               <p className="text-yellow-800/80 dark:text-yellow-300/80">
                                 {t('issuePanel.canonical', { source: m.source, value: m.canonicalValue })}
                               </p>
+                              <MismatchResolutionActions
+                                citation={item}
+                                mismatch={m}
+                                networkOnline={networkStatus === 'online'}
+                              />
                             </div>
                           ))}
                         </div>

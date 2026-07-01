@@ -473,6 +473,69 @@ async function enhanceByType(item: CslItem): Promise<{ item: CslItem; log: Corre
   return { item, log: [] }
 }
 
+/** Crossref → PubMed → OpenAlex title search for bibliography rows (incl. wrong-DOI repair). */
+export async function findRegistryMatchForItem(item: CslItem): Promise<CslItem | null> {
+  if (!item.title?.trim()) return null
+  const query = buildSearchQuery(item) ?? item.title
+
+  const crResults = await searchCrossRef(query, 5, crossrefOptsFromItem(item))
+  const crMatch = findBestMatch(item, crResults)
+  if (crMatch?.DOI) return crMatch
+
+  const pubMedMatch = await findDoiByTitle(item)
+  if (pubMedMatch?.DOI) return pubMedMatch
+
+  const oaType = mapTypeForOpenAlex(item.type)
+  const oaResults = await searchOpenAlex(query, oaType, 5)
+  const oaMatch = findBestMatch(item, oaResults)
+  if (oaMatch?.DOI) return oaMatch
+
+  return null
+}
+
+/** Replace a wrong DOI when registry search finds a better match for the row's title. */
+export async function resolveDoiForTitle(
+  item: CslItem
+): Promise<{ item: CslItem; log: CorrectionLog[] } | null> {
+  const match = await findRegistryMatchForItem(item)
+  if (!match?.DOI) return null
+
+  const current = item.DOI?.trim().toLowerCase()
+  const nextDoi = match.DOI.trim().toLowerCase()
+  if (current && current === nextDoi) return null
+
+  const localTitle = (item.title ?? '').toLowerCase().trim()
+  const matchTitle = (match.title ?? '').toLowerCase().trim()
+  if (localTitle && matchTitle && titleSimilarity(localTitle, matchTitle) < 0.6) {
+    return null
+  }
+
+  const log: CorrectionLog[] = [
+    {
+      citationId: item.id,
+      field: 'DOI',
+      oldValue: item.DOI,
+      newValue: match.DOI,
+      rule: 'doi-title-resolve'
+    }
+  ]
+
+  let merged: CslItem = {
+    ...item,
+    DOI: match.DOI,
+    URL: match.URL ?? item.URL ?? `https://doi.org/${match.DOI}`
+  }
+  merged = mergeFields(merged, match, log)
+
+  return { item: merged, log }
+}
+
+function isPlaceholderTitle(title?: string): boolean {
+  const t = title?.trim()
+  if (!t) return true
+  return t === '()' || t === '(?)' || t === '—' || t === '-'
+}
+
 async function enhanceWebpage(
   item: CslItem,
   log: CorrectionLog[]
@@ -484,12 +547,13 @@ async function enhanceWebpage(
   let changed = false
 
   if (meta) {
-    if (!merged.title && meta.title) {
+    if (isPlaceholderTitle(merged.title) && meta.title) {
+      const oldTitle = merged.title
       merged.title = meta.title
       log.push({
         citationId: item.id,
         field: 'title',
-        oldValue: undefined,
+        oldValue: oldTitle,
         newValue: meta.title,
         rule: 'url-meta-fill'
       })

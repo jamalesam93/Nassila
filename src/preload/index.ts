@@ -84,8 +84,8 @@ const api = {
   },
 
   // ── Network ───────────────────────────────────────────────────────────
-  checkNetwork: (): Promise<NetworkStatus> =>
-    ipcRenderer.invoke('network:check'),
+  checkNetwork: (opts?: { reset?: boolean }): Promise<NetworkStatus> =>
+    ipcRenderer.invoke('network:check', opts),
 
   searchJournals: (query: string, rows?: number): Promise<JournalSearchResult[]> =>
     ipcRenderer.invoke('registry:searchJournals', query, rows),
@@ -166,6 +166,9 @@ const api = {
 
   setMenuLocale: (locale: 'en' | 'ar'): Promise<void> =>
     ipcRenderer.invoke('app:set-menu-locale', locale),
+
+  notifyShow: (payload: { title: string; body: string }): Promise<{ shown: boolean }> =>
+    ipcRenderer.invoke('notify:show', payload),
 
   predatory: {
     getList: (): Promise<PredatoryList> => ipcRenderer.invoke('predatory:getList'),

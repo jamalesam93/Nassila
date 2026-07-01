@@ -10,6 +10,7 @@ import { useOuroborosLoopStore } from '../../stores/ouroboros-loop-store'
 import { useShellStore } from '../../stores/shell-store'
 import { segmentManuscriptText } from '../../../engine/manuscript/segments'
 import { previewManuscript } from '../../utils/manuscript-preview'
+import { pushToast } from '../../lib/notify'
 import LoopAuditDetail from './LoopAuditDetail'
 import ManuscriptSanadBar from './ManuscriptSanadBar'
 
@@ -100,6 +101,7 @@ export default function OuroborosLoopWorkspace() {
       return
     }
     setBridgeMessage(t('loop.exportRefsDone', { count: result.count }))
+    pushToast('success', t('notifications.bridgeComplete', { count: result.count }))
   }, [exportManuscriptRefsToBibliography, raw, t])
 
   const onDrop = useCallback(
@@ -115,7 +117,7 @@ export default function OuroborosLoopWorkspace() {
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
       <section className="flex min-h-0 flex-col border-b border-border lg:w-[42%] lg:border-b-0 lg:border-e">
-        <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-border px-3 py-2">
+        <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-border px-3 py-2 rtl:flex-row-reverse">
           <ManuscriptSanadBar />
           {running ? (
             <button
@@ -184,7 +186,7 @@ export default function OuroborosLoopWorkspace() {
         ) : null}
 
         {!report && !running && bibliographyCount > 0 ? (
-          <label className="flex shrink-0 cursor-pointer items-start gap-2 border-b border-border px-3 py-2 text-xs">
+          <label className="flex shrink-0 cursor-pointer items-start gap-2 border-b border-border px-3 py-2 text-xs rtl:flex-row-reverse">
             <input
               type="checkbox"
               className="mt-0.5"
@@ -219,7 +221,7 @@ export default function OuroborosLoopWorkspace() {
           />
         </div>
 
-        <footer className="flex shrink-0 flex-wrap items-center gap-3 border-t border-border px-3 py-2">
+        <footer className="flex shrink-0 flex-wrap items-center gap-3 border-t border-border px-3 py-2 rtl:flex-row-reverse">
           <div className="min-w-0 flex-1 text-xs text-muted-foreground">
             {!preview.ok && preview.reason === 'empty' ? t('loop.previewEmpty') : null}
             {!preview.ok && preview.reason === 'no_references' ? t('loop.previewNoReferences') : null}
@@ -272,8 +274,8 @@ export default function OuroborosLoopWorkspace() {
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
             <div className="max-h-[40%] min-h-0 shrink-0 overflow-auto border-b border-border lg:max-h-[45%]">
               <table className="w-full text-sm">
-                <thead className="sticky top-0 z-10 border-b border-border bg-background text-start text-xs text-muted-foreground shadow-[0_1px_0_0_hsl(var(--border))]">
-                  <tr>
+                <thead className="sticky top-0 z-10 border-b border-border bg-background text-start text-xs text-muted-foreground shadow-[0_1px_0_0_hsl(var(--border))] rtl:text-end">
+                  <tr className="rtl:[&>th:last-child]:text-start">
                     <th className="bg-background px-3 py-2 font-medium">{t('loop.colReference')}</th>
                     <th className="bg-background px-2 py-2 font-medium">{t('loop.colPassage')}</th>
                   </tr>

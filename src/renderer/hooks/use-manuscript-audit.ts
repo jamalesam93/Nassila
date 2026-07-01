@@ -1,9 +1,10 @@
 import { useCallback, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { segmentManuscriptText } from '../../engine/manuscript/segments'
 import { parseInTextCitations } from '../../engine/manuscript/intext'
 import { buildBibEntriesFromReferencesText, mapInTextToBibliography } from '../../engine/manuscript/mapping'
 import { bibEntriesFromCitationLibrary } from '../../engine/manuscript/bibliography-bridge'
-import { alignMetadata, resolveRegistry } from '../../engine/manuscript/verify'
+import { alignMetadata, bibliographySupportsRegistryTitle, resolveRegistry } from '../../engine/manuscript/verify'
 import { referenceIntegrityRiskFromRegistry } from '../../engine/manuscript/integrity-risk'
 import {
   buildGroundingLlmMessages,
@@ -32,7 +33,20 @@ import type {
 } from '../../engine/manuscript/types'
 import { useManuscriptAuditStore } from '../stores/manuscript-audit-store'
 import { useCitationStore } from '../stores/citation-store'
+import i18n from '../i18n/config'
 import { ensureLlmKeyReady } from '../utils/llm-config-utils'
+import {
+  groundingCheckFailed,
+  groundingEvidenceSnippet,
+  groundingInvalidJsonHint,
+  groundingModelUnrelatedReason,
+  groundingModelWeakReason,
+  groundingOverallUnrelatedNotice,
+  groundingRepairedNotice,
+  groundingRetryNotice,
+  groundingWeakPassageReason,
+  joinGroundingParseWarnings
+} from '../utils/grounding-i18n'
 import { scorePassageAgainstSource } from '../../engine/relevance/deterministic'
 
 const MAX_BIB_ENTRIES_FALLBACK = 80
@@ -69,6 +83,7 @@ type ResolvedL3Source =
   | { kind: 'unavailable'; reason: string }
 
 export function useManuscriptAudit() {
+  const { t } = useTranslation()
   const controllerRef = useRef<AbortController | null>(null)
   const setStep = useManuscriptAuditStore((s) => s.setStep)
   const setError = useManuscriptAuditStore((s) => s.setError)
@@ -107,20 +122,20 @@ export function useManuscriptAudit() {
 
       if (!useBibliography && !seg.referencesText) {
         setStep('error')
-        setError('Could not locate a References/Bibliography section in this text.')
+        setError(t('loop.error.noReferencesSection'))
         return
       }
 
       if (useBibliography && libraryCitations.length === 0) {
         setStep('error')
-        setError('Bibliography library is empty. Export references or import in Bibliography mode first.')
+        setError(t('loop.error.bibliographyEmpty'))
         return
       }
 
       const inText = parseInTextCitations(seg.bodyText)
       if (useBibliography && inText.citations.length === 0) {
         setStep('error')
-        setError('No in-text citations detected in the manuscript body.')
+        setError(t('loop.error.noInTextCites'))
         return
       }
 
@@ -190,11 +205,28 @@ export function useManuscriptAudit() {
 
         const registry = await resolveRegistry(userItem)
         setStep('l2')
-        const meta = registry.canonical ? await alignMetadata(userItem, registry.canonical, registry.source) : { l2: { status: 'skipped', reason: 'not_applicable' as const }, mismatchedFields: [] }
+        let meta = registry.canonical ? await alignMetadata(userItem, registry.canonical, registry.source) : { l2: { status: 'skipped', reason: 'not_applicable' as const }, mismatchedFields: [] }
+
+        const doiTitleConflict =
+          Boolean(userItem.DOI?.trim()) &&
+          Boolean(registry.canonical?.title?.trim()) &&
+          !bibliographySupportsRegistryTitle(entry.raw, registry.canonical!.title)
+
+        if (doiTitleConflict) {
+          meta = {
+            l2: {
+              status: 'fail',
+              reasons: ['Bibliography line title does not match the registry record for this DOI. Verify the DOI or title.']
+            },
+            mismatchedFields: ['title']
+          }
+        }
 
         setStep('oa_fetch')
         const canonical = registry.canonical ?? userItem
-        const resolved = await resolveL3Source(canonical, unpaywallEmail)
+        const resolved = doiTitleConflict
+          ? { kind: 'unavailable' as const, reason: 'Bibliography title does not match registry record for this DOI' }
+          : await resolveL3Source(canonical, unpaywallEmail)
 
         const citationSpans = spans.length > 0 ? spans : [syntheticSpanForBodyPreview()]
         setStep('l3')
@@ -285,7 +317,7 @@ export function useManuscriptAudit() {
       setStep('done')
       controllerRef.current = null
     },
-    [auditReferenceSource, llmBaseUrl, llmEnabled, llmModel, llmPresetId, networkStatus, selectedTemplateId, setError, setReport, setStep, templateStrict, templates, unpaywallEmail, userActionsByBibKey]
+    [auditReferenceSource, llmBaseUrl, llmEnabled, llmModel, llmPresetId, networkStatus, selectedTemplateId, setError, setReport, setStep, t, templateStrict, templates, unpaywallEmail, userActionsByBibKey]
   )
 
   return { runAudit, cancel }
@@ -537,7 +569,7 @@ async function evaluateCiteSite(
     deterministicScore: scored.score,
     deterministicBucket: scored.bucket,
     matchedTermsSample: scored.matchedTerms.slice(0, 12),
-    passageVerdict: scored.bucket === 'low' ? { status: 'warn', reasons: ['Weak passage alignment against OA full text'] } : { status: 'pass' },
+    passageVerdict: scored.bucket === 'low' ? { status: 'warn', reasons: [groundingWeakPassageReason()] } : { status: 'pass' },
     ...excerptMeta
   }
 }
@@ -565,14 +597,17 @@ async function runGroundingLlm(
   try {
     await ensureLlmKeyReady(llm.llmPresetId, llm.llmBaseUrl)
   } catch (e) {
-    return { kind: 'llm_error', message: e instanceof Error ? e.message : String(e) }
+    return {
+      kind: 'llm_error',
+      message: groundingCheckFailed(e instanceof Error ? e.message : String(e))
+    }
   }
 
   const cappedPassage = truncateForGrounding(passage, GROUNDING_PASSAGE_MAX_CHARS)
   const cappedExcerpt = truncateForGrounding(sourceExcerpt, GROUNDING_EXCERPT_MAX_CHARS)
 
   let lastRaw = ''
-  let lastParseError = 'Invalid JSON from model'
+  let lastParseError = groundingInvalidJsonHint()
 
   try {
     for (let attempt = 0; attempt < GROUNDING_LLM_RETRY_ATTEMPTS; attempt++) {
@@ -591,32 +626,38 @@ async function runGroundingLlm(
       let verdict = passageVerdictFromGroundingClaims(parsed.data.claims, scored.bucket, cappedExcerpt)
 
       const warnings: string[] = []
-      if (parsed.repaired) warnings.push('LLM JSON was auto-repaired before parsing.')
-      if (attempt > 0) warnings.push('Recovered on a second LLM attempt.')
+      if (parsed.repaired) warnings.push(groundingRepairedNotice())
+      if (attempt > 0) warnings.push(groundingRetryNotice())
 
       if (parsed.data.overallVerdict === 'unrelated') {
         if (verdict.status === 'pass') {
+          const detail = (parsed.data.overallRationale ?? []).join('; ') || i18n.t('loop.grounding.verifyManually')
           verdict = {
             status: 'warn',
-            reasons: [`Model flagged unrelated overall: ${(parsed.data.overallRationale ?? []).join('; ') || '(no rationale)'}`]
+            reasons: [groundingModelUnrelatedReason(detail)]
           }
         } else if (verdict.status === 'warn') {
-          warnings.push(`Model overall unrelated — ${(parsed.data.overallRationale ?? []).join('; ')}`)
+          const detail = (parsed.data.overallRationale ?? []).join('; ')
+          if (detail) warnings.push(groundingOverallUnrelatedNotice(detail))
         }
       } else if (parsed.data.overallVerdict === 'weak' && verdict.status === 'pass') {
+        const detail = (parsed.data.overallRationale ?? []).join('; ') || i18n.t('loop.grounding.verifyManually')
         verdict = {
           status: 'warn',
-          reasons: [`Model overall weak: ${(parsed.data.overallRationale ?? []).join('; ') || 'verify manually'}`]
+          reasons: [groundingModelWeakReason(detail)]
         }
       }
 
-      const parseWarning = warnings.length > 0 ? warnings.join(' ') : undefined
+      const parseWarning = joinGroundingParseWarnings(warnings)
       return { kind: 'parsed', verdict, claims: parsed.data.claims, raw: content, parseWarning }
     }
 
     return { kind: 'parse_fail', raw: lastRaw, hint: lastParseError }
   } catch (e) {
-    return { kind: 'llm_error', message: `LLM check failed: ${(e as Error).message}` }
+    return {
+      kind: 'llm_error',
+      message: groundingCheckFailed((e as Error).message)
+    }
   }
 }
 
@@ -647,7 +688,7 @@ function groundingEvidenceFromSite(site: CiteGroundingSite, resolved: ResolvedL3
       {
         source: metaSource,
         url,
-        text: `LLM (${site.llmParseWarning ?? 'unparsed'}): ${rawSnippet.slice(0, 500)}`
+        text: groundingEvidenceSnippet(site.llmParseWarning, rawSnippet.slice(0, 500))
       }
     ]
   }

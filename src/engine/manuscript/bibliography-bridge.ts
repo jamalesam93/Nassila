@@ -19,11 +19,20 @@ export function bibKeyFromManuscriptRefCitationId(id: string): string | null {
   return key.length > 0 ? key : null
 }
 
-function bibEntryRawLine(item: CslItem): string {
+/** Prefer parsed manuscript line (`_original`) over rebuilt title+DOI after registry patches. */
+export function manuscriptBibliographyLine(item: CslItem): string {
+  const original = item._original?.trim()
+  if (original) {
+    return original.replace(/^\s*\[?\d+[\].)]\s+/, '').trim()
+  }
   const title = item.title?.trim()
   const doi = item.DOI?.trim()
   if (title && doi) return `${title}. ${doi}`
   return title ?? doi ?? item.id
+}
+
+function bibEntryRawLine(item: CslItem): string {
+  return manuscriptBibliographyLine(item)
 }
 
 export function cslItemsFromManuscriptBibEntries(entries: BibEntry[]): CslItem[] {

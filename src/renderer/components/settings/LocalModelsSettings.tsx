@@ -12,6 +12,8 @@ import { useManuscriptAuditPrefsSync } from '../../hooks/use-manuscript-audit-pr
 
 import { patchSanadSetupPrefs, useSanadSetupPrompt } from '../../hooks/use-sanad-setup-prompt'
 
+import { pushToast } from '../../lib/notify'
+
 import { useShellStore } from '../../stores/shell-store'
 
 import {
@@ -253,6 +255,8 @@ export default function LocalModelsSettings() {
       await refreshKeyState()
 
       setConnTest(t('manuscriptAudit.keySaved'))
+
+      pushToast('success', t('notifications.keySaved'))
 
     } catch (e) {
 

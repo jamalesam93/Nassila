@@ -4,14 +4,16 @@ import { useCitationStore } from '../stores/citation-store'
 import { useManuscriptAuditStore } from '../stores/manuscript-audit-store'
 import { useShellStore } from '../stores/shell-store'
 import { previewManuscript } from '../utils/manuscript-preview'
+import { bibliographyTaskMessage } from '../utils/bibliography-task-message'
+import { NetworkStatusIndicator } from './NetworkStatusIndicator'
 
 export default function StatusBar() {
   const { t } = useTranslation()
   const appSurface = useShellStore((s) => s.appSurface)
-  const bibliographyBusy = useShellStore((s) => s.bibliographyBusy)
+  const bibliographyTask = useShellStore((s) => s.bibliographyTask)
+  const citationCount = useCitationStore((s) => s.citations.length)
 
   const issueCount = useCitationStore((s) => s.issues.length)
-  const networkStatus = useCitationStore((s) => s.networkStatus)
   const selectedStyleId = useCitationStore((s) => s.selectedStyleId)
   const predatoryFlags = useCitationStore((s) => s.predatoryFlags)
   const duplicateCount = useCitationStore((s) => s.duplicates.length)
@@ -43,16 +45,16 @@ export default function StatusBar() {
         ) : null}
         {findingCount > 0 ? <span>{t('loop.statusFindings', { count: findingCount })}</span> : null}
         <div className="flex-1" />
-        <span className={networkStatus === 'online' ? 'text-green-600 dark:text-green-400' : 'text-destructive'}>
-          {networkStatus === 'online' ? t('statusBar.online') : t('statusBar.offline')}
-        </span>
+        <NetworkStatusIndicator />
       </div>
     )
   }
 
+  const taskMessage = bibliographyTaskMessage(bibliographyTask, t, citationCount)
+
   return (
     <div className={baseClass}>
-      {bibliographyBusy ? <span>{t('toolbar.verifyingBusy')}</span> : null}
+      {taskMessage ? <span>{taskMessage}</span> : null}
       {issueCount > 0 && (
         <span className="text-destructive">{t('statusBar.issues', { count: issueCount })}</span>
       )}
@@ -66,9 +68,7 @@ export default function StatusBar() {
       )}
       {selectedStyleId ? <span>{t('statusBar.target', { id: selectedStyleId })}</span> : null}
       <div className="flex-1" />
-      <span className={networkStatus === 'online' ? 'text-green-600 dark:text-green-400' : 'text-destructive'}>
-        {networkStatus === 'online' ? t('statusBar.online') : t('statusBar.offline')}
-      </span>
+      <NetworkStatusIndicator />
     </div>
   )
 }

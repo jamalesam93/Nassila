@@ -1,0 +1,17 @@
+---
+description: Arabic UI copy — glossary, ask-before-translate, academic tone
+globs: src/renderer/i18n/**,src/main/menu-i18n.ts
+alwaysApply: false
+---
+
+# Arabic i18n
+
+Before editing Arabic user-facing strings:
+
+1. Read [docs/AR_I18N_GLOSSARY.md](../../docs/AR_I18N_GLOSSARY.md) and follow [`.cursor/skills/nassila-arabic/SKILL.md`](../skills/nassila-arabic/SKILL.md).
+2. **Ask the user and wait for approval** before applying Arabic translations — present EN, current AR, proposed AR, and rationale.
+3. **Academic tone** — natural Arabic, not literal EN calques (avoid «ربط المقاطع», «المخرجات», «قسرية»).
+4. **Key parity** — every key in `en/translation.json` must exist in `ar/translation.json`.
+5. **Locked terms** — hero lines and worker names from [docs/BRAND.md](../../docs/BRAND.md); do not translate DOI, Crossref, L1/L2/L3, etc.
+
+When the workspace includes **nassila-web**, apply the same rules to `messages/ar.json` and `content/docs/ar/**`.

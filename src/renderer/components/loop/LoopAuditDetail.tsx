@@ -162,7 +162,7 @@ function SiteBlock({ site, index, defaultOpen }: { site: CiteGroundingSite; inde
                       {claim.sourceQuotes.map((quote, qi) => (
                         <li
                           key={qi}
-                          className="border-s-2 border-primary/40 ps-2 text-xs italic leading-relaxed text-foreground"
+                          className="border-s-2 border-primary/40 ps-2 text-xs italic leading-relaxed text-foreground rtl:border-s-0 rtl:border-e-2 rtl:ps-0 rtl:pe-2"
                         >
                           {quote}
                         </li>

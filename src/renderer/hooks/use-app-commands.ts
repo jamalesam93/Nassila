@@ -2,8 +2,11 @@ import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import mammoth from 'mammoth'
 import { APP_MENU_COMMANDS, type AppMenuCommand } from '../../shared/app-menu-commands'
+import { MAX_VERIFICATION_ITEMS } from '../../shared/verification-limits'
 import { exportReportJson, exportReportMarkdown } from '../../engine/audit/report'
+import { translatePdfImportWarnings } from '../utils/grounding-i18n'
 import { setAppLocale } from '../i18n/config'
+import { pushToast } from '../lib/notify'
 import { useCitationEngine } from './use-citation-engine'
 import { useCitationStore } from '../stores/citation-store'
 import { useManuscriptAuditStore } from '../stores/manuscript-audit-store'
@@ -24,7 +27,6 @@ export function useAppCommands() {
 
   const {
     importFiles,
-    exportWithDialog,
     exportCitations,
     runAutocorrect,
     findMissingDoi,
@@ -80,7 +82,7 @@ export function useAppCommands() {
             text = extraction.text
             sourceFormat = 'pdf'
             if (extraction.warnings.length > 0) {
-              setAuditError(extraction.warnings.join(' · '))
+              setAuditError(translatePdfImportWarnings(extraction.warnings))
             } else {
               setAuditError(null)
             }
@@ -137,21 +139,46 @@ export function useAppCommands() {
     })
     if (!path) return
 
-    await window.api?.writeFile(path, await exportCitations('csl-json'))
-  }, [exportCitations])
+    try {
+      await window.api?.writeFile(path, await exportCitations('csl-json'))
+      const file = path.split(/[/\\]/).pop() ?? path
+      pushToast('success', t('notifications.exported', { file }))
+    } catch (e) {
+      pushToast('error', t('notifications.exportFailed', { message: (e as Error).message }))
+    }
+  }, [exportCitations, t])
 
   const findMissingDois = useCallback(async () => {
-    const missing = useCitationStore.getState().citations.filter((item) => !item.DOI)
-    for (const item of missing) {
-      await findMissingDoi(item.id)
+    const store = useCitationStore.getState()
+    if (store.networkStatus !== 'online') {
+      pushToast('warn', t('notifications.offline'))
+      return
     }
-  }, [findMissingDoi])
+    const missing = store.citations.filter((item) => !item.DOI)
+    let found = 0
+    for (const item of missing) {
+      const logs = await findMissingDoi(item.id)
+      if (logs.length > 0) found += 1
+    }
+    pushToast('success', t('notifications.doiFound', { found, total: missing.length }))
+  }, [findMissingDoi, t])
 
   const verifyReferences = useCallback(async () => {
     const store = useCitationStore.getState()
-    if (store.networkStatus !== 'online') return
-    await refreshVerification(store.citations)
-  }, [refreshVerification])
+    if (store.networkStatus !== 'online') {
+      pushToast('warn', t('notifications.offline'))
+      return
+    }
+    if (store.citations.length === 0) return
+    try {
+      await refreshVerification(store.citations)
+      const mismatches = useCitationStore.getState().verificationMismatches.length
+      const verified = Math.min(store.citations.length, MAX_VERIFICATION_ITEMS)
+      pushToast('success', t('notifications.verifyComplete', { verified, mismatches }))
+    } catch (e) {
+      pushToast('error', t('notifications.verifyFailed', { message: (e as Error).message }))
+    }
+  }, [refreshVerification, t])
 
   const detectDuplicates = useCallback(() => {
     useCitationStore.getState().refreshDuplicatesAndPredatory()
@@ -166,8 +193,14 @@ export function useAppCommands() {
       filters: [{ name: 'JSON', extensions: ['json'] }]
     })
     if (!path) return
-    await window.api?.writeFile(path, exportReportJson(report))
-  }, [])
+    try {
+      await window.api?.writeFile(path, exportReportJson(report))
+      const file = path.split(/[/\\]/).pop() ?? path
+      pushToast('success', t('notifications.exported', { file }))
+    } catch (e) {
+      pushToast('error', t('notifications.exportFailed', { message: (e as Error).message }))
+    }
+  }, [t])
 
   const exportManuscriptAuditMarkdown = useCallback(async () => {
     const report = useManuscriptAuditStore.getState().report
@@ -178,8 +211,43 @@ export function useAppCommands() {
       filters: [{ name: 'Markdown', extensions: ['md'] }]
     })
     if (!path) return
-    await window.api?.writeFile(path, exportReportMarkdown(report))
-  }, [])
+    try {
+      await window.api?.writeFile(path, exportReportMarkdown(report))
+      const file = path.split(/[/\\]/).pop() ?? path
+      pushToast('success', t('notifications.exported', { file }))
+    } catch (e) {
+      pushToast('error', t('notifications.exportFailed', { message: (e as Error).message }))
+    }
+  }, [t])
+
+  const runAutocorrectWithNotify = useCallback(async (useOnline = true) => {
+    const log = await runAutocorrect(useOnline)
+    if (log.length > 0) {
+      pushToast('success', t('notifications.autocorrectComplete', { count: log.length }))
+    } else {
+      pushToast('info', t('notifications.autocorrectNone'))
+    }
+    return log
+  }, [runAutocorrect, t])
+
+  const exportBibliographyWithNotify = useCallback(async (): Promise<void> => {
+    const store = useCitationStore.getState()
+    if (store.citations.length === 0) return
+
+    const path = await window.api?.saveFileDialog()
+    if (!path) return
+
+    const ext = path.split('.').pop()?.toLowerCase()
+    const format = ext === 'txt' ? 'plain-text' : 'csl-json'
+    try {
+      const content = await exportCitations(format)
+      await window.api?.writeFile(path, content)
+      const file = path.split(/[/\\]/).pop() ?? path
+      pushToast('success', t('notifications.exported', { file }))
+    } catch (e) {
+      pushToast('error', t('notifications.exportFailed', { message: (e as Error).message }))
+    }
+  }, [exportCitations, t])
 
   const cycleTheme = useCallback(() => {
     const next: Record<ThemeMode, ThemeMode> = {
@@ -201,7 +269,7 @@ export function useAppCommands() {
         await importReferences()
         return
       case APP_MENU_COMMANDS.EXPORT_BIBLIOGRAPHY:
-        await exportWithDialog()
+        await exportBibliographyWithNotify()
         return
       case APP_MENU_COMMANDS.EXPORT_CSL_JSON:
         await exportCslJson()
@@ -216,7 +284,7 @@ export function useAppCommands() {
         store.clearCitations()
         return
       case APP_MENU_COMMANDS.RUN_AUTOCORRECT:
-        await runAutocorrect(true)
+        await runAutocorrectWithNotify(true)
         return
       case APP_MENU_COMMANDS.FIND_MISSING_DOIS:
         await findMissingDois()
@@ -261,10 +329,10 @@ export function useAppCommands() {
     cycleTheme,
     detectDuplicates,
     exportCslJson,
-    exportWithDialog,
+    exportBibliographyWithNotify,
     findMissingDois,
     importReferences,
-    runAutocorrect,
+    runAutocorrectWithNotify,
     setAboutModalOpen,
     setSettingsModalOpen,
     setThemeMode,
@@ -276,14 +344,14 @@ export function useAppCommands() {
     detectDuplicates,
     executeCommand,
     exportCslJson,
-    exportBibliography: exportWithDialog,
+    exportBibliography: exportBibliographyWithNotify,
     exportManuscriptAuditJson,
     exportManuscriptAuditMarkdown,
     findMissingDois,
     importManuscript,
     importManuscriptFromPath,
     importReferences,
-    runAutocorrect,
+    runAutocorrect: runAutocorrectWithNotify,
     verifyReferences
   }
 }

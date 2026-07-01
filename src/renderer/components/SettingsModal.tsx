@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Button } from './ui/button'
 import { Tabs } from './ui/tabs'
 import PredatoryListSettings from './settings/PredatoryListSettings'
+import NotificationSettings from './settings/NotificationSettings'
 import LocalModelsSettings from './settings/LocalModelsSettings'
 import SourceFetchSettings from './settings/SourceFetchSettings'
 import { useShellStore } from '../stores/shell-store'
@@ -55,6 +56,7 @@ export default function SettingsModal() {
         <div className="mt-4">
           {tab === 'general' ? (
             <div className="space-y-2">
+              <NotificationSettings />
               <PredatoryListSettings />
               <SourceFetchSettings />
             </div>
@@ -62,7 +64,7 @@ export default function SettingsModal() {
           {tab === 'localModels' ? <LocalModelsSettings /> : null}
         </div>
 
-        <div className="mt-6 flex justify-end">
+        <div className="mt-6 flex justify-end gap-2 rtl:flex-row-reverse">
           <Button type="button" size="sm" onClick={() => setSettingsModalOpen(false)}>
             {t('settings.close')}
           </Button>

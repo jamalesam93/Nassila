@@ -8,7 +8,7 @@ alwaysApply: false
 
 - No Node.js APIs; use `window.api` from preload IPC only.
 - UI state: Zustand stores under `stores/`; keep components focused.
-- i18n: add EN and AR keys in `i18n/` when adding user-visible copy; Arabic enables RTL on `<html>`.
+- i18n: add EN and AR keys in `i18n/` when adding user-visible copy; Arabic enables RTL on `<html>`. For Arabic edits, read [docs/AR_I18N_GLOSSARY.md](../../docs/AR_I18N_GLOSSARY.md) and [`.cursor/skills/nassila-arabic/SKILL.md`](../skills/nassila-arabic/SKILL.md); ask before translating.
 - **Manuscript (Ouroboros loop)** ships via [`OuroborosLoopWorkspace`](../components/loop/OuroborosLoopWorkspace.tsx) (`appSurface === 'loop'`). Extend the loop per `docs/PRODUCT.md`; do not reintroduce Hydra-style peer worker tabs.
 - Engine-heavy work belongs in `src/engine/`, not duplicated in the renderer.
 - Run `npm test` and `npm run lint` after substantive changes.

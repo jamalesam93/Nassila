@@ -4,6 +4,26 @@ All notable changes to **Nassila** are documented here.
 
 ## [Unreleased]
 
+## [1.1.3] — 2026-06-29 · Polish
+
+### Added
+
+- **Notifications** — in-app toasts for verify, autocorrect, DOI lookup, export, predatory-list update, and bibliography bridge; OS notifications when a manuscript audit finishes while the window is in the background (toggle in Settings → General).
+- **Sanad setup guide link** — slim **Set up Sanad** modal with Hugging Face download links and a locale-aware link to the canonical website docs (`/docs/sanad-setup`).
+
+### Changed
+
+- **Arabic UI** — glossary-aligned copy across the app (workers, modes, panels, passage grounding); shipped with this release.
+- **Bibliography busy state** — task-specific status strip (verify / autocorrect / DOI lookup) instead of a dimmed overlay on the reference list.
+- **Sanad setup modal** — removed duplicated LM Studio / Ollama / vLLM walkthrough (now on nassila-web).
+
+### Fixed
+
+- **Windows app icon** — taskbar/titlebar now uses Nassila icon in dev and builds (generated `build/icon.png` + `build/icon.ico`).
+- **Network status** — reduced false Offline flapping during verify/audit; added **Retry connection** when Offline.
+- **DOI ↔ title conflicts** — when a DOI resolves to a different article than the row title, Nassila now treats it as an identity conflict. UI offers **Find DOI for title** or **Use DOI’s title**; autocorrect prefers fixing the DOI rather than overwriting the title.
+- **Webpage titles** — placeholder titles like `()` are now replaced from fetched page metadata during autocorrect.
+
 ## [1.1.2] — 2026-06-27
 
 ### Added
