@@ -22,6 +22,7 @@ import {
 import { classifyGreyTags } from '../../engine/audit/grey'
 import { checkStructure } from '../../engine/audit/structure'
 import { buildChecklistFromText } from '../../engine/audit/checklist'
+import { fullTextFromOaPdfBytes } from '../../engine/manuscript/oa-pdf-grounding'
 import type {
   AuditReport,
   CitationFinding,
@@ -88,6 +89,9 @@ export function useManuscriptAudit() {
   const setStep = useManuscriptAuditStore((s) => s.setStep)
   const setError = useManuscriptAuditStore((s) => s.setError)
   const setReport = useManuscriptAuditStore((s) => s.setReport)
+  const beginIncrementalAudit = useManuscriptAuditStore((s) => s.beginIncrementalAudit)
+  const appendFinding = useManuscriptAuditStore((s) => s.appendFinding)
+  const clearAuditProgress = useManuscriptAuditStore((s) => s.clearAuditProgress)
   const userActionsByBibKey = useManuscriptAuditStore((s) => s.userActionsByBibKey)
   const llmEnabled = useManuscriptAuditStore((s) => s.llmEnabled)
   const llmBaseUrl = useManuscriptAuditStore((s) => s.llmBaseUrl)
@@ -103,8 +107,9 @@ export function useManuscriptAudit() {
   const cancel = useCallback(() => {
     controllerRef.current?.abort()
     controllerRef.current = null
+    clearAuditProgress()
     setStep('idle')
-  }, [setStep])
+  }, [clearAuditProgress, setStep])
 
   const runAudit = useCallback(
     async (rawText: string) => {
@@ -112,6 +117,8 @@ export function useManuscriptAudit() {
       const controller = new AbortController()
       controllerRef.current = controller
       setError(null)
+      setReport(null)
+      clearAuditProgress()
       setStep('parsing')
 
       const appVersion = (await window.api?.getAppAbout().catch(() => null))?.version ?? 'unknown'
@@ -149,6 +156,22 @@ export function useManuscriptAudit() {
       const relevantBibEntries =
         usedBibKeys.size > 0 ? bib.entries.filter((e) => usedBibKeys.has(e.key)) : bib.entries.slice(0, MAX_BIB_ENTRIES_FALLBACK)
 
+      const tpl = templates.find((t) => t.id === selectedTemplateId)
+      beginIncrementalAudit({
+        total: relevantBibEntries.length,
+        shell: {
+          manuscript: {
+            wordCount: seg.fullText.split(/\s+/).filter(Boolean).length,
+            sourceFormat: 'paste'
+          },
+          template: { id: selectedTemplateId, name: tpl?.name ?? selectedTemplateId, strict: templateStrict },
+          checklist: [],
+          sources: sourcesAttribution(),
+          appVersion,
+          networkStatus
+        }
+      })
+
       setStep('l1')
       const findings: CitationFinding[] = []
 
@@ -161,7 +184,7 @@ export function useManuscriptAudit() {
             : []
 
         if (!userItem) {
-          findings.push({
+          const finding: CitationFinding = {
             bibKey: entry.key,
             inTextSpans: spans,
             referenceIntegrityRisk: referenceIntegrityRiskFromRegistry({
@@ -177,12 +200,14 @@ export function useManuscriptAudit() {
             evidence: [{ source: 'abstract', text: entry.raw }],
             greyTags: [],
             userAction: userActionsByBibKey[entry.key] ?? defaultAction()
-          })
+          }
+          findings.push(finding)
+          appendFinding(finding)
           continue
         }
 
         if (networkStatus !== 'online') {
-          findings.push({
+          const finding: CitationFinding = {
             bibKey: entry.key,
             inTextSpans: spans,
             resolvedItem: userItem,
@@ -199,10 +224,13 @@ export function useManuscriptAudit() {
             evidence: [{ source: 'abstract', text: entry.raw }],
             greyTags: classifyGreyTags(userItem),
             userAction: userActionsByBibKey[entry.key] ?? defaultAction()
-          })
+          }
+          findings.push(finding)
+          appendFinding(finding)
           continue
         }
 
+        setStep('l1')
         const registry = await resolveRegistry(userItem)
         setStep('l2')
         let meta = registry.canonical ? await alignMetadata(userItem, registry.canonical, registry.source) : { l2: { status: 'skipped', reason: 'not_applicable' as const }, mismatchedFields: [] }
@@ -258,7 +286,7 @@ export function useManuscriptAudit() {
 
         const sourceOnce = resolvedSourceSnippets(resolved)
 
-        findings.push({
+        const finding: CitationFinding = {
           bibKey: entry.key,
           inTextSpans: spans,
           resolvedItem: userItem,
@@ -281,7 +309,9 @@ export function useManuscriptAudit() {
           ],
           greyTags: classifyGreyTags(userItem),
           userAction: userActionsByBibKey[entry.key] ?? defaultAction()
-        })
+        }
+        findings.push(finding)
+        appendFinding(finding)
       }
 
       const report: AuditReport = {
@@ -317,7 +347,7 @@ export function useManuscriptAudit() {
       setStep('done')
       controllerRef.current = null
     },
-    [auditReferenceSource, llmBaseUrl, llmEnabled, llmModel, llmPresetId, networkStatus, selectedTemplateId, setError, setReport, setStep, t, templateStrict, templates, unpaywallEmail, userActionsByBibKey]
+    [appendFinding, auditReferenceSource, beginIncrementalAudit, clearAuditProgress, llmBaseUrl, llmEnabled, llmModel, llmPresetId, networkStatus, selectedTemplateId, setError, setReport, setStep, t, templateStrict, templates, unpaywallEmail, userActionsByBibKey]
   )
 
   return { runAudit, cancel }
@@ -391,7 +421,15 @@ async function resolveL3Source(canonical: CanonicalItem, unpaywallEmailRaw: stri
           const fetched = await window.api.fetchOaUrl(candidateUrl)
           if ((fetched as { blocked?: boolean }).blocked) continue
           if (fetched.kind === 'pdf') {
-            return { kind: 'pdf_pending', url: candidateUrl }
+            const pdfBytes = fetched.pdfBytes
+            if (!pdfBytes?.byteLength) continue
+            try {
+              const fromPdf = await fullTextFromOaPdfBytes(pdfBytes, candidateUrl)
+              if (fromPdf) return fromPdf
+            } catch {
+              /* try next OA candidate */
+            }
+            continue
           }
           const rawText = fetched.text ?? ''
           if (!rawText.trim()) continue

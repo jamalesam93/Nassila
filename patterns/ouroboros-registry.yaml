@@ -1,0 +1,98 @@
+# Ouroboros product loop — stage registry (machine-readable)
+# Human doc: LOOP.md · Code: src/shared/ouroboros-loop-stages.ts
+
+version: 1
+policy: offline_first
+
+stages:
+  - id: upload
+    worker: null
+    deterministic: true
+    status: live
+    hooks:
+      - src/renderer/components/loop/OuroborosLoopWorkspace.tsx
+
+  - id: maktab_extract
+    worker: Maktab
+    task: doc_extract
+    deterministic: true
+    status: partial
+    notes: pdf.js tier live; OCR module interface; Tesseract backend planned
+    hooks:
+      - src/engine/maktab/extract.ts
+      - src/engine/manuscript/pdf-extract.ts
+      - src/engine/parser/document.ts
+    ocr_plan: docs/MAKTAB_OCR.md
+
+  - id: masdar_sources
+    worker: Masdar
+    task: source_pdf_extract
+    deterministic: true
+    status: partial
+    notes: Masdar-lite 1.2.0; reuses Maktab extract for OA PDFs
+    hooks:
+      - src/renderer/hooks/use-manuscript-audit.ts
+
+  - id: raqim_verify
+    worker: Raqim
+    task: webpage_metadata
+    deterministic: true
+    status: live
+    hooks:
+      - src/engine/manuscript/verify.ts
+      - src/engine/verifier/
+
+  - id: tasnif_risk
+    worker: Tasnif
+    task: webpage_classify
+    deterministic: true
+    status: live
+    hooks:
+      - src/engine/predatory/
+      - src/engine/dedup/
+
+  - id: sanad_ground
+    worker: Sanad
+    task: l3_grounding
+    deterministic: partial
+    status: live
+    hooks:
+      - src/engine/manuscript/grounding-llm.ts
+      - src/renderer/hooks/use-manuscript-audit.ts
+
+  - id: sharh_explain
+    worker: Sharh
+    task: issue_explain
+    deterministic: true
+    status: partial
+    hooks:
+      - src/renderer/components/loop/LoopAuditDetail.tsx
+
+  - id: shahid_evidence
+    worker: Shahid
+    task: table_figure_grounding
+    deterministic: false
+    status: planned
+    tier: 3
+
+  - id: export
+    worker: Raqim
+    deterministic: true
+    status: live
+    hooks:
+      - src/engine/formatter/citeproc-wrapper.ts
+      - src/engine/audit/report.ts
+
+ocr:
+  owner: Maktab
+  languages: [eng, fra, ara]
+  backend: tesseract
+  backend_status: stub
+  policy: on_device_only
+  tiers:
+    - id: embedded_text
+      engine: pdfjs-dist
+      when: extractable glyphs present
+    - id: ocr
+      engine: tesseract
+      when: scan or embedded_text insufficient

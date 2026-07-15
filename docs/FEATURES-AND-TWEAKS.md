@@ -1,8 +1,8 @@
 # Features & Tweaks — Nassila app
 
-**Status:** 2026-06-29. Companion to [`POST_V114_MAP.md`](../../NassilaT/training/POST_V114_MAP.md) and the [website docs](https://nassila-web.vercel.app/en/docs/sanad-setup) (now canonical). Scope is the **desktop app** ([Nassila](https://github.com/jamalesam93/Nassila)). Items are grouped by priority and each has an effort, a blast radius, and acceptance checks so they can be picked off independently.
+**Status:** 2026-07-13. Companion to NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) and the [website docs](https://nassila-web.vercel.app/en/docs/sanad-setup) (now canonical). Scope is the **desktop app** ([Nassila](https://github.com/jamalesam93/Nassila)). Items are grouped by priority and each has an effort, a blast radius, and acceptance checks so they can be picked off independently.
 
-> **Version streams:** App semver (**Nassila 1.1.x**) and Sanad checkpoint **SNN** (**S12** / **S14**) are independent — see NassilaT [`POST_V114_MAP.md`](../../NassilaT/training/POST_V114_MAP.md) § App release train.
+> **Version streams:** App semver (**Nassila 1.1.x**) and Sanad checkpoint **SNN** (**S12** / **S14**) are independent — see NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) § App release train.
 
 > **Red line reminder (from the website docs spec):** no training methodology, corpus, QLoRA, eval scorecards, or NassilaT internals surface in the app. All copy must stay user-facing.
 
@@ -123,6 +123,51 @@ These were identified in the cross-repo review and confirmed by the 2026-06-28 s
 
 `setReport(report)` fires once at the end (`use-manuscript-audit.ts:284`). On the 76-cite smoke corpus the cited-sources table is blank for minutes. Add `appendFinding()` to the store, push each `CitationFinding` as it completes, render an `N / M` chip next to the phase label. The 2026-06-28 sign-off explicitly lists this as P1 operator pain. **Acceptance:** table populates incrementally; chip shows `processed/total`; cancel still aborts cleanly.
 
+**Shipped in 1.2.0** — see **#4b** for loop-panel refinement (**1.2.1**).
+
+### 4b. Audit in-progress panel (loop UX refinement)
+
+**Problem.** **1.2.0 #4** fills the cited-sources table and auto-opens `LoopAuditDetail` while the audit is still running. On long manuscripts (50+ refs) the right panel shows partial verdicts ("Insufficient evidence", passage grounding) that read like final results and feel static/jumpy as rows append.
+
+**Design (option 2 — table grows, detail locked).** While `running`:
+
+- Keep **incremental table** — rows and passage-status dots append as each reference completes; `N / M` + phase stay on the left bar and status bar.
+- **Hide `LoopAuditDetail`** until `step === 'done'` (no drill-down mid-run).
+- **Disable auto-select** of `findings[0]` during the run; select first row only when the audit completes (or when the user clicks a row after done).
+- Right panel header: short honest copy + current phase (no fake percentage). Optional muted progress affordance; honor `prefers-reduced-motion`.
+
+**Ship:** **1.2.1 Masdar UX** (pairs with #5–6, #8, icon I2) · **Effort:** small · **Blast radius:** `OuroborosLoopWorkspace.tsx`, `ouroboros-loop-store` selection effect, i18n `loop.auditInProgress*`
+
+**Acceptance.**
+- [ ] During audit: table grows; detail pane shows in-progress message only (not verdict cards).
+- [ ] After audit: full table + detail behave as today.
+- [ ] No auto-open of first finding while `running`; cancel leaves UI consistent.
+- [ ] EN + AR strings; no training/corpus copy.
+
+### 4c. DOI↔title conflict — manual-only resolution (Bibliography / Raqim)
+
+**Problem (operator report, 2026-07-13).** After **Verify references**, the yellow **Title does not match this DOI** panel (`MismatchResolutionActions`) should stay until the user clicks **Find DOI for title** or **Use DOI's title**. Instead:
+
+1. **Verify** can silently patch row fields from the **wrong** registry record (year, journal, volume, pages) while the title warning is still visible; title may auto-overwrite when `_original` is missing (guard in `apply-mismatches.ts` only checks `_original`, not `title` / `userValue` like `isDoiTitleConflict`).
+2. **Predatory list sync** (`subscribePredatoryList` → `refreshDerivedCitationState`) clears `verificationMismatches` seconds later — panel vanishes while the user is still reading issues (feels like a timer).
+3. **Autocorrect** auto-runs `resolveDoiForTitle` on every DOI conflict without button click (`use-citation-engine.ts` `runAutocorrect`).
+
+**Design — no automatic resolution for identity conflicts.**
+
+- **Verify:** partition mismatches by `isDoiTitleConflict`; for conflict rows, do **not** auto-apply *any* registry patch (title or other fields) until explicit user choice. Align `applyVerificationMismatches` title guard with `isDoiTitleConflict` anchor (`_original || title || userValue`).
+- **Autocorrect:** remove the `doiConflicts` → `resolveDoiForTitle` loop; keep manual actions on the yellow panel only.
+- **State:** `refreshDerivedCitationState` must not wipe `verificationMismatches` / `registryLayerByCitationId` on predatory-list refresh, undo, or duplicate merge unless the citation row is removed or the user resolves the conflict.
+- **Optional later:** blocking modal for unresolved DOI conflicts before export/audit bridge (out of scope unless requested).
+
+**Ship:** **1.2.1 Masdar UX** (Bibliography trust; pairs with #4b loop progress) · **Effort:** small–medium · **Blast radius:** `verify-and-apply.ts`, `apply-mismatches.ts`, `use-citation-engine.ts`, `citation-store.ts`, tests (`apply-mismatches-title-guard`, new predatory-sync / autocorrect guard tests)
+
+**Acceptance.**
+- [ ] After Verify on wrong-DOI row (Alshakka smoke case): yellow panel persists; row fields unchanged until user clicks a button.
+- [ ] Predatory list load / weekly check does not clear pending mismatch panels.
+- [ ] Autocorrect does not change DOI on conflict rows without explicit **Find DOI for title**.
+- [ ] **Use DOI's title** still works via button; cosmetic title patches (non-conflict) unchanged.
+- [ ] Unit tests cover `_original`-missing rows and predatory subscribe race.
+
 ### 5. Per-reference source PDF attach
 
 The website itself documents this as a planned Masdar feature. Minimal version: on a selected `CitationFinding`, "Attach source PDF" → file picker → pdf.js extract → re-ground just that reference. Closes "Sanad without manual copy-paste" for the common case where the user has the PDF locally. Needs `runAudit` to accept an optional single-`bibKey` filter (small refactor). **Acceptance:** attach a local PDF → that finding's L3 updates from abstract-only/skipped to full-text grounded.
@@ -144,13 +189,80 @@ The entry loop (`use-manuscript-audit.ts:140`) and cite-site loop (`:204`) are f
 
 **Acceptance:** shortcuts documented in `shortcuts.md` (website) and `HOW_TO_GUIDE.md`; each action has a toast (#1).
 
+### 13. Icon system (Lucide via react-icons)
+
+**Problem.** Severity markers use unicode glyphs (`●` `▲` `ℹ`) in `IssuePanel` / `OutputPanel`; `TargetSelector` has a one-off inline SVG close. No shared sizing, RTL, or a11y pattern. Toolbar and toasts are text-only where compact affordances would help (#8 shortcuts batch).
+
+**Design.** Add `react-icons` with **Lucide only** (`react-icons/lu`). Thin `Icon` wrapper: `currentColor`, fixed sizes (12/14/16px), `aria-hidden` when adjacent label exists. **DESIGN.md bans apply:** no icon tiles above section titles, no decorative card grids; verdict chips keep text labels.
+
+| Phase | Scope | Ship |
+|-------|-------|------|
+| **I0** | dependency + wrapper + import rule | **1.2.0** — done |
+| **I1** | replace ●▲ℹ + `TargetSelector` SVG | **1.2.0** — done |
+| **I2** | toasts, dropdown chevron, network, external links, toolbar icons | **1.2.1** with #8 |
+
+**Effort:** small (I0/I1) + medium (I2). Blast radius: low if Lucide-only discipline holds.
+
+**Acceptance.**
+- [ ] Only `react-icons/lu` imports in renderer (lint or review gate).
+- [ ] Issue severity icons consistent size/color in EN + AR RTL layouts.
+- [ ] Icon-only controls have `aria-label` + existing `Tooltip` where applicable.
+- [ ] No new items from DESIGN.md **Absolute bans** (icon tiles, hero grids).
+
+---
+
+### 14. Raqim Repair — resolver & parser hardening (R1)
+
+**Problem.** Bibliography **Verify** / **Autocorrect** flags are often correct, but repair is incomplete: PMCID-only refs skip L1 verify; arXiv and OUP URLs miss DOI extraction; Vancouver initials (`E. R., et al.`) mis-parse as titles; conference chapters get journal-volume APA warnings; software heuristics false-fire on journal titles mentioning "software."
+
+**Design.** Deterministic engine work under **Raqim** + **Tasnif** + `plain-text` parser. Extends L1 multi-registry fallback (shipped 1.1.2); does not require Sanad training.
+
+| Fix | Acceptance |
+|-----|------------|
+| **PMCID in L1 `resolveRegistry`** | PMC URL / `PMCID` field → `pmcidToPmid` → PubMed resolve in **verify**, not only enhance |
+| **arXiv URL → DOI** | `arxiv.org/abs/{id}` → `10.48550/arXiv.{id}` (DataCite), symmetric with bioRxiv/medRxiv |
+| **OUP `article-abstract`** | `academic.oup.com/.../article-abstract/...` yields DOI via URL helper or meta fetch |
+| **Springer chapter + type** | `link.springer.com/chapter/` in journal hosts; Crossref `book-chapter` reclass; LNCS volume from registry |
+| **DeLong-class parser** | `DeLong, E. R., et al.` does not produce title `R., et al`; PMID 3203132 repair fills title + authors |
+| **Software false-positive** | JAMIA scoping-review titles with "open-source software" stay `article-journal` |
+| **Genre-aware APA** | preprints / chapters / reports do not get `apa-volume-required` meant for journal articles |
+| **Kaggle datasets** *(stretch)* | dataset refs with Kaggle publisher → URL lookup when no DOI |
+
+**Ship:** **1.2.3** · **Effort:** medium · **Blast radius:** `src/engine/manuscript/verify.ts`, `autocorrect/enhance.ts`, `parser/plain-text.ts`, `resolver/*`, `validator/rules/`
+
+**Regression fixtures:** operator manuscript cases documented in NassilaT `OUROBOROS_OPERATOR_MAP.md` § Raqim track.
+
+---
+
+### 14b. Raqim Resolve — repair panel & gray-lit hosts (R2–R3)
+
+**Problem.** When L1 fails or metadata is garbled (Gemma report, wrong Nature/npj parse), the app shows pass/fail only — no ranked alternatives and no structured manual override path.
+
+**Design.** Bibliography-row **repair panel** with two paths:
+
+1. **Suggested matches** — ranked registry (and host) candidates on L1 fail / low confidence; optional manuscript-context boost (stretch → 1.3.0).
+2. **Manual lookup key** — user types or pastes **title**, **DOI**, **PMID**, **PMCID**, or **URL** → **Verify** / **Autocorrect** on that row only.
+
+**Gray-lit hosts (ML/AI audience):**
+
+- **Hugging Face Hub** — search models/datasets for report/software cites (e.g. Gemma); label **Model card** vs **Report**; on-demand network.
+- **Kaggle** — dataset URL lookup; manual-add prompt when not found.
+
+**Ship:** **1.2.4** · **Effort:** medium–large (engine + Bibliography UI) · **Blast radius:** Raqim renderer panels, new resolver modules, IPC unchanged unless new host IPC needed
+
+**Acceptance.**
+- [ ] Unresolved row shows ≥1 suggested match when OpenAlex/Crossref/HF return near-misses (threshold documented in code).
+- [ ] User can paste a DOI or PubMed URL and re-run Verify/Autocorrect without re-importing the whole bibliography.
+- [ ] Gemma-class report cites can surface HF model-card suggestions; user picks before apply (no silent auto-fill).
+- [ ] EN + AR strings for repair panel; no training/corpus copy in UI.
+
 ---
 
 ## P2 — Polish / when loop IA work continues
 
 ### 9. Sharh-lite plain explanations
 
-`POST_V114_MAP.md` flags Sharh as deterministic copy only. Small step: when Sanad already ran for a cite site, template a one-sentence summary from the structured claims ("2 of 3 claims supported; 1 contradicted on dosing") — no new LLM call, deterministic. Feels like explanations without the Sharh LLM facet.
+`OUROBOROS_OPERATOR_MAP.md` flags Sharh as deterministic copy only. Small step: when Sanad already ran for a cite site, template a one-sentence summary from the structured claims ("2 of 3 claims supported; 1 contradicted on dosing") — no new LLM call, deterministic. Feels like explanations without the Sharh LLM facet.
 
 ### 10. Cancel granularity
 
@@ -158,7 +270,7 @@ The entry loop (`use-manuscript-audit.ts:140`) and cite-site loop (`:204`) are f
 
 ### 11. In-app Help → deep-link to website
 
-`POST_V114_MAP.md:132` defers "End-user Help → full reference" until loop IA stable. It's stable now. **Don't duplicate content** — the website docs are canonical. Ship a small Help menu / "Documentation" link to the docs index and specific pages (`/docs/sanad-setup`, `/docs/verification`, `/docs/troubleshooting`). One source of truth, consistent with #2.
+`OUROBOROS_OPERATOR_MAP.md` defers "End-user Help → full reference" until loop IA stable. It's stable now. **Don't duplicate content** — the website docs are canonical. Ship a small Help menu / "Documentation" link to the docs index and specific pages (`/docs/sanad-setup`, `/docs/verification`, `/docs/troubleshooting`). One source of truth, consistent with #2.
 
 ### 12. Public Sanad metrics on the website `local-models` page (cross-repo, optional)
 
@@ -169,18 +281,21 @@ The HF model cards already publish `89.27% / 92.98% / 3.81%` (E4B) and `90.43% /
 ## Explicitly out of scope (research tracks — not small)
 
 Do not pull these into a tweak batch:
-- **Maktab** LLM ingest facet, **Shahid** multimodal, merged `nassila-agent-e12b-v1` model (`POST_V114_MAP.md` Tier 3+).
+- **Maktab** LLM ingest facet, **Shahid** multimodal, merged `nassila-agent-e12b-v1` model (`OUROBOROS_OPERATOR_MAP.md` Tier 3+).
 - **Institutional full-text access** / proxy / login webview — needs SEC-06 security review.
-- **v1.15+** training refinement — corpus work, lives in **NassilaT**, not the app. Next Sanad train: **S15+** (see POST_V114_MAP).
+- **S15+** training refinement — corpus work, lives in **NassilaT**, not the app.
 
 ---
 
 ## Implementation order
 
 1. **P0 #1 (notifications)** and **P0 #2 (modal shortening)** — independent, ship together as a "polish" release. Both are additive/contained and visibly improve the app.
-2. **P1 #3 + #4** as one PR ("Masdar-lite + responsive audit") — both live in `use-manuscript-audit.ts`, both confirmed by the smoke sign-off.
-3. **P1 #5 + #6 + #8** as a UX batch (attach/re-audit + quote chip + shortcuts/copy/jump). **#6** may ship in the 1.2.0 batch if ready (independent of #3/#4).
-4. **P1 #7** (concurrency) once #4's progress UI is stable.
-5. P2 items opportunistically.
+2. **P1 #3 + #4** as one PR ("Masdar-lite + responsive audit") — both live in `use-manuscript-audit.ts`, both confirmed by the smoke sign-off. **#4b** refines loop panel UX → **1.2.1**.
+3. **P1 #4b + #4c + #5 + #6 + #8 + #13 (I2)** as **1.2.1 Masdar UX** batch (loop in-progress panel + DOI conflict manual-only + attach/re-audit + quote chip + shortcuts + icon affordances).
+4. **Icon I2** ships with **1.2.1** (#4b + #4c + #5 + #6 + #8 + #13). **I0/I1** shipped in **1.2.0** installer.
+5. **P1 #7** (concurrency) → **1.2.2** once #4/#4b progress UI is stable.
+6. **P1 #14 (R1)** → **1.2.3** Raqim Repair — resolver/parser/type fixes; unit tests per operator regression table.
+7. **P1 #14b (R2–R3)** → **1.2.4** Raqim Resolve — repair panel + HF/Kaggle; parallel with 1.2.1–1.2.2 if bandwidth allows.
+8. P2 items opportunistically.
 
 **Red-line check before each merge:** no training/corpus/eval content surfaces in app UI or copy (see top of file).

@@ -43,13 +43,9 @@ export async function extractManuscriptFromPdf(
 ): Promise<PdfManuscriptExtraction> {
   const warnings: string[] = []
 
-  const pdfjsLib = await import('pdfjs-dist')
-  if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
-    pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-      'pdfjs-dist/build/pdf.worker.min.mjs',
-      import.meta.url
-    ).href
-  }
+  const { loadPdfJs, configurePdfJsWorker } = await import('./pdfjs-loader')
+  const pdfjsLib = await loadPdfJs()
+  await configurePdfJsWorker(pdfjsLib)
 
   const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(buffer) })
   const pdf = await loadingTask.promise

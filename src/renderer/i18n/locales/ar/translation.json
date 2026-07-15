@@ -253,6 +253,7 @@
       "done": "انتهى",
       "error": "خطأ"
     },
+    "progress": "{{processed}} / {{total}}",
     "auditRunning": "التدقيق قيد التشغيل — يمكن الإلغاء من الشريط العلوي.",
     "emptyManuscriptTitle": "لا مخطوطة محمّلة",
     "emptyManuscriptHint": "الصق النص أو استورد DOCX/PDF من شريط الأدوات. يمكنك إفلات ملف مخطوطة هنا إن زوَّد المتصفح بمساره.",

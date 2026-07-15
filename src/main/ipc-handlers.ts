@@ -6,6 +6,7 @@ import { homedir } from 'os'
 import { join, resolve } from 'path'
 import { existsSync, mkdirSync } from 'fs'
 import { registerOaIpcHandlers } from './ipc-oa'
+import { registerMaktabIpcHandlers } from './ipc-maktab'
 import { registerLlmIpcHandlers } from './ipc-llm'
 import { registerTemplateIpcHandlers } from './ipc-templates'
 import { registerManuscriptAuditPrefsHandlers } from './ipc-manuscript-audit-prefs'
@@ -124,6 +125,7 @@ function ensureConfigDir(): void {
 
 export function registerIpcHandlers(): void {
   registerOaIpcHandlers()
+  registerMaktabIpcHandlers()
   registerLlmIpcHandlers()
   registerManuscriptAuditPrefsHandlers()
   registerTemplateIpcHandlers()

@@ -5,7 +5,6 @@ import { useManuscriptAuditStore } from '../stores/manuscript-audit-store'
 import { useShellStore } from '../stores/shell-store'
 import { previewManuscript } from '../utils/manuscript-preview'
 import { bibliographyTaskMessage } from '../utils/bibliography-task-message'
-import { NetworkStatusIndicator } from './NetworkStatusIndicator'
 
 export default function StatusBar() {
   const { t } = useTranslation()
@@ -20,6 +19,7 @@ export default function StatusBar() {
 
   const raw = useManuscriptAuditStore((s) => s.rawManuscriptText)
   const step = useManuscriptAuditStore((s) => s.step)
+  const auditProgress = useManuscriptAuditStore((s) => s.auditProgress)
   const report = useManuscriptAuditStore((s) => s.report)
 
   const manuscriptPreview = useMemo(() => previewManuscript(raw), [raw])
@@ -41,11 +41,17 @@ export default function StatusBar() {
           </span>
         ) : null}
         {running ? (
-          <span>{t('manuscriptAudit.phase.' + step)}</span>
+          <span>
+            {t('manuscriptAudit.phase.' + step)}
+            {auditProgress && auditProgress.total > 0
+              ? ` · ${t('manuscriptAudit.progress', {
+                  processed: auditProgress.processed,
+                  total: auditProgress.total
+                })}`
+              : null}
+          </span>
         ) : null}
         {findingCount > 0 ? <span>{t('loop.statusFindings', { count: findingCount })}</span> : null}
-        <div className="flex-1" />
-        <NetworkStatusIndicator />
       </div>
     )
   }
@@ -67,8 +73,6 @@ export default function StatusBar() {
         <span>{t('statusBar.duplicates', { count: duplicateCount })}</span>
       )}
       {selectedStyleId ? <span>{t('statusBar.target', { id: selectedStyleId })}</span> : null}
-      <div className="flex-1" />
-      <NetworkStatusIndicator />
     </div>
   )
 }

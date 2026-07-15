@@ -12,10 +12,9 @@
     "isolatedModules": true,
     "declaration": true,
     "composite": true,
-    "baseUrl": ".",
     "paths": {
-      "@engine/*": ["src/engine/*"],
-      "@renderer/*": ["src/renderer/*"]
+      "@engine/*": ["./src/engine/*"],
+      "@renderer/*": ["./src/renderer/*"]
     }
   },
   "include": ["src/**/*"],

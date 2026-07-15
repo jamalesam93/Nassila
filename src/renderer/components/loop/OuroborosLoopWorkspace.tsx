@@ -37,6 +37,7 @@ export default function OuroborosLoopWorkspace() {
   const setRaw = useManuscriptAuditStore((s) => s.setRawManuscriptText)
   const report = useManuscriptAuditStore((s) => s.report)
   const step = useManuscriptAuditStore((s) => s.step)
+  const auditProgress = useManuscriptAuditStore((s) => s.auditProgress)
   const error = useManuscriptAuditStore((s) => s.error)
   const networkStatus = useCitationStore((s) => s.networkStatus)
   const unpaywallEmail = useManuscriptAuditStore((s) => s.unpaywallEmail)
@@ -133,6 +134,14 @@ export default function OuroborosLoopWorkspace() {
         {running ? (
           <p className="shrink-0 border-b border-border bg-muted/30 px-3 py-2 text-sm">
             {t('manuscriptAudit.phase.' + step)}
+            {auditProgress && auditProgress.total > 0 ? (
+              <span className="ms-2 rounded-md bg-background px-2 py-0.5 text-xs font-medium text-foreground">
+                {t('manuscriptAudit.progress', {
+                  processed: auditProgress.processed,
+                  total: auditProgress.total
+                })}
+              </span>
+            ) : null}
           </p>
         ) : null}
 

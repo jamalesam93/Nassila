@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { applyPrefsToStore } from './use-manuscript-audit-prefs-sync'
 import { useManuscriptAuditStore } from '../stores/manuscript-audit-store'
+import { registerMaktabOcrBackendWhenReady } from '../maktab/register-maktab-ocr'
 
 const BUILTIN_TEMPLATES = [
   {
@@ -43,6 +44,10 @@ const BUILTIN_TEMPLATES = [
 export function useOuroborosLoopBootstrap() {
   const setTemplates = useManuscriptAuditStore((s) => s.setTemplates)
   const setLlmPrefsHydrated = useManuscriptAuditStore((s) => s.setLlmPrefsHydrated)
+
+  useEffect(() => {
+    void registerMaktabOcrBackendWhenReady()
+  }, [])
 
   useEffect(() => {
     void window.api

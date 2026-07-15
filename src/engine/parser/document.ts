@@ -4,7 +4,7 @@ import type { ParseResult } from './index'
 import { parsePlainText } from './plain-text'
 import { resolveDoi, searchCrossRef } from '../resolver/crossref'
 import { segmentManuscriptText } from '../manuscript/segments'
-import { extractManuscriptFromPdf } from '../manuscript/pdf-extract'
+import { extractFromPdf } from '../maktab/extract'
 
 const MAX_DOCUMENT_BYTES = 15 * 1024 * 1024
 const MAX_EXTRACTED_TEXT_CHARS = 2_000_000
@@ -66,7 +66,7 @@ export async function parsePdf(buffer: ArrayBuffer): Promise<ParseResult> {
 
     let fullText: string
     try {
-      const extraction = await extractManuscriptFromPdf(buffer)
+      const extraction = await extractFromPdf(buffer, { mode: 'auto' })
       fullText = extraction.text
       if (extraction.warnings.length > 0) {
         errors.push(...extraction.warnings)

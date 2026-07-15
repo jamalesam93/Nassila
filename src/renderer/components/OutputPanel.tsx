@@ -16,6 +16,7 @@ import type { CslDate } from '../../engine/types'
 import { authorPreviewLimits } from '../utils/author-preview'
 import { bibliographyTaskMessage } from '../utils/bibliography-task-message'
 import { MismatchResolutionActions, mismatchFieldLabel } from './MismatchResolutionActions'
+import { SeverityIcon } from './ui/severity-icon'
 
 function formatAccessedForDisplay(accessed: CslDate): string {
   if (accessed.literal) return accessed.literal.trim()
@@ -458,18 +459,7 @@ export default function OutputPanel() {
                         <div className="mt-1.5 ps-4 space-y-0.5">
                           {itemIssues.slice(0, 3).map((issue) => (
                             <p key={issue.id} className="text-xs text-muted-foreground/80">
-                              <span
-                                className={
-                                  issue.severity === 'error'
-                                    ? 'text-red-500'
-                                    : issue.severity === 'warning'
-                                      ? 'text-amber-500'
-                                      : 'text-blue-500'
-                                }
-                              >
-                                {issue.severity === 'error' ? '●' : issue.severity === 'warning' ? '▲' : 'ℹ'}
-                              </span>
-                              {' '}
+                              <SeverityIcon severity={issue.severity} className="me-0.5 inline" />
                               {issue.message}
                             </p>
                           ))}

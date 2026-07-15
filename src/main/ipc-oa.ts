@@ -213,8 +213,9 @@ export function registerOaIpcHandlers(): void {
     else if (lower.includes('html')) kind = 'html'
 
     if (kind === 'pdf') {
-      try { await response.body?.cancel() } catch { /* noop */ }
-      return { url: resolvedUrl, contentType, kind }
+      const bytes = await readBytesCapped(response, THRESHOLDS.http.fullTextMaxBytes)
+      const pdfBytes = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)
+      return { url: resolvedUrl, contentType, kind, pdfBytes }
     }
 
     const bytes = await readBytesCapped(response, THRESHOLDS.http.fullTextMaxBytes)

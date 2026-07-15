@@ -3,18 +3,13 @@ import { useTranslation } from 'react-i18next'
 import { useCitationStore, type CitationStatus } from '../stores/citation-store'
 import { useShellStore } from '../stores/shell-store'
 import { requestConfirm } from '../stores/confirm-store'
-import type { IssueSeverity, PredatoryFlag } from '../../engine/types'
+import type { PredatoryFlag } from '../../engine/types'
 import type { LayerVerdict } from '../../engine/manuscript/types'
 import type { OutputListFilter } from '../utils/output-filters'
 import { getCitationStatus } from '../utils/output-filters'
 import { setPredatoryListCache } from '../../engine/predatory/list-store'
 import { duplicateColors } from '../utils/duplicate-colors'
-
-const severityIcons: Record<IssueSeverity, string> = {
-  error: '●',
-  warning: '▲',
-  info: 'ℹ'
-}
+import { SeverityIcon } from './ui/severity-icon'
 
 function citationRowId(id: string, index?: number): string {
   const safe = id.replace(/[^a-zA-Z0-9_-]/g, '-')
@@ -354,17 +349,7 @@ export default function IssuePanel() {
                     <div className="space-y-0.5 px-3 py-1.5">
                       {citIssues.map((issue) => (
                         <div key={issue.id} className="flex items-start gap-1.5">
-                          <span
-                            className={`mt-0.5 text-xs ${
-                              issue.severity === 'error'
-                                ? 'text-red-500'
-                                : issue.severity === 'warning'
-                                  ? 'text-amber-500'
-                                  : 'text-blue-500'
-                            }`}
-                          >
-                            {severityIcons[issue.severity]}
-                          </span>
+                          <SeverityIcon severity={issue.severity} className="mt-0.5" />
                           <div className="min-w-0 flex-1">
                             <p className="text-[11px] text-foreground/80">{issue.message}</p>
                             {issue.field && (
@@ -415,7 +400,7 @@ export default function IssuePanel() {
                   aria-label={t('issuePanel.mismatchJumpAria', { title: citeTitle, field: m.field })}
                 >
                   <div className="flex items-start gap-2">
-                    <span className="mt-0.5 text-xs font-bold text-yellow-700 dark:text-yellow-400">▲</span>
+                    <SeverityIcon severity="warning" className="mt-0.5" />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-xs font-medium text-foreground/90" title={citeTitle}>
                         {citeTitle}

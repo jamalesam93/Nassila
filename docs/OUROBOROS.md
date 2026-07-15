@@ -65,7 +65,7 @@ Stable **`task`** ids in JSONL and code. Seven workers = seven loop stages / cod
 | task id | Codename | Module role | LLM facet status | Engine hook (today) |
 |---------|----------|-------------|------------------|---------------------|
 | `l3_grounding` | **Sanad** (سند) | Ground claims to sources | **E4B S12** default-tier; **12B S14** quality tier | [`grounding-llm.ts`](../src/engine/manuscript/grounding-llm.ts) |
-| `doc_extract` | **Maktab** (مكتب) | Manuscript ingest | Planned | [`pdf-extract.ts`](../src/engine/manuscript/pdf-extract.ts) |
+| `doc_extract` | **Maktab** (مكتب) | Manuscript ingest | Planned | [`maktab/extract.ts`](../src/engine/maktab/extract.ts), [`pdf-extract.ts`](../src/engine/manuscript/pdf-extract.ts) |
 | `source_pdf_extract` | **Masdar** (مصدر) | Cited source text | Planned | Manuscript audit |
 | `table_figure_grounding` | **Shahid** (شاهد) | Table/figure evidence | Planned (12B) | Multimodal |
 | `webpage_metadata` | **Raqim** (رقيم) | Reference records + verify + export | Planned | [`WEBPAGE_ROADMAP.md`](./WEBPAGE_ROADMAP.md), verifier, citeproc |

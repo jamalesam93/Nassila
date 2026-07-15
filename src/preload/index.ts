@@ -129,6 +129,15 @@ const api = {
     error?: string
   }> => ipcRenderer.invoke('url:fetchHtml', url),
 
+  // ── Maktab OCR (main-process Tesseract) ─────────────────────────────────
+  maktabOcrAvailable: (): Promise<boolean> => ipcRenderer.invoke('maktab:ocrAvailable'),
+
+  maktabOcrExtract: (
+    pdfBytes: ArrayBuffer,
+    options?: { languages?: ('eng' | 'fra' | 'ara')[]; dpi?: number }
+  ): Promise<import('../engine/maktab/types').MaktabExtractionResult> =>
+    ipcRenderer.invoke('maktab:ocrExtract', pdfBytes, options ?? {}),
+
   // ── Secrets / LLM (main-process only) ───────────────────────────────────
   isEncryptionAvailable: (): Promise<boolean> =>
     ipcRenderer.invoke('secrets:isEncryptionAvailable'),

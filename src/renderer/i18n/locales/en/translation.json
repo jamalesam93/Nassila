@@ -253,6 +253,7 @@
       "done": "Complete",
       "error": "Error"
     },
+    "progress": "{{processed}} / {{total}}",
     "auditRunning": "Audit in progress — you can cancel from the toolbar.",
     "emptyManuscriptTitle": "No manuscript loaded",
     "emptyManuscriptHint": "Paste text or import DOCX / PDF via the toolbar (File menu or Ctrl+I). You can drag a manuscript file onto this area when the desktop provides a file path.",

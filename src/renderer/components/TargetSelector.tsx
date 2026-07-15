@@ -3,6 +3,8 @@ import { useCitationStore } from '../stores/citation-store'
 import { useCitationEngine } from '../hooks/use-citation-engine'
 import { findJournalByName, getStyleForJournal } from '../../engine/target/journal-database'
 import { useTranslation } from 'react-i18next'
+import { LuX } from 'react-icons/lu'
+import { Icon } from './ui/icon'
 
 const LOCAL_JOURNAL_CAP = 8
 const CROSSREF_JOURNAL_ROWS = 20
@@ -237,11 +239,13 @@ export default function TargetSelector() {
                   )}
                 </div>
                 <button
+                  type="button"
                   onClick={handleClearStyle}
-                  className="shrink-0 ml-2 rounded-full p-0.5 text-primary/60 hover:text-destructive hover:bg-destructive/10 transition-colors"
+                  className="shrink-0 ms-2 rounded-full p-0.5 text-primary/60 hover:text-destructive hover:bg-destructive/10 transition-colors"
                   title={t('targetSelector.removeSelectionTitle')}
+                  aria-label={t('targetSelector.removeSelectionTitle')}
                 >
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M3 3l6 6M9 3l-6 6"/></svg>
+                  <Icon icon={LuX} size={12} />
                 </button>
               </div>
             )}

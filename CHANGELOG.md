@@ -4,6 +4,52 @@ All notable changes to **Nassila** are documented here.
 
 ## [Unreleased]
 
+### Planned — 1.2.1 Masdar UX
+
+- **Audit in-progress panel (#4b)** — cited-sources table grows during the run; hide `LoopAuditDetail` and disable auto-select until audit completes. Refines 1.2.0 incremental progress (#4).
+- **DOI↔title conflict — manual-only (#4c)** — verify/autocorrect must not auto-patch or clear mismatch panels; yellow **Find DOI for title** / **Use DOI's title** stays until user chooses. Fixes predatory-list sync wiping `verificationMismatches`.
+- **Icon system (I2)** — toast, dropdown chevron, network indicator, external-link, and toolbar affordances. Pairs with keyboard shortcuts (#8). See NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) § UI icon track.
+- Attach PDF (#5), quote chip (#6), shortcuts (#8) — see [`FEATURES-AND-TWEAKS.md`](docs/FEATURES-AND-TWEAKS.md).
+
+### Planned — 1.2.2 Throughput
+
+- **Bounded audit concurrency** (#7) — split registry vs LLM pools.
+
+### Planned — 1.2.3 Raqim Repair
+
+- **Bibliography resolver hardening** (#14) — PMCID L1 path, arXiv URL→DOI, OUP `article-abstract`, Springer chapter reclass, DeLong-class parser fix, registry title repair, software false-positive guard, genre-aware APA rules. See [`FEATURES-AND-TWEAKS.md`](docs/FEATURES-AND-TWEAKS.md) §14 and NassilaT operator map § Raqim track (R1).
+
+### Planned — 1.2.4 Raqim Resolve
+
+- **Bibliography repair panel** (#14b) — suggested matches on L1 fail; manual lookup key (title / DOI / PMID / PMCID / URL) → per-row Verify/Autocorrect; Hugging Face Hub + Kaggle gray-lit lookup for ML/AI cites. See [`FEATURES-AND-TWEAKS.md`](docs/FEATURES-AND-TWEAKS.md) §14b (R2–R3).
+
+## [1.2.0] — 2026-07-15 · Masdar-lite
+
+**GitHub Release:** [v1.2.0](https://github.com/jamalesam93/Nassila/releases/tag/v1.2.0) · Windows installer `Nassila Setup 1.2.0.exe`. **Icon I0/I1** included; **I2** remains **1.2.1**.
+
+### Added
+
+- **Masdar-lite** — Open-access PDFs from Unpaywall are extracted via Maktab `extractFromPdf` (pdf.js tier A; OCR tier B when Tesseract is available) and fed into L3 passage grounding as `full_text_oa_unpaywall` instead of the previous `pdf_pending` stub.
+- **Incremental audit progress** — cited-sources table fills as each reference completes; `N / M` progress chip next to the phase label (loop workspace + status bar).
+- **Maktab OCR O1** — main-process Tesseract backend (`eng` / `fra` / `ara`) with IPC (`maktab:ocrExtract`); renderer registers the backend on loop bootstrap for scan fallback in `extractFromPdf`.
+- **Icon system (I0/I1)** — `react-icons` Lucide subset; shared `Icon` + `SeverityIcon` components; issue severity markers and journal clear button use Lucide instead of unicode / inline SVG (`IssuePanel`, `OutputPanel`, `TargetSelector`). Shipped in **1.2.0** installer; **I2** affordances ship in **1.2.1**.
+
+### Changed
+
+- **`oa:fetchOaUrl`** — PDF responses now return `pdfBytes` (capped) so the renderer can extract text instead of discarding the body.
+
+### Fixed
+
+- **Bibliography PDF import (dev)** — pdf.js worker URL in Vite dev no longer fails with "Setting up fake worker failed" (browser-specific worker bundle).
+- **Duplicate Online indicator** — network status shown once in the app header (removed duplicate from status bar).
+
+### Deferred to 1.2.1+
+
+- Per-reference source PDF attach (#5), quote-verification chip (#6), keyboard shortcuts (#8), bounded audit concurrency (#7).
+- **Audit in-progress panel (#4b)** — table grows during run; detail pane locked until done.
+- **DOI↔title conflict — manual-only (#4c)** — no verify/autocorrect auto-resolution; mismatch panel survives predatory list sync.
+- **Icon system (I2)** — toast, toolbar, dropdown chevron, network, and external-link affordances (#13).
+
 ## [1.1.3] — 2026-06-29 · Polish
 
 ### Added

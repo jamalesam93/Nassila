@@ -77,8 +77,8 @@ export function useAppCommands() {
         } else if (ext === 'pdf') {
           const buf = await window.api?.readFileBinary(first)
           if (buf) {
-            const { extractManuscriptFromPdf } = await import('../../engine/manuscript/pdf-extract')
-            const extraction = await extractManuscriptFromPdf(buf)
+            const { extractFromPdf } = await import('../../engine/maktab/extract')
+            const extraction = await extractFromPdf(buf, { mode: 'auto' })
             text = extraction.text
             sourceFormat = 'pdf'
             if (extraction.warnings.length > 0) {

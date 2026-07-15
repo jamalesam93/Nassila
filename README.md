@@ -11,26 +11,24 @@ Import or paste your bibliography, fix common errors, verify rows against Crossr
 
 | | |
 |---|---|
-| **Download (Windows)** | [**v1.1.3**](https://github.com/jamalesam93/Nassila/releases/tag/v1.1.3) · [Latest release](https://github.com/jamalesam93/Nassila/releases/latest) |
+| **Download (Windows)** | [**v1.2.0**](https://github.com/jamalesam93/Nassila/releases/tag/v1.2.0) · [Latest release](https://github.com/jamalesam93/Nassila/releases/latest) |
 | **Sanad models (HF)** | [`nassila-sanad-e4b`](https://huggingface.co/QinEmPeRoR93/nassila-sanad-e4b) · [`nassila-sanad-12b`](https://huggingface.co/QinEmPeRoR93/nassila-sanad-12b) — setup on the [website](https://nassila-web.vercel.app/en/docs/manuscript) |
 | **Website & docs** | [nassila-web.vercel.app](https://nassila-web.vercel.app) — [How-to](https://nassila-web.vercel.app/en/docs/how-to) · [User guide](https://nassila-web.vercel.app/en/docs/user-guide) · [Changelog](https://nassila-web.vercel.app/en/changelog) |
 | **Documentation (repo)** | [How-to guide](docs/HOW_TO_GUIDE.md) · [User guide](docs/USER_GUIDE.md) · [Brand](docs/BRAND.md) · [Changelog](CHANGELOG.md) |
 | **License** | [MIT](LICENSE) |
 
-> End users: install from **Releases** ([**v1.1.3**](https://github.com/jamalesam93/Nassila/releases/tag/v1.1.3)) or visit the [**website**](https://nassila-web.vercel.app). Developers: clone this repo and see [Getting started](#getting-started).
+> End users: install from **Releases** ([**v1.2.0**](https://github.com/jamalesam93/Nassila/releases/tag/v1.2.0)) or visit the [**website**](https://nassila-web.vercel.app). Developers: clone this repo and see [Getting started](#getting-started).
 
 The name **Nassila** is coined, inspired by the idea of a **sanad** (سند): a clear chain from what you write to where it came from.
 
-## What's new in v1.1.3
+## What's new in v1.2.0
 
-- **Notifications** — in-app toasts for verify, autocorrect, DOI lookup, export, and bibliography bridge; OS notification when a manuscript audit finishes in the background.
-- **Arabic UI** — glossary-aligned terminology across workers, modes, panels, and passage grounding.
-- **DOI ↔ title conflicts** — identity conflicts get **Find DOI for title** or **Use DOI's title**; autocorrect prefers fixing the DOI instead of overwriting your title.
-- **Windows app icon** — taskbar/titlebar uses the Nassila icon in dev and release builds.
-- **Network status** — less false Offline flapping during verify/audit; **Retry connection** when Offline.
-- **Sanad setup** — slimmer in-app modal; full runner walkthrough lives on the website.
+- **Masdar-lite** — Open-access PDFs from Unpaywall are extracted and fed into Sanad passage grounding (no more `pdf_pending` stub for OA PDFs).
+- **Incremental audit progress** — cited-sources table fills as each reference completes; `N / M` chip on loop workspace and status bar.
+- **Maktab OCR (O1)** — Tesseract backend for scanned PDF fallback (`eng` / `fra` / `ara`), on-device only.
+- **Icon system (I0/I1)** — Lucide icons for severity markers and common UI affordances.
 
-Full notes: [CHANGELOG.md](CHANGELOG.md) · [v1.1.3 release notes](release-artifacts/v1.1.3-RELEASE_NOTES.md).
+Full notes: [CHANGELOG.md](CHANGELOG.md) · [v1.2.0 release notes](release-artifacts/v1.2.0-RELEASE_NOTES.md).
 
 ## Who is this for?
 
