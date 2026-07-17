@@ -136,7 +136,7 @@ These were identified in the cross-repo review and confirmed by the 2026-06-28 s
 - **Disable auto-select** of `findings[0]` during the run; select first row only when the audit completes (or when the user clicks a row after done).
 - Right panel header: short honest copy + current phase (no fake percentage). Optional muted progress affordance; honor `prefers-reduced-motion`.
 
-**Ship:** **1.2.1 Masdar UX** (pairs with #4c, #8, icon I2; #5–6 deferred) · **Effort:** small · **Blast radius:** `OuroborosLoopWorkspace.tsx`, `ouroboros-loop-store` selection effect, i18n `loop.auditInProgress*`
+**Ship:** **Shipped in 1.2.1** (pairs with #4c, #8, icon I2; #5–6 deferred) · **Effort:** small · **Blast radius:** `OuroborosLoopWorkspace.tsx`, `ouroboros-loop-store` selection effect, i18n `loop.auditInProgress*`
 
 **Acceptance.**
 - [x] During audit: table grows; detail pane shows in-progress message only (not verdict cards).
@@ -159,7 +159,7 @@ These were identified in the cross-repo review and confirmed by the 2026-06-28 s
 - **State:** `refreshDerivedCitationState` must not wipe `verificationMismatches` / `registryLayerByCitationId` on predatory-list refresh, undo, or duplicate merge unless the citation row is removed or the user resolves the conflict.
 - **Optional later:** blocking modal for unresolved DOI conflicts before export/audit bridge (out of scope unless requested).
 
-**Ship:** **1.2.1 Masdar UX** (Bibliography trust; pairs with #4b loop progress) · **Effort:** small–medium · **Blast radius:** `verify-and-apply.ts`, `apply-mismatches.ts`, `use-citation-engine.ts`, `citation-store.ts`, tests (`apply-mismatches-title-guard`, new predatory-sync / autocorrect guard tests)
+**Ship:** **Shipped in 1.2.1** (Bibliography trust; pairs with #4b loop progress) · **Effort:** small–medium · **Blast radius:** `verify-and-apply.ts`, `apply-mismatches.ts`, `use-citation-engine.ts`, `citation-store.ts`, tests (`apply-mismatches-title-guard`, new predatory-sync / autocorrect guard tests)
 
 **Acceptance.**
 - [x] After Verify on wrong-DOI row (Alshakka smoke case): yellow panel persists; row fields unchanged until user clicks a button.
@@ -182,7 +182,7 @@ The entry loop (`use-manuscript-audit.ts:140`) and cite-site loop (`:204`) are f
 
 ### 8. Navigation + shortcuts
 
-**Ship:** **1.2.1** (without re-audit — that pairs with deferred #5).
+**Ship:** **Shipped in 1.2.1** (without re-audit — that pairs with deferred #5).
 
 - **Ctrl/Cmd+Enter** in the manuscript textarea → run audit.
 - **Copy evidence** per finding → passage window + excerpt + verbatim quotes as markdown/text for notes.
@@ -201,7 +201,7 @@ The entry loop (`use-manuscript-audit.ts:140`) and cite-site loop (`:204`) are f
 |-------|-------|------|
 | **I0** | dependency + wrapper + import rule | **1.2.0** — done |
 | **I1** | replace ●▲ℹ + `TargetSelector` SVG | **1.2.0** — done |
-| **I2** | toasts, dropdown chevron, network, external links, toolbar icons | **1.2.1** with #8 |
+| **I2** | toasts, dropdown chevron, network, external links, toolbar icons | **1.2.1** — done |
 
 **Effort:** small (I0/I1) + medium (I2). Blast radius: low if Lucide-only discipline holds.
 
@@ -278,6 +278,19 @@ The entry loop (`use-manuscript-audit.ts:140`) and cite-site loop (`:204`) are f
 
 The HF model cards already publish `89.27% / 92.98% / 3.81%` (E4B) and `90.43% / 100% / 2.86%` (12B). These are **not** red-lined — they're on the public HF cards. A small "Validation" table on [`nassila-web`](https://github.com/jamalesam93/nassila-web)'s `local-models` page builds trust and stays within the site's own honesty rules. Optional — the page is honest without it. **Repo:** `nassila-web`, not the app.
 
+### 15. Header chrome — drop redundant product wordmark
+
+**Problem.** `AppHeader` renders bold `app.productName` (“Nassila” / ناسيلا) next to the Manuscript / Bibliography switcher. The Windows title bar already shows the app icon + product name, so the in-app wordmark reads as leftover chrome (same weight as nav, no job).
+
+**Design.** Remove the in-app product-name span. Let the mode switcher be the left anchor; keep a little leading padding so it isn’t flush to the edge. **Do not** replace it with a marketing logo lockup or header glyph — window chrome is enough identity for a workstation UI (`DESIGN.md`).
+
+**Ship:** opportunistic polish (any 1.2.x) · **Effort:** tiny · **Blast radius:** `AppHeader.tsx` (+ spacing only)
+
+**Acceptance.**
+- [ ] No duplicate product name in the in-app header; title bar icon/name remain.
+- [ ] Mode switcher still clear as the first chrome control in EN and AR (RTL).
+- [ ] No new brand mark / logo treatment introduced in the header.
+
 ---
 
 ## Explicitly out of scope (research tracks — not small)
@@ -291,13 +304,13 @@ Do not pull these into a tweak batch:
 
 ## Implementation order
 
-1. **P0 #1 (notifications)** and **P0 #2 (modal shortening)** — independent, ship together as a "polish" release. Both are additive/contained and visibly improve the app.
-2. **P1 #3 + #4** as one PR ("Masdar-lite + responsive audit") — both live in `use-manuscript-audit.ts`, both confirmed by the smoke sign-off. **#4b** refines loop panel UX → **1.2.1**.
-3. **P1 #4b + #4c + #8 + #13 (I2)** as **1.2.1 Masdar UX** (trust + polish). **#5 attach PDF** and **#6 quote chip** deferred past 1.2.1.
-4. **Icon I2** ships with **1.2.1**. **I0/I1** shipped in **1.2.0** installer.
+1. **P0 #1 (notifications)** and **P0 #2 (modal shortening)** — **shipped 1.1.3**.
+2. **P1 #3 + #4** ("Masdar-lite + responsive audit") — **shipped 1.2.0**. **#4b** refined loop panel UX in **1.2.1**.
+3. **P1 #4b + #4c + #8 + #13 (I2)** — **shipped 1.2.1 Masdar UX** (trust + polish). **#5 attach PDF** and **#6 quote chip** remain deferred.
+4. **Icon I0/I1** — **1.2.0**; **I2** — **1.2.1**.
 5. **P1 #7** (concurrency) → **1.2.2** (may pair with #5/#6).
 6. **P1 #14 (R1)** → **1.2.3** Raqim Repair — resolver/parser/type fixes; unit tests per operator regression table.
-7. **P1 #14b (R2–R3)** → **1.2.4** Raqim Resolve — repair panel + HF/Kaggle; parallel with 1.2.1–1.2.2 if bandwidth allows.
-8. P2 items opportunistically.
+7. **P1 #14b (R2–R3)** → **1.2.4** Raqim Resolve — repair panel + HF/Kaggle.
+8. P2 items opportunistically (#9–12, **#15 header wordmark**).
 
 **Red-line check before each merge:** no training/corpus/eval content surfaces in app UI or copy (see top of file).

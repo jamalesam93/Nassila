@@ -4,6 +4,10 @@ All notable changes to **Nassila** are documented here.
 
 ## [Unreleased]
 
+### Planned — polish (opportunistic)
+
+- **Header wordmark (#15)** — remove redundant in-app “Nassila” / ناسيلا from `AppHeader` (window title bar already identifies the app). See [`FEATURES-AND-TWEAKS.md`](docs/FEATURES-AND-TWEAKS.md) §15.
+
 ### Planned — 1.2.2 Throughput
 
 - **Bounded audit concurrency** (#7) — split registry vs LLM pools.
@@ -41,7 +45,7 @@ Windows installer `Nassila Setup 1.2.1.exe`. **GitHub Release:** [v1.2.1](https:
 - **Masdar-lite** — Open-access PDFs from Unpaywall are extracted via Maktab `extractFromPdf` (pdf.js tier A; OCR tier B when Tesseract is available) and fed into L3 passage grounding as `full_text_oa_unpaywall` instead of the previous `pdf_pending` stub.
 - **Incremental audit progress** — cited-sources table fills as each reference completes; `N / M` progress chip next to the phase label (loop workspace + status bar).
 - **Maktab OCR O1** — main-process Tesseract backend (`eng` / `fra` / `ara`) with IPC (`maktab:ocrExtract`); renderer registers the backend on loop bootstrap for scan fallback in `extractFromPdf`.
-- **Icon system (I0/I1)** — `react-icons` Lucide subset; shared `Icon` + `SeverityIcon` components; issue severity markers and journal clear button use Lucide instead of unicode / inline SVG (`IssuePanel`, `OutputPanel`, `TargetSelector`). Shipped in **1.2.0** installer; **I2** affordances ship in **1.2.1**.
+- **Icon system (I0/I1)** — `react-icons` Lucide subset; shared `Icon` + `SeverityIcon` components; issue severity markers and journal clear button use Lucide instead of unicode / inline SVG (`IssuePanel`, `OutputPanel`, `TargetSelector`). Shipped in **1.2.0** installer; **I2** affordances shipped in **1.2.1**.
 
 ### Changed
 
