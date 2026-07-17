@@ -19,7 +19,7 @@ All notable changes to **Nassila** are documented here.
 
 ## [1.2.1] — 2026-07-17 · Masdar UX (trust + polish)
 
-Windows installer `Nassila Setup 1.2.1.exe`. Tag/GitHub Release when you push (not yet).
+Windows installer `Nassila Setup 1.2.1.exe`. **GitHub Release:** [v1.2.1](https://github.com/jamalesam93/Nassila/releases/tag/v1.2.1).
 
 ### Added
 
