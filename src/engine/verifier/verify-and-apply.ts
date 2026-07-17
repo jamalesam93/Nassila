@@ -3,6 +3,7 @@ import type { LayerVerdict } from '../manuscript/types'
 import type { RegistrySource } from '../manuscript/verify'
 import { registryCheckOneItem } from '../manuscript/verify'
 import { applyVerificationMismatches } from './apply-mismatches'
+import { doiConflictCitationIds } from './mismatch-kind'
 
 /** Aligns with validator `year-range` rule so DOI/PMID rows most likely to need registry repair are verified first. */
 export function isUnusualIssuedYear(
@@ -124,7 +125,12 @@ export async function verifyUnifiedRegistryWithPatches(
     }
   }
 
-  const patched = applyVerificationMismatches(citations, first.mismatches)
+  // DOI↔title identity conflicts: never auto-patch any field; leave for manual UI.
+  const conflictIds = doiConflictCitationIds(citations, first.mismatches)
+  const autoApply = first.mismatches.filter((m) => !conflictIds.has(m.citationId))
+  const heldConflicts = first.mismatches.filter((m) => conflictIds.has(m.citationId))
+
+  const patched = applyVerificationMismatches(citations, autoApply)
   const anyRowChanged = patched.some((c, i) => c !== citations[i])
   if (!anyRowChanged) {
     return {
@@ -136,10 +142,12 @@ export async function verifyUnifiedRegistryWithPatches(
 
   const againSlice = prioritizeForUnifiedRegistryCheck(patched, maxItems)
   const second = await runRegistryChecksOnItems(againSlice)
+  const secondNonConflict = second.mismatches.filter((m) => !conflictIds.has(m.citationId))
+  const remainingMismatches = [...heldConflicts, ...secondNonConflict]
 
   return {
     nextCitations: patched,
-    remainingMismatches: second.mismatches,
+    remainingMismatches,
     layersByCitationId: mergeLayers(first.layersByCitationId, patched, second.layersByCitationId)
   }
 }

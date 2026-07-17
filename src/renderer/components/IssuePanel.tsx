@@ -10,18 +10,7 @@ import { getCitationStatus } from '../utils/output-filters'
 import { setPredatoryListCache } from '../../engine/predatory/list-store'
 import { duplicateColors } from '../utils/duplicate-colors'
 import { SeverityIcon } from './ui/severity-icon'
-
-function citationRowId(id: string, index?: number): string {
-  const safe = id.replace(/[^a-zA-Z0-9_-]/g, '-')
-  return index !== undefined ? `citation-row-${index}-${safe}` : `citation-row-${safe}`
-}
-
-function scrollToCitationRow(citationId: string) {
-  document.getElementById(citationRowId(citationId))?.scrollIntoView({
-    behavior: 'smooth',
-    block: 'center'
-  })
-}
+import { citationRowId, scrollToCitationRow } from '../utils/citation-row-dom'
 
 function predatoryExplanation(flag: PredatoryFlag, t: (k: string, opts?: Record<string, unknown>) => string): string {
   switch (flag.matchedOn) {

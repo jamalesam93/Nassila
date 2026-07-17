@@ -293,28 +293,10 @@ export function useCitationEngine() {
 
     const pendingMismatches = useCitationStore.getState().verificationMismatches
     if (pendingMismatches.length > 0) {
-      const { cosmetic, doiConflicts } = partitionMismatches(allCorrected, pendingMismatches)
+      // Cosmetic only — DOI↔title conflicts stay for manual Keep my title / Keep this DOI actions.
+      const { cosmetic } = partitionMismatches(allCorrected, pendingMismatches)
       if (cosmetic.length > 0) {
         allCorrected = applyVerificationMismatches(allCorrected, cosmetic)
-      }
-      if (doiConflicts.length > 0 && useOnline) {
-        const { resolveDoiForTitle } = await import('../../engine/autocorrect/enhance')
-        const conflictIds = new Set(doiConflicts.map((m) => m.citationId))
-        const resolved: CslItem[] = []
-        for (const item of allCorrected) {
-          if (!conflictIds.has(item.id)) {
-            resolved.push(item)
-            continue
-          }
-          const result = await resolveDoiForTitle(item)
-          if (result) {
-            allLog.push(...result.log)
-            resolved.push(result.item)
-          } else {
-            resolved.push(item)
-          }
-        }
-        allCorrected = resolved
       }
     }
 

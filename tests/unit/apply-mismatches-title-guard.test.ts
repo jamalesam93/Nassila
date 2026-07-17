@@ -54,4 +54,49 @@ describe('applyVerificationMismatches title patch guard', () => {
     })
     expect(next.title).toBe(PPRI_TITLE)
   })
+
+  it('does not overwrite title when conflict is detected via title alone (no _original)', () => {
+    const item: CslItem = {
+      id: 'c1',
+      type: 'article-journal',
+      title: 'Importance of incorporating social pharmacy education in Yemeni pharmacy schools curriculum',
+      DOI: '10.1186/s40545-021-00300-3'
+    }
+    const mismatches: VerificationMismatch[] = [
+      {
+        id: 'm1',
+        citationId: 'c1',
+        field: 'title',
+        userValue: item.title!,
+        canonicalValue: PPRI_TITLE,
+        source: 'crossref'
+      }
+    ]
+    const [next] = applyVerificationMismatches([item], mismatches)
+    expect(next.title).toBe(item.title)
+  })
+
+  it('does not patch year on a DOI↔title conflict row when mismatches are filtered by caller', () => {
+    // verify-and-apply excludes all fields for conflict ids; this guards apply itself on title only.
+    const item: CslItem = {
+      id: 'c1',
+      type: 'article-journal',
+      title: 'Importance of incorporating social pharmacy education in Yemeni pharmacy schools curriculum',
+      DOI: '10.1186/s40545-021-00300-3',
+      issued: { 'date-parts': [[2021]] }
+    }
+    const mismatches: VerificationMismatch[] = [
+      {
+        id: 'm1',
+        citationId: 'c1',
+        field: 'title',
+        userValue: item.title!,
+        canonicalValue: PPRI_TITLE,
+        source: 'crossref'
+      }
+    ]
+    const [next] = applyVerificationMismatches([item], mismatches)
+    expect(next.title).toBe(item.title)
+    expect(next.issued?.['date-parts']?.[0]?.[0]).toBe(2021)
+  })
 })

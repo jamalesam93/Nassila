@@ -4,16 +4,10 @@ All notable changes to **Nassila** are documented here.
 
 ## [Unreleased]
 
-### Planned — 1.2.1 Masdar UX
-
-- **Audit in-progress panel (#4b)** — cited-sources table grows during the run; hide `LoopAuditDetail` and disable auto-select until audit completes. Refines 1.2.0 incremental progress (#4).
-- **DOI↔title conflict — manual-only (#4c)** — verify/autocorrect must not auto-patch or clear mismatch panels; yellow **Find DOI for title** / **Use DOI's title** stays until user chooses. Fixes predatory-list sync wiping `verificationMismatches`.
-- **Icon system (I2)** — toast, dropdown chevron, network indicator, external-link, and toolbar affordances. Pairs with keyboard shortcuts (#8). See NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) § UI icon track.
-- Attach PDF (#5), quote chip (#6), shortcuts (#8) — see [`FEATURES-AND-TWEAKS.md`](docs/FEATURES-AND-TWEAKS.md).
-
 ### Planned — 1.2.2 Throughput
 
 - **Bounded audit concurrency** (#7) — split registry vs LLM pools.
+- May include deferred #5 / #6.
 
 ### Planned — 1.2.3 Raqim Repair
 
@@ -23,9 +17,24 @@ All notable changes to **Nassila** are documented here.
 
 - **Bibliography repair panel** (#14b) — suggested matches on L1 fail; manual lookup key (title / DOI / PMID / PMCID / URL) → per-row Verify/Autocorrect; Hugging Face Hub + Kaggle gray-lit lookup for ML/AI cites. See [`FEATURES-AND-TWEAKS.md`](docs/FEATURES-AND-TWEAKS.md) §14b (R2–R3).
 
+## [1.2.1] — 2026-07-17 · Masdar UX (trust + polish)
+
+Windows installer `Nassila Setup 1.2.1.exe`. Tag/GitHub Release when you push (not yet).
+
+### Added
+
+- **Audit in-progress panel (#4b)** — cited-sources table grows during the run; `LoopAuditDetail` stays locked until audit completes; no auto-select while `running`.
+- **DOI↔title conflict — manual-only (#4c)** — verify does not auto-patch conflict rows; Autocorrect no longer auto-resolves DOI; predatory-list sync preserves mismatch panels. Buttons: **Keep my title — find correct DOI** / **Keep this DOI — update title** (AR: أبقِ عنواني — ابحث عن الـDOI الصحيح / أبقِ هذا الـDOI — حدِّث العنوان).
+- **Shortcuts (#8)** — Ctrl/Cmd+Enter runs audit; **Copy evidence** and **Jump to Bibliography** on findings (re-audit deferred with #5).
+- **Icon system (I2)** — toast kind icons, dropdown chevron, network wifi/offline + refresh, external-link on source URL, AppHeader toolbar icons. See NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) § UI icon track.
+
+### Deferred to later 1.2.x
+
+- **Attach PDF (#5)** and **quote chip (#6)** → later 1.2.x (with #7 or a dedicated Masdar follow-up).
+
 ## [1.2.0] — 2026-07-15 · Masdar-lite
 
-**GitHub Release:** [v1.2.0](https://github.com/jamalesam93/Nassila/releases/tag/v1.2.0) · Windows installer `Nassila Setup 1.2.0.exe`. **Icon I0/I1** included; **I2** remains **1.2.1**.
+**GitHub Release:** [v1.2.0](https://github.com/jamalesam93/Nassila/releases/tag/v1.2.0) · Windows installer `Nassila Setup 1.2.0.exe`. **Icon I0/I1** included; **I2** shipped in **1.2.1**.
 
 ### Added
 
@@ -43,12 +52,9 @@ All notable changes to **Nassila** are documented here.
 - **Bibliography PDF import (dev)** — pdf.js worker URL in Vite dev no longer fails with "Setting up fake worker failed" (browser-specific worker bundle).
 - **Duplicate Online indicator** — network status shown once in the app header (removed duplicate from status bar).
 
-### Deferred to 1.2.1+
+### Deferred to later 1.2.x
 
-- Per-reference source PDF attach (#5), quote-verification chip (#6), keyboard shortcuts (#8), bounded audit concurrency (#7).
-- **Audit in-progress panel (#4b)** — table grows during run; detail pane locked until done.
-- **DOI↔title conflict — manual-only (#4c)** — no verify/autocorrect auto-resolution; mismatch panel survives predatory list sync.
-- **Icon system (I2)** — toast, toolbar, dropdown chevron, network, and external-link affordances (#13).
+- Per-reference source PDF attach (#5), quote-verification chip (#6), bounded audit concurrency (#7).
 
 ## [1.1.3] — 2026-06-29 · Polish
 

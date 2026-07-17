@@ -17,6 +17,7 @@ import { authorPreviewLimits } from '../utils/author-preview'
 import { bibliographyTaskMessage } from '../utils/bibliography-task-message'
 import { MismatchResolutionActions, mismatchFieldLabel } from './MismatchResolutionActions'
 import { SeverityIcon } from './ui/severity-icon'
+import { citationRowId } from '../utils/citation-row-dom'
 
 function formatAccessedForDisplay(accessed: CslDate): string {
   if (accessed.literal) return accessed.literal.trim()
@@ -38,11 +39,6 @@ function doiUrl(doi: string): string {
     .trim()
     .replace(/[.)\s]+$/, '')
   return `https://doi.org/${cleaned}`
-}
-
-function citationRowId(id: string, index?: number): string {
-  const safe = id.replace(/[^a-zA-Z0-9_-]/g, '-')
-  return index !== undefined ? `citation-row-${index}-${safe}` : `citation-row-${safe}`
 }
 
 export default function OutputPanel() {

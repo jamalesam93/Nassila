@@ -80,10 +80,18 @@ export default function OuroborosLoopWorkspace() {
       setSelectedBibKey(null)
       return
     }
+    // Only auto-select after a completed audit (#4b) — mid-run detail stays locked.
+    if (step !== 'done') return
     if (!selectedBibKey || !findings.some((f) => f.bibKey === selectedBibKey)) {
       setSelectedBibKey(findings[0]!.bibKey)
     }
-  }, [findings, selectedBibKey, setSelectedBibKey])
+  }, [findings, selectedBibKey, setSelectedBibKey, step])
+
+  useEffect(() => {
+    if (step === 'idle' || step === 'error') {
+      setSelectedBibKey(null)
+    }
+  }, [step, setSelectedBibKey])
 
   const handleRun = useCallback(() => {
     if (!raw.trim() || running) return
@@ -225,6 +233,12 @@ export default function OuroborosLoopWorkspace() {
             className="font-prose h-full min-h-[160px] w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm leading-relaxed"
             value={raw}
             onChange={(e) => setRaw(e.target.value)}
+            onKeyDown={(e) => {
+              if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault()
+                if (preview.ok && !running) handleRun()
+              }
+            }}
             placeholder={t('manuscriptAudit.editorPlaceholder')}
             disabled={running}
           />
@@ -319,7 +333,29 @@ export default function OuroborosLoopWorkspace() {
               </table>
             </div>
             <div className="min-h-0 flex-1 overflow-hidden">
-              <LoopAuditDetail finding={selectedFinding} />
+              {running ? (
+                <div className="flex h-full flex-col justify-center gap-2 p-4 text-sm text-muted-foreground">
+                  <p className="font-medium text-foreground">{t('loop.auditInProgressTitle')}</p>
+                  <p>
+                    {t('loop.auditInProgressBody', {
+                      phase: t(`manuscriptAudit.phase.${step}`),
+                      progress:
+                        auditProgress && auditProgress.total > 0
+                          ? ` · ${t('manuscriptAudit.progress', {
+                              processed: auditProgress.processed,
+                              total: auditProgress.total
+                            })}`
+                          : ''
+                    })}
+                  </p>
+                </div>
+              ) : step === 'done' ? (
+                <LoopAuditDetail finding={selectedFinding} />
+              ) : (
+                <div className="flex h-full items-center p-4 text-sm text-muted-foreground">
+                  <p>{t('loop.auditDetailLocked')}</p>
+                </div>
+              )}
             </div>
           </div>
         )}

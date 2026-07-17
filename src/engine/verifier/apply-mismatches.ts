@@ -1,12 +1,12 @@
 import type { CslItem, VerificationMismatch } from '../types'
-import { bibliographySupportsRegistryTitle } from '../manuscript/verify'
+import { isDoiTitleConflict } from './mismatch-kind'
 
 /**
  * Applies registry-reported canonical values from verification mismatches onto citations.
  * Ignores sentinel user values such as `(missing)` for the user's side; canonical must be real text.
  */
 export type ApplyVerificationMismatchOptions = {
-  /** Explicit user choice: apply registry title when _original disagrees (wrong-DOI row). */
+  /** Explicit user choice: apply registry title when row title conflicts with DOI record. */
   applyConflictingTitlePatch?: boolean
 }
 
@@ -35,11 +35,7 @@ export function applyVerificationMismatches(
 
       switch (m.field) {
         case 'title':
-          if (
-            !options?.applyConflictingTitlePatch &&
-            citation._original?.trim() &&
-            !bibliographySupportsRegistryTitle(citation._original, m.canonicalValue)
-          ) {
+          if (!options?.applyConflictingTitlePatch && isDoiTitleConflict(citation, m)) {
             break
           }
           draft.title = m.canonicalValue

@@ -4,6 +4,52 @@ export function exportReportJson(report: AuditReport): string {
   return JSON.stringify(report, null, 2)
 }
 
+/** Markdown evidence block for one finding (passage, excerpt, quotes). */
+export function formatFindingEvidenceMarkdown(finding: CitationFinding): string {
+  const lines: string[] = []
+  const title =
+    finding.resolvedItem?.title?.trim() ||
+    finding.evidence[0]?.text?.slice(0, 120) ||
+    finding.bibKey
+  lines.push(`# ${title}`)
+  lines.push(`bibKey: ${finding.bibKey}`)
+  lines.push('')
+
+  const sites = finding.citeSites ?? []
+  if (sites.length === 0) {
+    lines.push('_No cite sites evaluated._')
+    return lines.join('\n')
+  }
+
+  let i = 0
+  for (const s of sites) {
+    i++
+    lines.push(`## Cite site ${i}`)
+    lines.push(`Span: ${s.inTextSpan.raw}`)
+    lines.push('')
+    lines.push('### Passage window')
+    lines.push(s.passageWindow || '_empty_')
+    lines.push('')
+    if (s.sourceExcerpt?.trim()) {
+      lines.push('### Source excerpt')
+      if (s.sourceExcerptUrl) lines.push(`URL: ${s.sourceExcerptUrl}`)
+      lines.push(s.sourceExcerpt)
+      lines.push('')
+    }
+    if (s.claimGrounding?.length) {
+      lines.push('### Claims')
+      for (const c of s.claimGrounding) {
+        lines.push(`- **${c.verdict}**: ${c.claim}`)
+        for (const q of c.sourceQuotes ?? []) {
+          lines.push(`  - Quote: "${q}"`)
+        }
+      }
+      lines.push('')
+    }
+  }
+  return lines.join('\n')
+}
+
 function citationFindingBullet(f: CitationFinding): string {
   return `- **${f.bibKey}** — integrity:${f.referenceIntegrityRisk} — L1:${f.layers.registry.status} L2:${f.layers.metadata.status} L3:${f.layers.passage.status} (${f.l3Coverage})`
 }

@@ -22,6 +22,22 @@ export function titleMismatchKind(
   return isDoiTitleConflict(citation, mismatch) ? 'doi_conflict' : 'cosmetic'
 }
 
+/** Citation ids that have at least one DOI↔title identity conflict. */
+export function doiConflictCitationIds(
+  citations: CslItem[],
+  mismatches: VerificationMismatch[]
+): Set<string> {
+  const byId = new Map(citations.map((c) => [c.id, c]))
+  const ids = new Set<string>()
+  for (const m of mismatches) {
+    const cite = byId.get(m.citationId)
+    if (cite && isDoiTitleConflict(cite, m)) {
+      ids.add(m.citationId)
+    }
+  }
+  return ids
+}
+
 export function partitionMismatches(
   citations: CslItem[],
   mismatches: VerificationMismatch[]
@@ -29,12 +45,11 @@ export function partitionMismatches(
   cosmetic: VerificationMismatch[]
   doiConflicts: VerificationMismatch[]
 } {
-  const byId = new Map(citations.map((c) => [c.id, c]))
+  const conflictIds = doiConflictCitationIds(citations, mismatches)
   const cosmetic: VerificationMismatch[] = []
   const doiConflicts: VerificationMismatch[] = []
   for (const m of mismatches) {
-    const cite = byId.get(m.citationId)
-    if (cite && isDoiTitleConflict(cite, m)) {
+    if (conflictIds.has(m.citationId)) {
       doiConflicts.push(m)
     } else {
       cosmetic.push(m)

@@ -149,11 +149,28 @@ function buildDuplicateGroupByCitation(duplicates: DuplicateGroup[]): Record<str
   return markers
 }
 
+function verifyStateFromStore(state: {
+  verificationMismatches: VerificationMismatch[]
+  registryLayerByCitationId: Record<string, RegistryLayerSnapshot>
+}): {
+  verificationMismatches: VerificationMismatch[]
+  registryLayerByCitationId: Record<string, RegistryLayerSnapshot>
+} {
+  return {
+    verificationMismatches: state.verificationMismatches,
+    registryLayerByCitationId: state.registryLayerByCitationId
+  }
+}
+
 function refreshDerivedCitationState(
   items: CslItem[],
   styleId: string | null,
   setState: (partial: Partial<CitationState>) => void,
-  dismissedPredatoryIds: Set<string>
+  dismissedPredatoryIds: Set<string>,
+  verifyState: {
+    verificationMismatches: VerificationMismatch[]
+    registryLayerByCitationId: Record<string, RegistryLayerSnapshot>
+  }
 ): void {
   const issues = validateCitations(items, styleId ?? undefined)
   const duplicates = findDuplicates(items)
@@ -161,13 +178,22 @@ function refreshDerivedCitationState(
   const rawPredatory = checkPredatory(items)
   const predatoryFlags = rawPredatory.filter((f) => !dismissedPredatoryIds.has(f.citationId))
 
+  const validIds = new Set(items.map((c) => c.id))
+  const verificationMismatches = verifyState.verificationMismatches.filter((m) =>
+    validIds.has(m.citationId)
+  )
+  const registryLayerByCitationId: Record<string, RegistryLayerSnapshot> = {}
+  for (const [id, snap] of Object.entries(verifyState.registryLayerByCitationId)) {
+    if (validIds.has(id)) registryLayerByCitationId[id] = snap
+  }
+
   setState({
     issues,
     duplicates,
     duplicateGroupByCitation: buildDuplicateGroupByCitation(duplicates),
     citationStatuses,
-    verificationMismatches: [],
-    registryLayerByCitationId: {},
+    verificationMismatches,
+    registryLayerByCitationId,
     predatoryFlags,
     predatoryByCitation: predatoryFlagsToByCitation(predatoryFlags)
   })
@@ -258,7 +284,13 @@ export const useCitationStore = create<CitationState>((set, get) => {
         canUndo: undoManager.canUndo(),
         canRedo: undoManager.canRedo()
       })
-      refreshDerivedCitationState(after, get().selectedStyleId, setState, get().dismissedPredatoryIds)
+      refreshDerivedCitationState(
+        after,
+        get().selectedStyleId,
+        setState,
+        get().dismissedPredatoryIds,
+        verifyStateFromStore(get())
+      )
     },
 
     deleteCitation: (id, index) => {
@@ -282,7 +314,13 @@ export const useCitationStore = create<CitationState>((set, get) => {
         canUndo: undoManager.canUndo(),
         canRedo: undoManager.canRedo()
       })
-      refreshDerivedCitationState(after, get().selectedStyleId, setState, get().dismissedPredatoryIds)
+      refreshDerivedCitationState(
+        after,
+        get().selectedStyleId,
+        setState,
+        get().dismissedPredatoryIds,
+        verifyStateFromStore(get())
+      )
     },
 
     updateCitation: (id, updates) => {
@@ -294,7 +332,13 @@ export const useCitationStore = create<CitationState>((set, get) => {
         canUndo: undoManager.canUndo(),
         canRedo: undoManager.canRedo()
       })
-      refreshDerivedCitationState(after, get().selectedStyleId, setState, get().dismissedPredatoryIds)
+      refreshDerivedCitationState(
+        after,
+        get().selectedStyleId,
+        setState,
+        get().dismissedPredatoryIds,
+        verifyStateFromStore(get())
+      )
     },
 
     clearCitations: () => {
@@ -358,7 +402,8 @@ export const useCitationStore = create<CitationState>((set, get) => {
         get().citations,
         get().selectedStyleId,
         setState,
-        dismissed
+        dismissed,
+        verifyStateFromStore(get())
       )
     },
 
@@ -427,7 +472,13 @@ export const useCitationStore = create<CitationState>((set, get) => {
         canUndo: undoManager.canUndo(),
         canRedo: undoManager.canRedo()
       })
-      refreshDerivedCitationState(after, get().selectedStyleId, setState, get().dismissedPredatoryIds)
+      refreshDerivedCitationState(
+        after,
+        get().selectedStyleId,
+        setState,
+        get().dismissedPredatoryIds,
+        verifyStateFromStore(get())
+      )
     },
 
     undo: () => {
@@ -439,7 +490,13 @@ export const useCitationStore = create<CitationState>((set, get) => {
           canUndo: undoManager.canUndo(),
           canRedo: undoManager.canRedo()
         })
-        refreshDerivedCitationState(citations, get().selectedStyleId, setState, get().dismissedPredatoryIds)
+        refreshDerivedCitationState(
+          citations,
+          get().selectedStyleId,
+          setState,
+          get().dismissedPredatoryIds,
+          verifyStateFromStore(get())
+        )
       }
     },
 
@@ -452,7 +509,13 @@ export const useCitationStore = create<CitationState>((set, get) => {
           canUndo: undoManager.canUndo(),
           canRedo: undoManager.canRedo()
         })
-        refreshDerivedCitationState(citations, get().selectedStyleId, setState, get().dismissedPredatoryIds)
+        refreshDerivedCitationState(
+          citations,
+          get().selectedStyleId,
+          setState,
+          get().dismissedPredatoryIds,
+          verifyStateFromStore(get())
+        )
       }
     }
   }
@@ -460,7 +523,13 @@ export const useCitationStore = create<CitationState>((set, get) => {
 
 subscribePredatoryList(() => {
   const s = useCitationStore.getState()
-  refreshDerivedCitationState(s.citations, s.selectedStyleId, (partial) => {
-    useCitationStore.setState(partial)
-  }, s.dismissedPredatoryIds)
+  refreshDerivedCitationState(
+    s.citations,
+    s.selectedStyleId,
+    (partial) => {
+      useCitationStore.setState(partial)
+    },
+    s.dismissedPredatoryIds,
+    verifyStateFromStore(s)
+  )
 })

@@ -136,13 +136,13 @@ These were identified in the cross-repo review and confirmed by the 2026-06-28 s
 - **Disable auto-select** of `findings[0]` during the run; select first row only when the audit completes (or when the user clicks a row after done).
 - Right panel header: short honest copy + current phase (no fake percentage). Optional muted progress affordance; honor `prefers-reduced-motion`.
 
-**Ship:** **1.2.1 Masdar UX** (pairs with #5–6, #8, icon I2) · **Effort:** small · **Blast radius:** `OuroborosLoopWorkspace.tsx`, `ouroboros-loop-store` selection effect, i18n `loop.auditInProgress*`
+**Ship:** **1.2.1 Masdar UX** (pairs with #4c, #8, icon I2; #5–6 deferred) · **Effort:** small · **Blast radius:** `OuroborosLoopWorkspace.tsx`, `ouroboros-loop-store` selection effect, i18n `loop.auditInProgress*`
 
 **Acceptance.**
-- [ ] During audit: table grows; detail pane shows in-progress message only (not verdict cards).
-- [ ] After audit: full table + detail behave as today.
-- [ ] No auto-open of first finding while `running`; cancel leaves UI consistent.
-- [ ] EN + AR strings; no training/corpus copy.
+- [x] During audit: table grows; detail pane shows in-progress message only (not verdict cards).
+- [x] After audit: full table + detail behave as today.
+- [x] No auto-open of first finding while `running`; cancel leaves UI consistent.
+- [x] EN + AR strings; no training/corpus copy.
 
 ### 4c. DOI↔title conflict — manual-only resolution (Bibliography / Raqim)
 
@@ -162,19 +162,19 @@ These were identified in the cross-repo review and confirmed by the 2026-06-28 s
 **Ship:** **1.2.1 Masdar UX** (Bibliography trust; pairs with #4b loop progress) · **Effort:** small–medium · **Blast radius:** `verify-and-apply.ts`, `apply-mismatches.ts`, `use-citation-engine.ts`, `citation-store.ts`, tests (`apply-mismatches-title-guard`, new predatory-sync / autocorrect guard tests)
 
 **Acceptance.**
-- [ ] After Verify on wrong-DOI row (Alshakka smoke case): yellow panel persists; row fields unchanged until user clicks a button.
-- [ ] Predatory list load / weekly check does not clear pending mismatch panels.
-- [ ] Autocorrect does not change DOI on conflict rows without explicit **Find DOI for title**.
-- [ ] **Use DOI's title** still works via button; cosmetic title patches (non-conflict) unchanged.
-- [ ] Unit tests cover `_original`-missing rows and predatory subscribe race.
+- [x] After Verify on wrong-DOI row (Alshakka smoke case): yellow panel persists; row fields unchanged until user clicks a button.
+- [x] Predatory list load / weekly check does not clear pending mismatch panels.
+- [x] Autocorrect does not change DOI on conflict rows without explicit **Keep my title — find correct DOI**.
+- [x] **Keep this DOI — update title** still works via button; cosmetic title patches (non-conflict) unchanged.
+- [x] Unit tests cover `_original`-missing rows and predatory subscribe race.
 
 ### 5. Per-reference source PDF attach
 
-The website itself documents this as a planned Masdar feature. Minimal version: on a selected `CitationFinding`, "Attach source PDF" → file picker → pdf.js extract → re-ground just that reference. Closes "Sanad without manual copy-paste" for the common case where the user has the PDF locally. Needs `runAudit` to accept an optional single-`bibKey` filter (small refactor). **Acceptance:** attach a local PDF → that finding's L3 updates from abstract-only/skipped to full-text grounded.
+**Ship:** **later 1.2.x** (deferred from 1.2.1 trust+polish batch). The website itself documents this as a planned Masdar feature. Minimal version: on a selected `CitationFinding`, "Attach source PDF" → file picker → pdf.js extract → re-ground just that reference. Closes "Sanad without manual copy-paste" for the common case where the user has the PDF locally. Needs `runAudit` to accept an optional single-`bibKey` filter (small refactor). **Acceptance:** attach a local PDF → that finding's L3 updates from abstract-only/skipped to full-text grounded.
 
 ### 6. Per-claim quote-verification chip
 
-The engine already validates quotes deterministically (`grounding-llm.ts:204` `findInvalidSourceQuotes`) but `LoopAuditDetail.tsx:148` folds the warning into the top-level layer reasons where it's easy to miss. Render a small amber chip on the offending claim row. Builds trust — shows the AI is checked, not trusted. **Acceptance:** a claim whose `sourceQuotes` fail substring verification shows an inline "quote not found" marker.
+**Ship:** **later 1.2.x** (deferred from 1.2.1; pairs with #5 or a dedicated Masdar follow-up). The engine already validates quotes deterministically (`grounding-llm.ts` `findInvalidSourceQuotes`) but `LoopAuditDetail` folds the warning into the top-level layer reasons where it's easy to miss. Render a small amber chip on the offending claim row. Builds trust — shows the AI is checked, not trusted. **Acceptance:** a claim whose `sourceQuotes` fail substring verification shows an inline "quote not found" marker.
 
 ### 7. Bounded concurrency in the audit loop
 
@@ -182,12 +182,14 @@ The entry loop (`use-manuscript-audit.ts:140`) and cite-site loop (`:204`) are f
 
 ### 8. Navigation + shortcuts
 
-- **Ctrl/Cmd+Enter** in the manuscript textarea → run audit (no loop binding exists today in `use-keyboard-shortcuts.ts`).
-- **Copy evidence** per finding → passage window + excerpt + verbatim quotes as markdown/text for notes.
-- **Jump to Bibliography** per finding → the bridge already sends refs with `manuscript-ref:N` keys; link the finding back to that row.
-- **Re-audit this reference** action (pairs with #5) — avoids re-running all cites after a fix.
+**Ship:** **1.2.1** (without re-audit — that pairs with deferred #5).
 
-**Acceptance:** shortcuts documented in `shortcuts.md` (website) and `HOW_TO_GUIDE.md`; each action has a toast (#1).
+- **Ctrl/Cmd+Enter** in the manuscript textarea → run audit.
+- **Copy evidence** per finding → passage window + excerpt + verbatim quotes as markdown/text for notes.
+- **Jump to Bibliography** per finding → scroll to `manuscript-ref:{bibKey}` row.
+- **Re-audit this reference** — deferred with #5 (needs single-`bibKey` audit).
+
+**Acceptance:** shortcuts documented in website `shortcuts.mdx` and `HOW_TO_GUIDE.md`; each action has a toast (#1).
 
 ### 13. Icon system (Lucide via react-icons)
 
@@ -291,9 +293,9 @@ Do not pull these into a tweak batch:
 
 1. **P0 #1 (notifications)** and **P0 #2 (modal shortening)** — independent, ship together as a "polish" release. Both are additive/contained and visibly improve the app.
 2. **P1 #3 + #4** as one PR ("Masdar-lite + responsive audit") — both live in `use-manuscript-audit.ts`, both confirmed by the smoke sign-off. **#4b** refines loop panel UX → **1.2.1**.
-3. **P1 #4b + #4c + #5 + #6 + #8 + #13 (I2)** as **1.2.1 Masdar UX** batch (loop in-progress panel + DOI conflict manual-only + attach/re-audit + quote chip + shortcuts + icon affordances).
-4. **Icon I2** ships with **1.2.1** (#4b + #4c + #5 + #6 + #8 + #13). **I0/I1** shipped in **1.2.0** installer.
-5. **P1 #7** (concurrency) → **1.2.2** once #4/#4b progress UI is stable.
+3. **P1 #4b + #4c + #8 + #13 (I2)** as **1.2.1 Masdar UX** (trust + polish). **#5 attach PDF** and **#6 quote chip** deferred past 1.2.1.
+4. **Icon I2** ships with **1.2.1**. **I0/I1** shipped in **1.2.0** installer.
+5. **P1 #7** (concurrency) → **1.2.2** (may pair with #5/#6).
 6. **P1 #14 (R1)** → **1.2.3** Raqim Repair — resolver/parser/type fixes; unit tests per operator regression table.
 7. **P1 #14b (R2–R3)** → **1.2.4** Raqim Resolve — repair panel + HF/Kaggle; parallel with 1.2.1–1.2.2 if bandwidth allows.
 8. P2 items opportunistically.

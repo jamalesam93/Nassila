@@ -9,6 +9,8 @@ import {
   type KeyboardEvent,
   type ReactNode
 } from 'react'
+import { LuChevronDown } from 'react-icons/lu'
+import { Icon } from './icon'
 
 const DropdownCloseContext = createContext<() => void>(() => {})
 
@@ -49,7 +51,7 @@ export function DropdownMenu({ label, children, align = 'start' }: DropdownMenuP
         aria-expanded={open}
         aria-haspopup="menu"
         aria-controls={open ? menuId : undefined}
-        className="inline-flex h-8 cursor-pointer items-center rounded-md border border-border bg-background px-2 text-xs font-medium text-foreground hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        className="inline-flex h-8 cursor-pointer items-center gap-1 rounded-md border border-border bg-background px-2 text-xs font-medium text-foreground hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         onClick={() => setOpen((v) => !v)}
         onKeyDown={(e) => {
           if (e.key === 'ArrowDown' && !open) {
@@ -59,6 +61,7 @@ export function DropdownMenu({ label, children, align = 'start' }: DropdownMenuP
         }}
       >
         {label}
+        <Icon icon={LuChevronDown} size={12} className="opacity-70" />
       </button>
       {open ? (
         <DropdownCloseContext.Provider value={close}>

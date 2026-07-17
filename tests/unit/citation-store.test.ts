@@ -12,7 +12,7 @@ beforeEach(() => {
 })
 
 describe('citation store undo/redo', () => {
-  it('recomputes derived state and clears stale mismatches on undo', async () => {
+  it('recomputes derived state and keeps mismatches for surviving citations on undo', async () => {
     const { useCitationStore } = await import('../../src/renderer/stores/citation-store')
     const store = useCitationStore.getState()
 
@@ -41,7 +41,9 @@ describe('citation store undo/redo', () => {
     const afterUndo = useCitationStore.getState()
     expect(afterUndo.citations).toHaveLength(1)
     expect(afterUndo.citations[0]?.id).toBe(BASE_ITEM.id)
-    expect(afterUndo.verificationMismatches).toEqual([])
+    // DOI↔title / verify panels must survive undo of unrelated adds (#4c)
+    expect(afterUndo.verificationMismatches).toHaveLength(1)
+    expect(afterUndo.verificationMismatches[0]?.id).toBe('stale-mismatch')
     expect(afterUndo.citationStatuses['extra-item']).toBeUndefined()
     expect(Object.keys(afterUndo.citationStatuses)).toEqual([BASE_ITEM.id])
   })

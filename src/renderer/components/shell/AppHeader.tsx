@@ -20,6 +20,10 @@ import { DropdownMenu, DropdownMenuItem, DropdownMenuSeparator } from '../ui/dro
 
 import { NetworkStatusIndicator } from '../NetworkStatusIndicator'
 
+import { Icon } from '../ui/icon'
+
+import { LuDownload, LuFileText, LuShieldCheck, LuUpload } from 'react-icons/lu'
+
 import { MAX_VERIFICATION_ITEMS } from '../../../shared/verification-limits'
 
 
@@ -264,6 +268,8 @@ export default function AppHeader() {
 
               >
 
+                <Icon icon={LuUpload} size={14} className="me-1.5" />
+
                 {t('toolbar.import')}
 
               </Button>
@@ -288,6 +294,8 @@ export default function AppHeader() {
 
               >
 
+                <Icon icon={LuShieldCheck} size={14} className="me-1.5" />
+
                 {verifying ? t('toolbar.verifyingBusy') : t('toolbar.verifyRegistry')}
 
               </Button>
@@ -307,6 +315,8 @@ export default function AppHeader() {
                 disabled={citationCount === 0}
 
               >
+
+                <Icon icon={LuDownload} size={14} className="me-1.5" />
 
                 {t('toolbar.export')}
 
@@ -337,6 +347,8 @@ export default function AppHeader() {
                 variant="secondary"
 
               >
+
+                <Icon icon={LuFileText} size={14} className="me-1.5" />
 
                 {t('loop.importManuscript')}
 

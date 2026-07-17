@@ -124,6 +124,7 @@ Theme (light/dark) follows your preference where the app exposes it; use the the
 | **Ctrl+Shift+V** | Verify references (unified L1+L2) |
 | **Ctrl+Shift+U** | Detect duplicates |
 | **Ctrl+Z** / **Ctrl+Shift+Z** | Undo / Redo |
+| **Ctrl+Enter** (Manuscript textarea) | Run manuscript audit |
 
 ---
 

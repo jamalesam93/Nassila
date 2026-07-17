@@ -1,7 +1,9 @@
 import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
+import { LuCheck, LuCircleAlert, LuInfo, LuTriangleAlert } from 'react-icons/lu'
 import i18n from '../../i18n/config'
 import { useNotifyStore, type ToastItem } from '../../stores/notify-store'
+import { Icon } from './icon'
 
 function toastClass(kind: ToastItem['kind']): string {
   switch (kind) {
@@ -13,6 +15,19 @@ function toastClass(kind: ToastItem['kind']): string {
       return 'border-red-600/40 bg-red-50 text-red-950 dark:bg-red-950/90 dark:text-red-50'
     default:
       return 'border-border bg-card text-foreground'
+  }
+}
+
+function toastIcon(kind: ToastItem['kind']) {
+  switch (kind) {
+    case 'success':
+      return LuCheck
+    case 'warn':
+      return LuTriangleAlert
+    case 'error':
+      return LuCircleAlert
+    default:
+      return LuInfo
   }
 }
 
@@ -34,12 +49,13 @@ function ToastStack({ items }: { items: ToastItem[] }) {
         <button
           key={item.id}
           type="button"
-          className={`pointer-events-auto w-full rounded-lg border px-3 py-2 text-start text-sm shadow-lg ${
+          className={`pointer-events-auto flex w-full items-start gap-2 rounded-lg border px-3 py-2 text-start text-sm shadow-lg ${
             reduceMotion ? 'opacity-100' : 'opacity-100 transition-opacity duration-200'
           } ${toastClass(item.kind)}`}
           onClick={() => dismiss(item.id)}
         >
-          {item.message}
+          <Icon icon={toastIcon(item.kind)} size={16} className="mt-0.5" />
+          <span className="min-w-0 flex-1">{item.message}</span>
         </button>
       ))}
     </div>

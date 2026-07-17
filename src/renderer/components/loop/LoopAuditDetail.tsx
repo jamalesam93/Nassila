@@ -1,6 +1,16 @@
 import { useTranslation } from 'react-i18next'
+import { LuExternalLink } from 'react-icons/lu'
 import type { CitationFinding, CiteGroundingSite, EvidenceSource, L3Coverage, LayerVerdict } from '../../../engine/manuscript/types'
+import { formatFindingEvidenceMarkdown } from '../../../engine/audit/report'
+import { manuscriptRefCitationId } from '../../../engine/manuscript/bibliography-bridge'
 import { claimVerdictI18nKey, layerVerdictI18nKey, layerVerdictReasons } from '../../utils/sanad-grounding'
+import { copyToClipboard } from '../../utils/copy-to-clipboard'
+import { scrollToCitationRow } from '../../utils/citation-row-dom'
+import { notifyCopied, pushToast } from '../../lib/notify'
+import { useShellStore } from '../../stores/shell-store'
+import { useCitationStore } from '../../stores/citation-store'
+import { Button } from '../ui/button'
+import { Icon } from '../ui/icon'
 
 function coverageLabelKey(coverage: L3Coverage): string {
   switch (coverage) {
@@ -104,9 +114,10 @@ function ExcerptBlock({ site }: { site: CiteGroundingSite }) {
           href={site.sourceExcerptUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-1 block truncate text-[11px] text-primary hover:underline"
+          className="mt-1 inline-flex max-w-full items-center gap-1 truncate text-[11px] text-primary hover:underline"
         >
-          {t('loop.sourceExcerptLink')}
+          <Icon icon={LuExternalLink} size={12} />
+          <span className="truncate">{t('loop.sourceExcerptLink')}</span>
         </a>
       ) : null}
       <p className="mt-1.5 whitespace-pre-wrap rounded border border-border/80 bg-background px-2.5 py-2 text-xs leading-relaxed text-foreground">
@@ -198,6 +209,8 @@ interface LoopAuditDetailProps {
 
 export default function LoopAuditDetail({ finding }: LoopAuditDetailProps) {
   const { t } = useTranslation()
+  const setAppSurface = useShellStore((s) => s.setAppSurface)
+  const citations = useCitationStore((s) => s.citations)
 
   if (!finding) {
     return (
@@ -214,11 +227,36 @@ export default function LoopAuditDetail({ finding }: LoopAuditDetailProps) {
 
   const citeCount = finding.citeSites?.length ?? 0
 
+  const handleCopyEvidence = async () => {
+    const ok = await copyToClipboard(formatFindingEvidenceMarkdown(finding))
+    if (ok) notifyCopied(t('notifications.copied'))
+    else pushToast('error', t('loop.copyEvidenceFailed'))
+  }
+
+  const handleJumpToBibliography = () => {
+    const citationId = manuscriptRefCitationId(finding.bibKey)
+    const exists = citations.some((c) => c.id === citationId)
+    setAppSurface('bibliography')
+    window.setTimeout(() => {
+      if (!exists || !scrollToCitationRow(citationId)) {
+        pushToast('info', t('loop.jumpToBibliographyMissing'))
+      }
+    }, 80)
+  }
+
   return (
     <div className="flex h-full flex-col overflow-auto">
       <header className="border-b border-border px-4 py-3">
         <h3 className="text-sm font-semibold leading-snug text-foreground">{title}</h3>
         <p className="mt-0.5 text-[11px] text-muted-foreground">{finding.bibKey}</p>
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          <Button type="button" variant="outline" size="sm" className="h-7 text-xs" onClick={() => void handleCopyEvidence()}>
+            {t('loop.copyEvidence')}
+          </Button>
+          <Button type="button" variant="outline" size="sm" className="h-7 text-xs" onClick={handleJumpToBibliography}>
+            {t('loop.jumpToBibliography')}
+          </Button>
+        </div>
       </header>
 
       <section className="border-b border-border px-4 py-3">

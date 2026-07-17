@@ -67,4 +67,37 @@ describe('mismatch-kind', () => {
     expect(doiConflicts).toHaveLength(1)
     expect(doiConflicts[0]!.id).toBe('m2')
   })
+
+  it('holds all field mismatches for a DOI↔title conflict citation id', () => {
+    const items: CslItem[] = [
+      {
+        id: 'b',
+        type: 'article-journal',
+        title: 'Cardiology pharmacy practice in Saudi Arabia',
+        _original: SOCIAL_LINE,
+        issued: { 'date-parts': [[2020]] }
+      }
+    ]
+    const mismatches: VerificationMismatch[] = [
+      {
+        id: 'm2',
+        citationId: 'b',
+        field: 'title',
+        userValue: items[0]!.title!,
+        canonicalValue: PPRI_TITLE,
+        source: 'crossref'
+      },
+      {
+        id: 'm3',
+        citationId: 'b',
+        field: 'year',
+        userValue: '2020',
+        canonicalValue: '2019',
+        source: 'crossref'
+      }
+    ]
+    const { cosmetic, doiConflicts } = partitionMismatches(items, mismatches)
+    expect(cosmetic).toHaveLength(0)
+    expect(doiConflicts).toHaveLength(2)
+  })
 })
