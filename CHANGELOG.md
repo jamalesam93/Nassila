@@ -4,22 +4,39 @@ All notable changes to **Nassila** are documented here.
 
 ## [Unreleased]
 
-### Planned — polish (opportunistic)
-
-- **Header wordmark (#15)** — remove redundant in-app “Nassila” / ناسيلا from `AppHeader` (window title bar already identifies the app). See [`FEATURES-AND-TWEAKS.md`](docs/FEATURES-AND-TWEAKS.md) §15.
-
 ### Planned — 1.2.2 Throughput
 
 - **Bounded audit concurrency** (#7) — split registry vs LLM pools.
-- May include deferred #5 / #6.
 
-### Planned — 1.2.3 Raqim Repair
+### Planned — 1.2.3 Quote chip
+
+- **Per-claim quote-verification chip** (#6) — inline “quote not found” on offending claim rows.
+- **Header wordmark** (#15) — remove redundant in-app “Nassila” / ناسيلا from `AppHeader`.
+
+### Planned — 1.2.4 Masdar attach
+
+- **Per-reference source PDF attach** (#5) — file picker → extract → re-ground that reference; **Re-audit this reference**.
+
+### Planned — 1.2.5 Raqim Repair
 
 - **Bibliography resolver hardening** (#14) — PMCID L1 path, arXiv URL→DOI, OUP `article-abstract`, Springer chapter reclass, DeLong-class parser fix, registry title repair, software false-positive guard, genre-aware APA rules. See [`FEATURES-AND-TWEAKS.md`](docs/FEATURES-AND-TWEAKS.md) §14 and NassilaT operator map § Raqim track (R1).
 
-### Planned — 1.2.4 Raqim Resolve
+### Planned — 1.2.6 Raqim Resolve
 
 - **Bibliography repair panel** (#14b) — suggested matches on L1 fail; manual lookup key (title / DOI / PMID / PMCID / URL) → per-row Verify/Autocorrect; Hugging Face Hub + Kaggle gray-lit lookup for ML/AI cites. See [`FEATURES-AND-TWEAKS.md`](docs/FEATURES-AND-TWEAKS.md) §14b (R2–R3).
+
+### Planned — 1.2.7–1.2.9
+
+- TBD polish / product slots (not yet scoped).
+
+### Planned — 1.3.0 Sharh-lite
+
+- Deterministic summaries, Help → website, cancel granularity (#9–11).
+
+### Parallel (not a numbered release)
+
+- **Maktab OCR O2** — golden fixtures + hardware smoke (`docs/MAKTAB_OCR.md`); may land alongside any 1.2.x.
+- **S15+** Sanad refinement — NassilaT; parallel with late 1.2.x / 1.3.0 when Tier 3 corpus exists.
 
 ## [1.2.1] — 2026-07-17 · Masdar UX (trust + polish)
 
@@ -34,7 +51,8 @@ Windows installer `Nassila Setup 1.2.1.exe`. **GitHub Release:** [v1.2.1](https:
 
 ### Deferred to later 1.2.x
 
-- **Attach PDF (#5)** and **quote chip (#6)** → later 1.2.x (with #7 or a dedicated Masdar follow-up).
+- **Quote chip (#6)** + **header wordmark (#15)** → **1.2.3**.
+- **Attach PDF (#5)** → **1.2.4**.
 
 ## [1.2.0] — 2026-07-15 · Masdar-lite
 

@@ -170,15 +170,15 @@ These were identified in the cross-repo review and confirmed by the 2026-06-28 s
 
 ### 5. Per-reference source PDF attach
 
-**Ship:** **later 1.2.x** (deferred from 1.2.1 trust+polish batch). The website itself documents this as a planned Masdar feature. Minimal version: on a selected `CitationFinding`, "Attach source PDF" → file picker → pdf.js extract → re-ground just that reference. Closes "Sanad without manual copy-paste" for the common case where the user has the PDF locally. Needs `runAudit` to accept an optional single-`bibKey` filter (small refactor). **Acceptance:** attach a local PDF → that finding's L3 updates from abstract-only/skipped to full-text grounded.
+**Ship:** **1.2.4 Masdar attach**. The website itself documents this as a planned Masdar feature. Minimal version: on a selected `CitationFinding`, "Attach source PDF" → file picker → pdf.js extract → re-ground just that reference. Closes "Sanad without manual copy-paste" for the common case where the user has the PDF locally. Needs `runAudit` to accept an optional single-`bibKey` filter (small refactor). **Acceptance:** attach a local PDF → that finding's L3 updates from abstract-only/skipped to full-text grounded.
 
 ### 6. Per-claim quote-verification chip
 
-**Ship:** **later 1.2.x** (deferred from 1.2.1; pairs with #5 or a dedicated Masdar follow-up). The engine already validates quotes deterministically (`grounding-llm.ts` `findInvalidSourceQuotes`) but `LoopAuditDetail` folds the warning into the top-level layer reasons where it's easy to miss. Render a small amber chip on the offending claim row. Builds trust — shows the AI is checked, not trusted. **Acceptance:** a claim whose `sourceQuotes` fail substring verification shows an inline "quote not found" marker.
+**Ship:** **1.2.3 Quote chip** (with #15 header wordmark). The engine already validates quotes deterministically (`grounding-llm.ts` `findInvalidSourceQuotes`) but `LoopAuditDetail` folds the warning into the top-level layer reasons where it's easy to miss. Render a small amber chip on the offending claim row. Builds trust — shows the AI is checked, not trusted. **Acceptance:** a claim whose `sourceQuotes` fail substring verification shows an inline "quote not found" marker.
 
 ### 7. Bounded concurrency in the audit loop
 
-The entry loop (`use-manuscript-audit.ts:140`) and cite-site loop (`:204`) are fully sequential. A bounded pool (3–4 in flight, configurable) cuts wall-clock substantially and pairs with #4's progress UI. **Caveat:** keep concurrency modest to respect Crossref/PubMed rate limits — that's the only real constraint. **Acceptance:** audit wall-clock drops on a 50+ cite manuscript; no registry rate-limit errors; abort still works.
+**Ship:** **1.2.2 Throughput**. The entry loop (`use-manuscript-audit.ts`) and cite-site loop are fully sequential. A bounded pool (3–4 in flight, configurable) cuts wall-clock substantially and pairs with #4's progress UI. **Caveat:** keep concurrency modest to respect Crossref/PubMed rate limits — that's the only real constraint. **Acceptance:** audit wall-clock drops on a 50+ cite manuscript; no registry rate-limit errors; abort still works.
 
 ### 8. Navigation + shortcuts
 
@@ -230,7 +230,7 @@ The entry loop (`use-manuscript-audit.ts:140`) and cite-site loop (`:204`) are f
 | **Genre-aware APA** | preprints / chapters / reports do not get `apa-volume-required` meant for journal articles |
 | **Kaggle datasets** *(stretch)* | dataset refs with Kaggle publisher → URL lookup when no DOI |
 
-**Ship:** **1.2.3** · **Effort:** medium · **Blast radius:** `src/engine/manuscript/verify.ts`, `autocorrect/enhance.ts`, `parser/plain-text.ts`, `resolver/*`, `validator/rules/`
+**Ship:** **1.2.5** · **Effort:** medium · **Blast radius:** `src/engine/manuscript/verify.ts`, `autocorrect/enhance.ts`, `parser/plain-text.ts`, `resolver/*`, `validator/rules/`
 
 **Regression fixtures:** operator manuscript cases documented in NassilaT `OUROBOROS_OPERATOR_MAP.md` § Raqim track.
 
@@ -250,7 +250,7 @@ The entry loop (`use-manuscript-audit.ts:140`) and cite-site loop (`:204`) are f
 - **Hugging Face Hub** — search models/datasets for report/software cites (e.g. Gemma); label **Model card** vs **Report**; on-demand network.
 - **Kaggle** — dataset URL lookup; manual-add prompt when not found.
 
-**Ship:** **1.2.4** · **Effort:** medium–large (engine + Bibliography UI) · **Blast radius:** Raqim renderer panels, new resolver modules, IPC unchanged unless new host IPC needed
+**Ship:** **1.2.6** · **Effort:** medium–large (engine + Bibliography UI) · **Blast radius:** Raqim renderer panels, new resolver modules, IPC unchanged unless new host IPC needed
 
 **Acceptance.**
 - [ ] Unresolved row shows ≥1 suggested match when OpenAlex/Crossref/HF return near-misses (threshold documented in code).
@@ -284,7 +284,7 @@ The HF model cards already publish `89.27% / 92.98% / 3.81%` (E4B) and `90.43% /
 
 **Design.** Remove the in-app product-name span. Let the mode switcher be the left anchor; keep a little leading padding so it isn’t flush to the edge. **Do not** replace it with a marketing logo lockup or header glyph — window chrome is enough identity for a workstation UI (`DESIGN.md`).
 
-**Ship:** opportunistic polish (any 1.2.x) · **Effort:** tiny · **Blast radius:** `AppHeader.tsx` (+ spacing only)
+**Ship:** **1.2.3 Quote chip** (with #6) · **Effort:** tiny · **Blast radius:** `AppHeader.tsx` (+ spacing only)
 
 **Acceptance.**
 - [ ] No duplicate product name in the in-app header; title bar icon/name remain.
@@ -306,11 +306,15 @@ Do not pull these into a tweak batch:
 
 1. **P0 #1 (notifications)** and **P0 #2 (modal shortening)** — **shipped 1.1.3**.
 2. **P1 #3 + #4** ("Masdar-lite + responsive audit") — **shipped 1.2.0**. **#4b** refined loop panel UX in **1.2.1**.
-3. **P1 #4b + #4c + #8 + #13 (I2)** — **shipped 1.2.1 Masdar UX** (trust + polish). **#5 attach PDF** and **#6 quote chip** remain deferred.
+3. **P1 #4b + #4c + #8 + #13 (I2)** — **shipped 1.2.1 Masdar UX**.
 4. **Icon I0/I1** — **1.2.0**; **I2** — **1.2.1**.
-5. **P1 #7** (concurrency) → **1.2.2** (may pair with #5/#6).
-6. **P1 #14 (R1)** → **1.2.3** Raqim Repair — resolver/parser/type fixes; unit tests per operator regression table.
-7. **P1 #14b (R2–R3)** → **1.2.4** Raqim Resolve — repair panel + HF/Kaggle.
-8. P2 items opportunistically (#9–12, **#15 header wordmark**).
+5. **P1 #7** → **1.2.2 Throughput** (concurrency only).
+6. **P1 #6 + #15** → **1.2.3 Quote chip**.
+7. **P1 #5** → **1.2.4 Masdar attach** (incl. re-audit this reference).
+8. **P1 #14 (R1)** → **1.2.5 Raqim Repair**.
+9. **P1 #14b (R2–R3)** → **1.2.6 Raqim Resolve**.
+10. **1.2.7–1.2.9** — TBD.
+11. **P1 #9–11** → **1.3.0 Sharh-lite**.
+12. **∥ Parallel:** **Maktab OCR O2** (any 1.2.x); **S15+** on NassilaT when Tier 3 corpus exists. Opportunistic P2 (#12 site metrics, etc.).
 
 **Red-line check before each merge:** no training/corpus/eval content surfaces in app UI or copy (see top of file).

@@ -11,7 +11,7 @@ Built on this machine for [GitHub Releases](https://github.com/jamalesam93/Nassi
 | **1.1.1** | **Bibliography-first** | `Nassila Setup 1.1.1.exe` | [v1.1.1-RELEASE_NOTES.md](./v1.1.1-RELEASE_NOTES.md) |
 | **1.1.0** | **Sanad** | `Nassila Setup 1.1.0.exe` | [v1.1.0-RELEASE_NOTES.md](./v1.1.0-RELEASE_NOTES.md) |
 
-**Planned (see NassilaT [`OUROBOROS_OPERATOR_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/OUROBOROS_OPERATOR_MAP.md) § App release train):** 1.2.2 Throughput · 1.2.3 Raqim Repair · 1.2.4 Raqim Resolve · 1.3.0 Sharh-lite
+**Planned (see NassilaT [`OUROBOROS_OPERATOR_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/OUROBOROS_OPERATOR_MAP.md) § App release train):** 1.2.2 Throughput · 1.2.3 Quote chip · 1.2.4 Masdar attach · 1.2.5–1.2.6 Raqim · 1.2.7–1.2.9 TBD · 1.3.0 Sharh-lite · ∥ Maktab OCR O2 · ∥ S15+
 
 **Latest:** use **1.2.1**. Older installers are for release history; upgrading from **1.1.x** / **1.2.0** to **1.2.1** is fine.
 
