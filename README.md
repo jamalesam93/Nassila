@@ -11,24 +11,25 @@ Import or paste your bibliography, fix common errors, verify rows against Crossr
 
 | | |
 |---|---|
-| **Download (Windows)** | [**v1.2.1**](https://github.com/jamalesam93/Nassila/releases/tag/v1.2.1) · [Latest release](https://github.com/jamalesam93/Nassila/releases/latest) |
+| **Download (Windows)** | [**v1.3.0**](https://github.com/jamalesam93/Nassila/releases/tag/v1.3.0) · [Latest release](https://github.com/jamalesam93/Nassila/releases/latest) |
 | **Sanad models (HF)** | [`nassila-sanad-e4b`](https://huggingface.co/QinEmPeRoR93/nassila-sanad-e4b) · [`nassila-sanad-12b`](https://huggingface.co/QinEmPeRoR93/nassila-sanad-12b) — setup on the [website](https://nassila-web.vercel.app/en/docs/manuscript) |
 | **Website & docs** | [nassila-web.vercel.app](https://nassila-web.vercel.app) — [How-to](https://nassila-web.vercel.app/en/docs/how-to) · [User guide](https://nassila-web.vercel.app/en/docs/user-guide) · [Changelog](https://nassila-web.vercel.app/en/changelog) |
 | **Documentation (repo)** | [How-to guide](docs/HOW_TO_GUIDE.md) · [User guide](docs/USER_GUIDE.md) · [Brand](docs/BRAND.md) · [Changelog](CHANGELOG.md) |
 | **License** | [MIT](LICENSE) |
 
-> End users: install from **Releases** ([**v1.2.1**](https://github.com/jamalesam93/Nassila/releases/tag/v1.2.1)) or visit the [**website**](https://nassila-web.vercel.app). Developers: clone this repo and see [Getting started](#getting-started).
+> End users: install from **Releases** ([**v1.3.0**](https://github.com/jamalesam93/Nassila/releases/tag/v1.3.0)) or visit the [**website**](https://nassila-web.vercel.app). Developers: clone this repo and see [Getting started](#getting-started).
 
 The name **Nassila** is coined, inspired by the idea of a **sanad** (سند): a clear chain from what you write to where it came from.
 
-## What's new in v1.2.1
+## What's new in v1.3.0
 
-- **Audit in-progress panel** — cited-sources table grows during the run; detail panel stays locked until the audit finishes.
-- **DOI↔title conflict — manual-only** — verify no longer auto-patches conflict rows; choose keep-title (find DOI) or keep-DOI (update title).
-- **Shortcuts** — Ctrl/Cmd+Enter runs audit; Copy evidence and Jump to Bibliography on findings.
-- **Icon polish (I2)** — toast, network, dropdown, toolbar, and source-link affordances.
+- **Faster, safer audits** — main-process scheduler, live progress, cancel-safe runs, and clearer claim/quote evidence.
+- **Raqim Repair + Resolve** — stronger verify for PMCID/arXiv/publisher URLs; repair panel with registry and Hugging Face / Kaggle / GitHub suggestions (you apply matches).
+- **Masdar attach** — attach your own source PDF per cited reference and re-ground offline.
+- **Projects, OCR, Sharh-lite** — `.nassila` save/open, bundled eng/fra/ara OCR packs, deterministic evidence summary, Help → docs.
+- **Import polish** — DOCX/PDF bibliography splitting matches paste counts more reliably; Windows installer icons fixed.
 
-Full notes: [CHANGELOG.md](CHANGELOG.md) · [v1.2.1 release notes](release-artifacts/v1.2.1-RELEASE_NOTES.md).
+Full notes: [CHANGELOG.md](CHANGELOG.md) · [v1.3.0 release](https://github.com/jamalesam93/Nassila/releases/tag/v1.3.0).
 
 ## Who is this for?
 
