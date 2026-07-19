@@ -124,7 +124,7 @@ function matchBibliographyNumber(line: string): number | null {
   const bracket = line.match(/^\s*\[(\d+)\]\s*\S/)
   if (bracket) return parseInt(bracket[1], 10)
   // Require whitespace after "12." / "12)" so DOIs like 10.1038/... do not match.
-  const dotted = line.match(/^\s*(\d+)[\.)]\s+\S/)
+  const dotted = line.match(/^\s*(\d+)[.)]\s+\S/)
   if (dotted) return parseInt(dotted[1], 10)
   return null
 }
