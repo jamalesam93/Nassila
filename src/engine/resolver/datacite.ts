@@ -20,7 +20,8 @@ interface DataCiteAttributes {
   rightsList?: { rights: string }[]
 }
 
-function mapDataCiteType(resourceTypeGeneral?: string): CslItemType {
+function mapDataCiteType(resourceTypeGeneral?: string, resourceType?: string): CslItemType {
+  if (/\bpre-?print\b/i.test(resourceType ?? '')) return 'article'
   const typeMap: Record<string, CslItemType> = {
     'Dataset': 'dataset',
     'Software': 'software',
@@ -84,7 +85,7 @@ export async function resolveDataCiteDoi(doi: string): Promise<CslItem | null> {
 
     const item: CslItem = {
       id: `datacite-${doi.replace(/[^a-zA-Z0-9]/g, '-')}`,
-      type: mapDataCiteType(attr.types?.resourceTypeGeneral),
+      type: mapDataCiteType(attr.types?.resourceTypeGeneral, attr.types?.resourceType),
       title: attr.titles?.[0]?.title,
       author: mapCreators(attr.creators),
       DOI: attr.doi,
@@ -144,7 +145,7 @@ export async function searchDataCite(
 
       results.push({
         id: `datacite-${attr.doi.replace(/[^a-zA-Z0-9]/g, '-')}`,
-        type: mapDataCiteType(attr.types?.resourceTypeGeneral),
+        type: mapDataCiteType(attr.types?.resourceTypeGeneral, attr.types?.resourceType),
         title: attr.titles?.[0]?.title,
         author: mapCreators(attr.creators),
         DOI: attr.doi,

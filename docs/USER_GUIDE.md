@@ -75,15 +75,17 @@ For each in-text citation, expand **Passage grounding** to review:
 ### Coverage labels
 
 - **Abstract only** — Full paper not available via OA; Sanad compared against the registry abstract.
-- **Open-access full text** — HTML or JATS from Europe PMC or Unpaywall was used (excerpt may still be chunk-selected).
+- **Open-access full text** — Europe PMC text or an OA PDF discovered through Unpaywall was extracted and used (the excerpt may still be chunk-selected).
 - **Source text unavailable** — No abstract and no OA text; passage checks are limited.
 
-Cited **PDF attach** is not used in audits yet (planned **Masdar** worker).
+Cited **local PDF attach** is not wired into audits yet; it remains planned for Masdar. Masdar-lite already fetches and extracts open-access source text when available.
 
 - **Tasnif** (classification) and **Sharh** (explanation) appear inline in the loop detail and bibliography drawer — not as separate tabs.
 - **Raqim** (numbering) works in bibliography mode.
 - Grounding runs automatically through Sanad when the loop audit is triggered.
-- Pipeline stages that are not yet implemented (Maktab, Masdar, Shahid) appear as honest stubs, not functional apps.
+- **Maktab** manuscript extraction is live through DOCX/text and pdf.js/Tesseract O1; **Masdar-lite** OA source extraction is live. Their LLM facets, local-PDF attach, and **Shahid** evidence remain planned.
+
+For scanned PDFs, Tesseract O1 supports English, Arabic, and French OCR. The first OCR use for a language currently downloads its traineddata pack from the Tesseract.js CDN; offline/bundled packs and enhanced OCR controls are planned for O2.
 
 ## L1 and L2 (bibliography mode)
 

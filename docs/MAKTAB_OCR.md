@@ -33,7 +33,7 @@ Operator map: NassilaT [`training/OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/tra
 | Tier | Engine | When | Status |
 |------|--------|------|--------|
 | **A — embedded text** | `pdfjs-dist` via `pdf-extract.ts` | PDF has extractable glyphs | **Live** |
-| **B — OCR** | Tesseract (Apache-2.0) + Leptonica (BSD-2) | Scan, empty glyph map, or user selects Enhanced OCR | **Interface stub** |
+| **B — OCR** | Tesseract.js (Apache-2.0) + Leptonica (BSD-2) | Scan, empty glyph map, or OCR is requested | **Live (O1)** |
 
 **Mode** (`MaktabExtractionOptions.mode`):
 
@@ -56,18 +56,28 @@ DOCX ingest remains separate (parser/document path); OCR applies to PDF and imag
 
 ---
 
-## OCR backend (Tesseract) — next implementation
+## OCR backend (Tesseract) — O1 live
 
 1. **Rasterize** PDF pages (~300 DPI quality / 200 DPI fast).
 2. **Preprocess** — grayscale, deskew, denoise (Nassila-owned heuristics).
-3. **Language packs** — ship or download `eng`, `fra`, `ara` traineddata; optional `osd` for orientation.
-4. **Recognize** — Tesseract CLI or native binding in **main process** (IPC to renderer).
+3. **Language packs** — `eng`, `fra`, and `ara` from official `tessdata_fast` are bundled under `resources/tesseract/`; default OCR does not require a first-use CDN download.
+4. **Recognize** — Tesseract.js runs in the **main process** through validated IPC.
 5. **Post-process** — de-hyphenation, Unicode normalize, Arabic policy (conservative).
 6. **Cache** — key = `sha256(file) + page + dpi + lang pack version`.
 
-**Licensing:** include Tesseract + Leptonica + traineddata notices in `THIRD_PARTY_NOTICES` when bundled.
+**Licensing:** Tesseract.js and the official Tesseract `tessdata_fast` files are Apache-2.0; Leptonica is BSD-2-Clause. Pack source and license details are recorded in [`resources/tesseract/README.md`](../resources/tesseract/README.md).
+
+Install or refresh the pinned language packs before packaging:
+
+```bash
+npm run ocr:langpacks
+```
+
+The script downloads the official `tessdata_fast` 4.1.0 files and writes `resources/tesseract/checksums.sha256`. Electron Builder copies that directory to the installed app's resources. In development, OCR reads the same files directly from the repository.
 
 **Not in scope v1:** custom OCR model training; MinerU or other layout-VLM backends (optional plugin track only).
+
+If the files are absent in a development or CI checkout, OCR emits a clear warning and leaves Tesseract.js's network fallback available. Release builds must run `npm run ocr:langpacks`; packaged builds always prefer the bundled directory.
 
 ---
 
@@ -87,9 +97,8 @@ DOCX ingest remains separate (parser/document path); OCR applies to PDF and imag
 
 | Version | Maktab / OCR deliverable |
 |---------|--------------------------|
-| **Now** | Module interface + tier A routing via `extractFromPdf` |
-| **1.2.0** | Masdar-lite uses same extract for OA PDF bytes |
-| **1.2.x** | Tesseract backend + OCR fallback in ingest |
+| **1.2.0 / O1** | Tesseract.js backend (EN/AR/FR) in main-process IPC; Masdar-lite reuses `extractFromPdf` for OA PDF bytes |
+| **1.2.8 / O2** | Offline/bundled language-pack policy, golden fixtures, provenance/cache UX, scan fallback, Enhanced OCR control, hardware smoke |
 | **Tier 3** | Maktab LLM `doc_extract` facet + full-text eval corpus |
 
 ---

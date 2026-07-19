@@ -108,7 +108,8 @@ function stripDoiNoise(doi: string): string {
 }
 
 /**
- * Oxford Academic article URLs use `/journal/article/vol/issue/{piiname}/{numeric-id}` or `article-pdf/...`.
+ * Oxford Academic article URLs use `/journal/article/vol/issue/{piiname}/{numeric-id}`,
+ * `article-abstract/...`, or `article-pdf/...`.
  * The Highwire DOI is `10.1093/{shortJ}/{piiname}`.
  */
 export function extractDoiFromOxfordAcademicUrl(rawUrl: string): string | undefined {
@@ -121,7 +122,7 @@ export function extractDoiFromOxfordAcademicUrl(rawUrl: string): string | undefi
     return undefined
   }
   const m = pathname.match(
-    /^\/([^/]+)\/(?:article|article-pdf)\/\d+\/\d+\/([^/]+)\/(?:\d+)?\/?$/i
+    /^\/([^/]+)\/(?:article|article-abstract|article-pdf)\/\d+\/\d+\/([^/]+)\/(?:\d+)?\/?$/i
   )
   if (!m?.[1] || !m?.[2]) return undefined
   const shortJournal = m[1].toLowerCase()

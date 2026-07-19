@@ -1,5 +1,6 @@
 import { BrowserWindow, Menu, shell, type MenuItemConstructorOptions } from 'electron'
 import { APP_MENU_COMMANDS, type AppMenuCommand } from '../shared/app-menu-commands'
+import { NASSILA_GITHUB_ISSUES, NASSILA_WEBSITE_DOCS_BASE } from '../shared/nassila-project'
 import { type MainMenuLocale, mainMenuLabels } from './menu-i18n'
 
 /** Last UI locale used to build the app menu (for new windows without an explicit locale). */
@@ -25,6 +26,16 @@ export function buildAppMenu(window: BrowserWindow, locale?: MainMenuLocale): vo
       label: m.file,
       submenu: [
         { label: m.newSession, accelerator: 'CmdOrCtrl+N', click: command(APP_MENU_COMMANDS.NEW_SESSION) },
+        {
+          label: m.openProject,
+          accelerator: 'CmdOrCtrl+O',
+          click: command(APP_MENU_COMMANDS.OPEN_PROJECT)
+        },
+        {
+          label: m.saveProject,
+          accelerator: 'CmdOrCtrl+S',
+          click: command(APP_MENU_COMMANDS.SAVE_PROJECT)
+        },
         { type: 'separator' },
         {
           label: m.importReferences,
@@ -147,6 +158,13 @@ export function buildAppMenu(window: BrowserWindow, locale?: MainMenuLocale): vo
           label: m.helpExternalGroup,
           submenu: [
             {
+              label: m.nassilaDocs,
+              click: () => {
+                const docsPath = loc === 'ar' ? '/ar/docs' : '/docs'
+                void shell.openExternal(`${NASSILA_WEBSITE_DOCS_BASE}${docsPath}`)
+              }
+            },
+            {
               label: m.cslDocs,
               click: () => shell.openExternal('https://docs.citationstyles.org/')
             },
@@ -156,7 +174,7 @@ export function buildAppMenu(window: BrowserWindow, locale?: MainMenuLocale): vo
             },
             {
               label: m.reportIssue,
-              click: () => shell.openExternal('https://github.com/citation-style-language/styles/issues')
+              click: () => shell.openExternal(NASSILA_GITHUB_ISSUES)
             }
           ]
         },

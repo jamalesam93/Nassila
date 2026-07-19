@@ -119,25 +119,60 @@ export function extractReferenceSection(text: string): string | null {
   return seg.referencesText?.trim() || null
 }
 
+/** True bibliography marker — not a bare year ("2025."), page ("241."), or DOI ("10.1038/..."). */
+function matchBibliographyNumber(line: string): number | null {
+  const bracket = line.match(/^\s*\[(\d+)\]\s*\S/)
+  if (bracket) return parseInt(bracket[1], 10)
+  // Require whitespace after "12." / "12)" so DOIs like 10.1038/... do not match.
+  const dotted = line.match(/^\s*(\d+)[\.)]\s+\S/)
+  if (dotted) return parseInt(dotted[1], 10)
+  return null
+}
+
+function looksLikeAuthorDateStart(line: string): boolean {
+  // Unicode letters (Giuffré), initials (U.S.), or plain Author,
+  return /^(?:(?:\p{Lu}\.)+\s*[\p{Lu}\p{L}]|\p{Lu}[\p{L}'’-]*[\s,])/u.test(line)
+}
+
 export function splitReferenceEntries(text: string): string[] {
+  // DOCX/mammoth: one unnumbered reference per paragraph (blank-line separated).
+  // Skip for numbered lists — a stray blank line in a PDF would under-split.
+  const paragraphs = text
+    .split(/\n\s*\n+/)
+    .map((p) => p.replace(/\n+/g, ' ').replace(/\s+/g, ' ').trim())
+    .filter(Boolean)
+  if (paragraphs.length >= 2) {
+    const numberedParas = paragraphs.filter((p) => matchBibliographyNumber(p) !== null).length
+    if (numberedParas === 0) {
+      return paragraphs
+    }
+  }
+
   const lines = text.split('\n').map((l) => l.trim()).filter(Boolean)
   const entries: string[] = []
   let current = ''
+  let prevNum: number | null = null
 
-  const numberedPattern = /^\s*\[?\d+[\].)]\s*/
-  const isNumbered = lines.filter((l) => numberedPattern.test(l)).length >= 2
+  const numberedHits = lines.map(matchBibliographyNumber).filter((n): n is number => n !== null)
+  const isNumbered = numberedHits.length >= 2
 
   for (const line of lines) {
-    if (isNumbered && numberedPattern.test(line)) {
-      if (current.trim()) entries.push(current.trim())
-      current = line
-    } else if (!isNumbered && /^[A-Z][a-z]+[\s,]/.test(line) && current.trim()) {
-      // Author-date style: new entry starts with author name
+    const num = matchBibliographyNumber(line)
+    if (isNumbered && num !== null) {
+      // Prefer sequential markers (1,2,3…) so wrapped years like "2025. More text" do not split.
+      const sequential = prevNum === null || num === prevNum + 1
+      if (sequential) {
+        if (current.trim()) entries.push(current.trim())
+        current = line
+        prevNum = num
+        continue
+      }
+    } else if (!isNumbered && looksLikeAuthorDateStart(line) && current.trim()) {
       entries.push(current.trim())
       current = line
-    } else {
-      current += ' ' + line
+      continue
     }
+    current = current ? `${current} ${line}` : line
   }
 
   if (current.trim()) entries.push(current.trim())

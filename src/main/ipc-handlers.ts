@@ -10,10 +10,16 @@ import { registerMaktabIpcHandlers } from './ipc-maktab'
 import { registerLlmIpcHandlers } from './ipc-llm'
 import { registerTemplateIpcHandlers } from './ipc-templates'
 import { registerManuscriptAuditPrefsHandlers } from './ipc-manuscript-audit-prefs'
+import { registerManuscriptAuditIpcHandlers } from './ipc-manuscript-audit'
 import { registerPredatoryIpcHandlers } from './ipc-predatory-updates'
 import { registerRegistryIpcHandlers } from './ipc-registry'
 import { registerNotificationHandlers } from './notification'
 import { checkNetworkStatus, resetNetworkStatusState } from './network-status'
+import {
+  attachSourcePdf,
+  sourceArtifactCacheDirectory
+} from '../engine/manuscript/source-artifact-cache'
+import { SOURCE_ARTIFACT_ATTACH_CHANNEL } from '../shared/source-artifact'
 
 const PRESETS_DIR = join(homedir(), '.citations-style')
 const PRESETS_FILE = join(PRESETS_DIR, 'presets.json')
@@ -128,6 +134,7 @@ export function registerIpcHandlers(): void {
   registerMaktabIpcHandlers()
   registerLlmIpcHandlers()
   registerManuscriptAuditPrefsHandlers()
+  registerManuscriptAuditIpcHandlers()
   registerTemplateIpcHandlers()
   registerPredatoryIpcHandlers()
   registerRegistryIpcHandlers()
@@ -185,6 +192,11 @@ export function registerIpcHandlers(): void {
     const allowedPath = assertAllowedPath(filePath, readablePaths, 'read')
     const buffer = await readFile(allowedPath)
     return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength)
+  })
+
+  ipcMain.handle(SOURCE_ARTIFACT_ATTACH_CHANNEL, async (_event, filePath: unknown) => {
+    const allowedPath = assertAllowedPath(filePath, readablePaths, 'read')
+    return attachSourcePdf(allowedPath, sourceArtifactCacheDirectory(app.getPath('userData')))
   })
 
   ipcMain.handle('fs:write-file', async (_event, filePath: string, content: string) => {

@@ -6,6 +6,9 @@ const resolveOpenAlexDoi = vi.fn()
 const resolveOpenAlexPmid = vi.fn()
 const resolvePubMedByDoi = vi.fn()
 const resolvePmid = vi.fn()
+const pmcidToPmid = vi.fn()
+const isDataCiteDoi = vi.fn()
+const resolveDataCiteDoi = vi.fn()
 const searchOpenAlex = vi.fn()
 
 vi.mock('../../src/engine/resolver', () => ({
@@ -20,7 +23,13 @@ vi.mock('../../src/engine/resolver/openalex', () => ({
 
 vi.mock('../../src/engine/resolver/pubmed', () => ({
   resolvePubMedByDoi: (...args: unknown[]) => resolvePubMedByDoi(...args),
-  resolvePmid: (...args: unknown[]) => resolvePmid(...args)
+  resolvePmid: (...args: unknown[]) => resolvePmid(...args),
+  pmcidToPmid: (...args: unknown[]) => pmcidToPmid(...args)
+}))
+
+vi.mock('../../src/engine/resolver/datacite', () => ({
+  isDataCiteDoi: (...args: unknown[]) => isDataCiteDoi(...args),
+  resolveDataCiteDoi: (...args: unknown[]) => resolveDataCiteDoi(...args)
 }))
 
 vi.mock('../../src/engine/resolver/crossref', () => ({
@@ -42,6 +51,7 @@ describe('resolveRegistry multi-registry fallbacks', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     searchOpenAlex.mockResolvedValue([])
+    isDataCiteDoi.mockReturnValue(false)
   })
 
   it('falls back from Crossref miss to OpenAlex DOI lookup', async () => {
@@ -89,5 +99,51 @@ describe('resolveRegistry multi-registry fallbacks', () => {
     expect(result.l1.status).toBe('pass')
     expect(result.source).toBe('openalex')
     expect(resolveOpenAlexPmid).toHaveBeenCalledWith('11223344')
+  })
+
+  it('maps PMCID to PMID and resolves PubMed in L1', async () => {
+    pmcidToPmid.mockResolvedValue('41680725')
+    resolvePmid.mockResolvedValue(item({
+      id: 'pmc-pubmed',
+      PMID: '41680725',
+      title: 'Canonical PubMed title for PMC12919426'
+    }))
+
+    const result = await resolveRegistry(item({
+      id: 'pmc-only',
+      PMCID: 'PMC12919426',
+      URL: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC12919426/'
+    }))
+
+    expect(result).toMatchObject({ source: 'pubmed', l1: { status: 'pass' } })
+    expect(pmcidToPmid).toHaveBeenCalledWith('PMC12919426')
+    expect(resolvePmid).toHaveBeenCalledWith('41680725')
+  })
+
+  it('uses DataCite for arXiv DOI without upgrading preprint identity', async () => {
+    isDataCiteDoi.mockReturnValue(true)
+    resolveDataCiteDoi.mockResolvedValue(item({
+      id: 'datacite-arxiv',
+      type: 'article',
+      DOI: '10.48550/arXiv.2507.19530',
+      version: 'v2',
+      genre: 'Preprint'
+    }))
+
+    const result = await resolveRegistry(item({
+      id: 'arxiv',
+      type: 'article',
+      DOI: '10.48550/arXiv.2507.19530',
+      version: 'v2',
+      genre: 'Preprint'
+    }))
+
+    expect(result.source).toBe('datacite')
+    expect(result.canonical).toMatchObject({
+      type: 'article',
+      DOI: '10.48550/arXiv.2507.19530',
+      version: 'v2'
+    })
+    expect(resolveIdentifier).not.toHaveBeenCalled()
   })
 })

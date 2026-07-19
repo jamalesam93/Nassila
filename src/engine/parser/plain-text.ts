@@ -49,7 +49,7 @@ const GRAY_LIT_INDICATORS: { pattern: RegExp; type: CslItemType; genre?: string;
   { pattern: /\b\d+\s+(?:F\.?\s*(?:2d|3d|4th)|S\.?\s*Ct\.?|U\.?S\.?\s+\d)\b/i, type: 'legal_case' },
   { pattern: /\b(?:dataset|data\s+set|data\s+file)\b/i, type: 'dataset' },
   { pattern: /\[(?:data\s*(?:set|file))\]/i, type: 'dataset' },
-  { pattern: /\b(?:software|computer\s+program|R\s+package|python\s+package|npm\s+package)\b/i, type: 'software' },
+  { pattern: /\b(?:computer\s+program|R\s+package|python\s+package|npm\s+package)\b|\[(?:computer\s+)?software\]/i, type: 'software' },
   { pattern: /\b(?:version|ver\.?|v\.?)\s*\d+\.\d+/i, type: 'software' },
   { pattern: /\b(?:GitHub|GitLab|Bitbucket|CRAN|PyPI|npm)\b/i, type: 'software' },
   { pattern: /\b(?:preprint|pre-print|advance\s+online)\b/i, type: 'article' },
@@ -113,6 +113,16 @@ export function extractDoiFromPreprintUrl(url: string): string | undefined {
   return m[1].replace(/[.)]+$/, '').replace(/\/$/, '')
 }
 
+/** arXiv versions belong in CSL `version`; the stable DataCite DOI never includes `vN`. */
+export function extractArxivIdentity(url: string): { DOI: string; version?: string } | undefined {
+  const m = url.match(/arxiv\.org\/(?:abs|pdf)\/(\d{4}\.\d{4,5})(v\d+)?(?:\.pdf)?(?:[?#/]|$)/i)
+  if (!m?.[1]) return undefined
+  return {
+    DOI: `10.48550/arXiv.${m[1]}`,
+    version: m[2]?.toLowerCase()
+  }
+}
+
 /** Crossref registers 10.1101 preprints without the medRxiv/bioRxiv URL version suffix (`v1`, `v2`). */
 export function canonicalize1101PreprintDoi(doi: string): string {
   if (!/^10\.1101\//i.test(doi)) return doi
@@ -120,6 +130,13 @@ export function canonicalize1101PreprintDoi(doi: string): string {
 }
 
 function detectItemType(text: string): { type: CslItemType; genre?: string } {
+  if (/arxiv\.org\/(?:abs|pdf)\//i.test(text)) {
+    return { type: 'article', genre: 'Preprint' }
+  }
+  if (/link\.springer\.com\/chapter\//i.test(text)) {
+    return { type: 'chapter' }
+  }
+
   // Catalogue pages on known journal/preprint hosts are journal articles, not generic webpages.
   if (isJournalArticleUrl(text)) {
     return { type: 'article-journal' }
@@ -214,8 +231,14 @@ function parseSingleCitation(text: string, index: number): CslItem | null {
     const matchToStrip =
       urlMatches.find((m) => m[0].replace(/[.)]+$/, '') === rawUrl)?.[0] ?? urlMatches[0][0]
     item.URL = rawUrl
+    const arxiv = extractArxivIdentity(rawUrl)
     const pathDoi = extractDoiFromPreprintUrl(rawUrl)
-    if (pathDoi) {
+    if (arxiv) {
+      item.DOI = arxiv.DOI
+      item.version = arxiv.version
+      item.genre = 'Preprint'
+      confidence += 0.1
+    } else if (pathDoi) {
       item.DOI = canonicalize1101PreprintDoi(pathDoi)
       confidence += 0.1
     } else if (!item.DOI) {
@@ -361,9 +384,13 @@ function parseSingleCitation(text: string, index: number): CslItem | null {
     }
   }
 
-  const parts = remaining
+  // Initial periods are not citation-part separators. Mask them before splitting so
+  // `DeLong, E. R., et al.` remains one author segment instead of yielding title `R., et al`.
+  const initialPeriod = '\uE000'
+  const protectedRemaining = remaining.replace(/\b([A-Z])\.(?=\s*[A-Z]\.|,)/g, `$1${initialPeriod}`)
+  const parts = protectedRemaining
     .split(/\.\s+/)
-    .map((p) => p.trim())
+    .map((p) => p.replaceAll(initialPeriod, '.').trim())
     .filter((p) => p.length > 2)
 
   if (parts.length >= 1) {

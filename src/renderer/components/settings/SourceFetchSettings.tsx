@@ -9,6 +9,8 @@ export default function SourceFetchSettings() {
   const llmPrefsHydrated = useManuscriptAuditStore((s) => s.llmPrefsHydrated)
   const unpaywallEmail = useManuscriptAuditStore((s) => s.unpaywallEmail)
   const setUnpaywallEmail = useManuscriptAuditStore((s) => s.setUnpaywallEmail)
+  const enhancedOcr = useManuscriptAuditStore((s) => s.enhancedOcr)
+  const setEnhancedOcr = useManuscriptAuditStore((s) => s.setEnhancedOcr)
 
   return (
     <section className="border-t border-border pt-6">
@@ -33,6 +35,22 @@ export default function SourceFetchSettings() {
       {unpaywallEmail.trim() ? (
         <p className="mt-2 text-[11px] text-muted-foreground">{t('settings.sourceFetch.savedHint')}</p>
       ) : null}
+
+      <label className="mt-5 flex items-start gap-2 text-xs text-foreground">
+        <input
+          type="checkbox"
+          className="mt-0.5"
+          disabled={!llmPrefsHydrated}
+          checked={enhancedOcr}
+          onChange={(e) => setEnhancedOcr(e.target.checked)}
+        />
+        <span>
+          <span className="font-medium">{t('settings.sourceFetch.enhancedOcr')}</span>
+          <span className="mt-0.5 block text-[11px] text-muted-foreground">
+            {t('settings.sourceFetch.enhancedOcrHint')}
+          </span>
+        </span>
+      </label>
     </section>
   )
 }

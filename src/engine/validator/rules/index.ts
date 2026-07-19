@@ -27,6 +27,13 @@ function makeIssue(
   }
 }
 
+function isPreprint(item: CslItem): boolean {
+  return /\bpre-?print\b/i.test(item.genre ?? '') ||
+    /(?:arxiv|biorxiv|medrxiv|research\s+square)/i.test(
+      `${item['container-title'] ?? ''} ${item.publisher ?? ''} ${item.URL ?? ''}`
+    )
+}
+
 export const STYLE_RULES: StyleRule[] = [
   // ── Universal Required Fields ──────────────────────────────────────
   {
@@ -398,6 +405,7 @@ export const STYLE_RULES: StyleRule[] = [
     styleIds: ['apa-7th', 'apa-6th'],
     itemTypes: ['article-journal'],
     validate: (item) => {
+      if (isPreprint(item)) return []
       if (!item.DOI) {
         return [makeIssue(item.id, 'info', 'DOI', 'APA recommends including DOI for journal articles', true, 'Lookup online')]
       }
@@ -409,6 +417,7 @@ export const STYLE_RULES: StyleRule[] = [
     styleIds: ['apa-7th', 'apa-6th'],
     itemTypes: ['article-journal'],
     validate: (item) => {
+      if (isPreprint(item)) return []
       if (!item.volume) {
         return [makeIssue(item.id, 'warning', 'volume', 'APA: missing volume number for journal article', true, 'Lookup online')]
       }

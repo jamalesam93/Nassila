@@ -6,7 +6,7 @@ This repo (**Nassila**) owns the Electron app, citation engine, JSON repair guar
 
 **Agent entry:** [`OUROBOROS_CONTEXT.md`](./OUROBOROS_CONTEXT.md)
 
-**Current training arc:** v1.14 **GO** on 12B (selected quality tier). Laptop smoke **PASS** (RTX 4060 8 GB). See NassilaT [`training/POST_V114_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/POST_V114_MAP.md) and [`outputs/LAPTOP_SMOKE_SIGNOFF.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/outputs/LAPTOP_SMOKE_SIGNOFF.md).
+**Current training arc:** v1.14 **GO** on 12B (selected quality tier). Laptop smoke **PASS** (RTX 4060 8 GB). NassilaT currently focuses on field-note curation and Tier 3 data; **S15 is parked**. See NassilaT [`training/OUROBOROS_OPERATOR_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/OUROBOROS_OPERATOR_MAP.md) and [`outputs/LAPTOP_SMOKE_SIGNOFF.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/outputs/LAPTOP_SMOKE_SIGNOFF.md).
 
 ---
 
@@ -17,7 +17,7 @@ E:/Cursor Projects/
   Nassila/             ← this repo (app)
   NassilaT/            ← training pack
     training/
-      POST_V114_MAP.md
+      OUROBOROS_OPERATOR_MAP.md
       LAPTOP_SMOKE_TEST.md
       ROADMAP.md
       scripts/
@@ -33,7 +33,7 @@ E:/Cursor Projects/
 
 | Need | Path (NassilaT) |
 |------|-----------------|
-| **Current map** | `training/POST_V114_MAP.md` |
+| **Current map** | `training/OUROBOROS_OPERATOR_MAP.md` |
 | Laptop smoke sign-off | `training/outputs/LAPTOP_SMOKE_SIGNOFF.md` |
 | HF verify | `training/HF_RELEASE_VERIFY.md` |
 | Tier 3 plan | `training/PHASE3_TIER3_GROUNDWORK.md` |

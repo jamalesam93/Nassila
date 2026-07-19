@@ -32,6 +32,7 @@ async function extractEmbeddedTier(
     {
       text: embedded.text,
       pageCount: embedded.pageCount,
+      pageBoundaries: embedded.pageBoundaries,
       warnings: embedded.warnings,
       tier: 'embedded_text',
       needsReview: sparse

@@ -18,6 +18,7 @@ import { bibliographyTaskMessage } from '../utils/bibliography-task-message'
 import { MismatchResolutionActions, mismatchFieldLabel } from './MismatchResolutionActions'
 import { SeverityIcon } from './ui/severity-icon'
 import { citationRowId } from '../utils/citation-row-dom'
+import RaqimResolvePanel from './RaqimResolvePanel'
 
 function formatAccessedForDisplay(accessed: CslDate): string {
   if (accessed.literal) return accessed.literal.trim()
@@ -488,6 +489,7 @@ export default function OutputPanel() {
                           ))}
                         </div>
                       )}
+                      <RaqimResolvePanel item={item} />
                     </div>
                     <div className="flex shrink-0 flex-col items-end gap-1">
                       <span

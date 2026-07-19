@@ -43,4 +43,29 @@ describe('document parser reference extraction', () => {
     expect(splitReferenceEntries(refs)).toHaveLength(3)
     expect(splitReferenceEntries(refs.replace(/\n/g, ' '))).toHaveLength(1)
   })
+
+  it('splits blank-line separated unnumbered DOCX-style references', () => {
+    const refs = `Bell S, et al. Artificial intelligence in nephrology. Clin Kidney J. 2024.
+
+Luther MK, Timbrook TT. Vancomycin Plus Piperacillin-Tazobactam. Clin Infect Dis. 2011.
+
+U.S. Food and Drug Administration. Software as a Medical Device. 2017.
+
+Giuffré M, Shung D. Harnessing synthetic data. NPJ Digit Med. 2023.`
+    expect(splitReferenceEntries(refs)).toHaveLength(4)
+  })
+
+  it('does not treat wrapped years or DOI paths as new numbered entries', () => {
+    const refs = `43. Yoon J, et al. EHR-Safe: generating high-fidelity records. NPJ Digit Med.
+2023;6(1):141.
+https://doi.org/10.1038/s41746-023-00887-8
+44. Azam M, Singh SI. When Validation Fails. 2025.
+45. U.S. Food and Drug Administration. SaMD guidance. 2017.`
+    const entries = splitReferenceEntries(refs)
+    expect(entries).toHaveLength(3)
+    expect(entries[0]).toContain('Yoon J')
+    expect(entries[0]).toContain('10.1038')
+    expect(entries[1]).toContain('Azam M')
+    expect(entries[2]).toContain('Food and Drug')
+  })
 })

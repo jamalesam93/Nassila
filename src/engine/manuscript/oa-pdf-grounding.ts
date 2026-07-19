@@ -7,6 +7,7 @@ export type OaPdfFullTextSource = {
   coverage: 'full_text_oa_unpaywall'
   snippetSource: Extract<EvidenceSnippet['source'], 'unpaywall'>
   url: string
+  extractionTier: 'pdf_embedded_text' | 'pdf_ocr'
 }
 
 type ExtractFn = typeof extractFromPdf
@@ -30,6 +31,7 @@ export async function fullTextFromOaPdfBytes(
     text,
     coverage: 'full_text_oa_unpaywall',
     snippetSource: 'unpaywall',
-    url
+    url,
+    extractionTier: extracted.tier === 'ocr' ? 'pdf_ocr' : 'pdf_embedded_text'
   }
 }

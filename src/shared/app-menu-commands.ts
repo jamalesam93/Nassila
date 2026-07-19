@@ -1,5 +1,7 @@
 export const APP_MENU_COMMANDS = {
   NEW_SESSION: 'new-session',
+  OPEN_PROJECT: 'open-project',
+  SAVE_PROJECT: 'save-project',
   IMPORT_REFERENCES: 'import-references',
   EXPORT_BIBLIOGRAPHY: 'export-bibliography',
   EXPORT_CSL_JSON: 'export-csl-json',
@@ -17,6 +19,8 @@ export const APP_MENU_COMMANDS = {
   TOGGLE_THEME: 'toggle-theme',
   SHOW_SETTINGS: 'show-settings',
   SHOW_ABOUT: 'show-about',
+  OPEN_DOCS: 'open-docs',
+  REPORT_ISSUE: 'report-issue',
   SET_LOCALE_EN: 'set-locale-en',
   SET_LOCALE_AR: 'set-locale-ar'
 } as const

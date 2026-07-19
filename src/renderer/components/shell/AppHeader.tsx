@@ -12,6 +12,8 @@ import { useAppCommands } from '../../hooks/use-app-commands'
 
 import { requestConfirm } from '../../stores/confirm-store'
 
+import { clearFullSession, sessionIsDirty } from '../../utils/nassila-project-io'
+
 import { Button } from '../ui/button'
 
 import { Tooltip } from '../ui/tooltip'
@@ -59,8 +61,6 @@ export default function AppHeader() {
   const undo = useCitationStore((s) => s.undo)
 
   const redo = useCitationStore((s) => s.redo)
-
-  const clearCitations = useCitationStore((s) => s.clearCitations)
 
   const citationCount = useCitationStore((s) => s.citations.length)
 
@@ -178,11 +178,11 @@ export default function AppHeader() {
 
   const handleClearAll = async () => {
 
-    if (citationCount === 0) return
+    if (!sessionIsDirty()) return
 
-    const ok = await requestConfirm(t('toolbar.clearConfirm'))
+    const ok = await requestConfirm(t('project.newSessionConfirm'))
 
-    if (ok) clearCitations()
+    if (ok) clearFullSession()
 
   }
 
@@ -191,15 +191,6 @@ export default function AppHeader() {
   return (
 
     <header className="flex shrink-0 flex-wrap items-center gap-2 border-b border-border bg-card px-3 py-2 rtl:flex-row-reverse">
-
-      <div className="min-w-0 shrink-0">
-
-        <span className="text-base font-bold leading-none text-primary">{t('app.productName')}</span>
-
-      </div>
-
-
-
       <nav
 
         className="flex items-center gap-0.5 rounded-md border border-border bg-muted/40 p-0.5"

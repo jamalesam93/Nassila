@@ -40,7 +40,7 @@ export function applyPrefsToStore(p: ManuscriptAuditPrefsV1) {
 
   if (typeof p.selectedTemplateId === 'string') store.setSelectedTemplateId(p.selectedTemplateId)
 
-
+  if (typeof p.enhancedOcr === 'boolean') store.setEnhancedOcr(p.enhancedOcr)
 
   const migratedPresetId = migrateLlmPresetId(p.llmPresetId ?? 'lmstudio')
 
@@ -83,6 +83,8 @@ export function useManuscriptAuditPrefsSync(options: UseManuscriptAuditPrefsSync
   const llmModel = useManuscriptAuditStore((s) => s.llmModel)
 
   const unpaywallEmail = useManuscriptAuditStore((s) => s.unpaywallEmail)
+
+  const enhancedOcr = useManuscriptAuditStore((s) => s.enhancedOcr)
 
   const llmPrefsHydrated = useManuscriptAuditStore((s) => s.llmPrefsHydrated)
 
@@ -152,7 +154,9 @@ export function useManuscriptAuditPrefsSync(options: UseManuscriptAuditPrefsSync
 
           llmBaseUrl,
 
-          llmModel
+          llmModel,
+
+          enhancedOcr
 
         })
 
@@ -166,7 +170,7 @@ export function useManuscriptAuditPrefsSync(options: UseManuscriptAuditPrefsSync
 
     }
 
-  }, [llmBaseUrl, llmEnabled, llmModel, llmPresetId, llmPrefsHydrated, saveEnabled, unpaywallEmail])
+  }, [enhancedOcr, llmBaseUrl, llmEnabled, llmModel, llmPresetId, llmPrefsHydrated, saveEnabled, unpaywallEmail])
 
 }
 

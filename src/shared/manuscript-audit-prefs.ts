@@ -12,4 +12,6 @@ export type ManuscriptAuditPrefsV1 = {
   sanadSetupDismissed?: boolean
   /** Passage grounding test connection succeeded at least once. */
   sanadConnectionTested?: boolean
+  /** Prefer OCR (tier B) when extracting PDFs — Enhanced OCR. */
+  enhancedOcr?: boolean
 }

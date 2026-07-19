@@ -72,6 +72,7 @@ interface CitationState {
   removeCitation: (id: string) => void
   deleteCitation: (id: string, index?: number) => void
   updateCitation: (id: string, updates: Partial<CslItem>) => void
+  replaceCitation: (id: string, replacement: CslItem) => void
   clearCitations: () => void
   setSelectedStyle: (styleId: string | null) => void
   setSelectedJournal: (journal: string | null) => void
@@ -338,6 +339,31 @@ export const useCitationStore = create<CitationState>((set, get) => {
         setState,
         get().dismissedPredatoryIds,
         verifyStateFromStore(get())
+      )
+    },
+
+    replaceCitation: (id, replacement) => {
+      const before = get().citations
+      const after = before.map((citation) =>
+        citation.id === id ? { ...replacement, id } : citation
+      )
+      undoManager.record('accept-verification', 'Apply selected Raqim candidate', before, after)
+      set({
+        citations: after,
+        canUndo: undoManager.canUndo(),
+        canRedo: undoManager.canRedo()
+      })
+      refreshDerivedCitationState(
+        after,
+        get().selectedStyleId,
+        setState,
+        get().dismissedPredatoryIds,
+        {
+          verificationMismatches: get().verificationMismatches.filter(
+            (mismatch) => mismatch.citationId !== id
+          ),
+          registryLayerByCitationId: get().registryLayerByCitationId
+        }
       )
     },
 

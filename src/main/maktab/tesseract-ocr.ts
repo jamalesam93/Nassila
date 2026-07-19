@@ -3,9 +3,21 @@ import type {
   MaktabLanguage,
   MaktabOcrExtractOptions
 } from '../../engine/maktab/types'
+import { existsSync } from 'node:fs'
+import { join } from 'node:path'
 
 const MAX_OCR_PAGES = 50
 const MIN_PAGE_CHARS = 40
+
+export function resolveTesseractLangPath(runtime: {
+  isPackaged: boolean
+  appPath: string
+  resourcesPath: string
+}): string {
+  return runtime.isPackaged
+    ? join(runtime.resourcesPath, 'tesseract')
+    : join(runtime.appPath, 'resources', 'tesseract')
+}
 
 async function rasterizePdfPage(
   pdfjsLib: typeof import('pdfjs-dist'),
@@ -32,18 +44,34 @@ export async function extractPdfWithTesseract(
   const dpi = options.dpi ?? 300
   const languages = options.languages?.length ? options.languages : (['eng'] as MaktabLanguage[])
 
-  const [{ createWorker }, { loadPdfJs, configurePdfJsWorker }, { createCanvas }] = await Promise.all([
+  const [{ createWorker }, { loadPdfJs, configurePdfJsWorker }, { createCanvas }, { app }] = await Promise.all([
     import('tesseract.js'),
     import('../../engine/manuscript/pdfjs-loader'),
-    import('canvas')
+    import('canvas'),
+    import('electron')
   ])
 
   const pdfjsLib = await loadPdfJs()
   await configurePdfJsWorker(pdfjsLib)
 
   const langArg = languages.join('+')
-  const worker = await createWorker(langArg)
   const warnings: string[] = []
+  const langPath = resolveTesseractLangPath({
+    isPackaged: app.isPackaged,
+    appPath: app.getAppPath(),
+    resourcesPath: process.resourcesPath
+  })
+  const hasBundledLanguages = languages.every((language) =>
+    existsSync(join(langPath, `${language}.traineddata`))
+  )
+  if (!hasBundledLanguages) {
+    const warning = `Bundled OCR language packs were not found at ${langPath}; Tesseract may use its network fallback.`
+    console.warn(warning)
+    warnings.push(warning)
+  }
+  const worker = hasBundledLanguages
+    ? await createWorker(langArg, undefined, { langPath, gzip: false })
+    : await createWorker(langArg)
   const pageTexts: string[] = []
 
   try {
@@ -65,6 +93,12 @@ export async function extractPdfWithTesseract(
   }
 
   const text = pageTexts.join('\n\n').trim()
+  let offset = 0
+  const pageBoundaries = pageTexts.map((pageText, index) => {
+    const boundary = { page: index + 1, start: offset, end: offset + pageText.length }
+    offset = boundary.end + 2
+    return boundary
+  })
   if (text.length < MIN_PAGE_CHARS && pageTexts.length > 0) {
     warnings.push('Very little text was extracted. The PDF may be partially scanned or use embedded fonts without a Unicode map.')
   }
@@ -72,6 +106,7 @@ export async function extractPdfWithTesseract(
   return {
     text,
     pageCount: pageTexts.length || 1,
+    pageBoundaries,
     warnings,
     tier: 'ocr',
     languages,

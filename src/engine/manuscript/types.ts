@@ -7,11 +7,12 @@ export type LayerVerdict =
   | { status: 'warn'; reasons: string[] }
   | { status: 'fail'; reasons: string[] }
   | { status: 'insufficient_evidence'; reason: string }
-  | { status: 'skipped'; reason: 'offline' | 'closed_access' | 'not_applicable' }
+  | { status: 'skipped'; reason: 'offline' | 'closed_access' | 'not_applicable' | 'llm_disabled' }
 
 export type L3Coverage =
   | 'full_text_oa_europe_pmc'
   | 'full_text_oa_unpaywall'
+  | 'full_text_attached_pdf'
   | 'abstract_only_closed'
   | 'unavailable'
 
@@ -31,10 +32,12 @@ export type UserAction =
 
 export type EvidenceSource =
   | 'crossref'
+  | 'datacite'
   | 'pubmed'
   | 'openalex'
   | 'europe_pmc'
   | 'unpaywall'
+  | 'local_pdf'
   | 'abstract'
 
 export interface EvidenceSnippet {
@@ -47,6 +50,7 @@ export interface InTextSpan {
   start: number
   end: number
   raw: string
+  locator?: string
 }
 
 export interface AmbiguityInfo {
@@ -57,11 +61,21 @@ export interface AmbiguityInfo {
 /** Per-claim support relative to retrieved source excerpt (optional LLM). */
 export type ClaimSupportVerdict = 'supported' | 'weak' | 'contradicted' | 'not_in_source' | 'insufficient_evidence'
 
+export type QuoteValidationStatus = 'found' | 'not_found' | 'not_applicable'
+
+export interface QuoteValidationState {
+  status: QuoteValidationStatus
+  checkedQuotes: number
+  matchedQuotes: number
+}
+
 export interface ClaimGroundingRow {
   claim: string
   verdict: ClaimSupportVerdict
   hasNumericClaim?: boolean
   sourceQuotes?: string[]
+  /** Verbatim quote presence only; this does not establish that the claim is true. */
+  quoteValidation?: QuoteValidationState
   rationale?: string[]
 }
 
@@ -86,6 +100,11 @@ export interface CiteGroundingSite {
   sourceExcerptSource?: EvidenceSnippet['source']
   sourceExcerptUrl?: string
   sourceExcerptLabel?: string
+  sourceRetrievedAt?: string
+  sourceExtractionTier?: 'jats_xml' | 'html_text' | 'pdf_embedded_text' | 'pdf_ocr' | 'registry_abstract'
+  sourceHash?: string
+  sourcePageHint?: string
+  sourceSectionHint?: string
 }
 
 export interface CitationFinding {
@@ -136,14 +155,37 @@ export interface AuditManuscriptInfo {
   sourceFormat: 'docx' | 'pdf' | 'paste'
 }
 
+export interface AuditGroundingInfo {
+  enabled: boolean
+  modelId: string
+  checkpoint: string
+  runner: string
+}
+
+export interface AuditRunProvenance {
+  generatedAt: string
+  appVersion: string
+  promptContractVersion: string
+  bibKeyFilter?: string
+}
+
 export interface AuditReport {
   manuscript: AuditManuscriptInfo
   template: AuditTemplateRef
+  grounding: AuditGroundingInfo
+  citationMapping: {
+    matched: number
+    ambiguous: number
+    unmatched: number
+  }
   findings: CitationFinding[]
   checklist: ChecklistItem[]
   sources: AuditReportSources[]
   generatedAt: string
   appVersion: string
+  promptContractVersion: string
   networkStatus: NetworkStatus
+  /** Prior report runs retained when a single source is re-audited in place. */
+  priorRuns?: AuditRunProvenance[]
 }
 

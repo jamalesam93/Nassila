@@ -8,6 +8,8 @@ type MenuLabelSet = {
   window: string
   help: string
   newSession: string
+  openProject: string
+  saveProject: string
   importReferences: string
   exportBibliography: string
   exportCslJson: string
@@ -30,6 +32,7 @@ type MenuLabelSet = {
   toggleTheme: string
   alwaysOnTop: string
   helpExternalGroup: string
+  nassilaDocs: string
   cslDocs: string
   cslRepo: string
   reportIssue: string
@@ -57,6 +60,8 @@ const EN: MenuLabelSet = {
   window: 'Window',
   help: 'Help',
   newSession: 'New Session',
+  openProject: 'Open Project…',
+  saveProject: 'Save Project…',
   importReferences: 'Import References...',
   exportBibliography: 'Export Bibliography...',
   exportCslJson: 'Export CSL JSON...',
@@ -78,10 +83,11 @@ const EN: MenuLabelSet = {
   themeDark: 'Dark',
   toggleTheme: 'Toggle Theme',
   alwaysOnTop: 'Always on Top',
-  helpExternalGroup: 'Citation style websites',
+  helpExternalGroup: 'Documentation',
+  nassilaDocs: 'Nassila user guide (website)',
   cslDocs: 'Citation Style Language documentation',
   cslRepo: 'CSL style repository (GitHub)',
-  reportIssue: 'Report issue (CSL upstream repo)',
+  reportIssue: 'Report issue (Nassila on GitHub)',
   about: 'About Nassila…',
   cut: 'Cut',
   copy: 'Copy',
@@ -106,6 +112,8 @@ const AR: MenuLabelSet = {
   window: 'نافذة',
   help: 'مساعدة',
   newSession: 'جلسة جديدة',
+  openProject: 'فتح مشروع…',
+  saveProject: 'حفظ المشروع…',
   importReferences: 'استيراد مراجع…',
   exportBibliography: 'تصدير قائمة المراجع…',
   exportCslJson: 'تصدير CSL JSON…',
@@ -127,10 +135,11 @@ const AR: MenuLabelSet = {
   themeDark: 'داكن',
   toggleTheme: 'تبديل المظهر',
   alwaysOnTop: 'فوق كل النوافذ',
-  helpExternalGroup: 'مواقع أنماط الاقتباس',
+  helpExternalGroup: 'التوثيق',
+  nassilaDocs: 'دليل مستخدم ناسيلا (الموقع)',
   cslDocs: 'توثيق Citation Style Language',
   cslRepo: 'مستودع أنماط CSL (GitHub)',
-  reportIssue: 'الإبلاغ عن مشكلة (لمستودع CSL)',
+  reportIssue: 'الإبلاغ عن مشكلة (ناسيلا على GitHub)',
   about: 'حول ناسيلا…',
   cut: 'قص',
   copy: 'نسخ',

@@ -19,7 +19,8 @@ describe('fullTextFromOaPdfBytes', () => {
       text: 'Results showed significant improvement in outcomes.',
       coverage: 'full_text_oa_unpaywall',
       snippetSource: 'unpaywall',
-      url: 'https://example.org/paper.pdf'
+      url: 'https://example.org/paper.pdf',
+      extractionTier: 'pdf_embedded_text'
     })
     expect(extract).toHaveBeenCalledWith(expect.any(ArrayBuffer), { mode: 'auto' })
   })

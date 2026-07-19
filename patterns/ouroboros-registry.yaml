@@ -16,8 +16,8 @@ stages:
     worker: Maktab
     task: doc_extract
     deterministic: true
-    status: partial
-    notes: pdf.js tier live; OCR module interface; Tesseract backend planned
+    status: live
+    notes: pdf.js tier and Tesseract O1 live; first-use traineddata CDN; O2 bundled/offline packs and ingest UX planned
     hooks:
       - src/engine/maktab/extract.ts
       - src/engine/manuscript/pdf-extract.ts
@@ -87,7 +87,8 @@ ocr:
   owner: Maktab
   languages: [eng, fra, ara]
   backend: tesseract
-  backend_status: stub
+  backend_status: live_o1
+  language_pack_policy: first_use_cdn_until_o2_bundled_packs
   policy: on_device_only
   tiers:
     - id: embedded_text

@@ -28,6 +28,8 @@ export interface MaktabExtractionOptions {
 export interface MaktabExtractionResult {
   text: string
   pageCount: number
+  /** Character offsets for each extracted page in `text`. */
+  pageBoundaries?: Array<{ page: number; start: number; end: number }>
   warnings: string[]
   tier: MaktabExtractionTier
   languages: MaktabLanguage[]

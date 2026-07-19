@@ -1,7 +1,7 @@
 # Ouroboros context brief
 
-> **For agents.** Single entry point for Nassila + NassilaT. Last updated: 2026-06-21.
-> **Ship checkpoints:** `nassila-sanad-e4b` **S12** (default-tier, legacy v1.12) · `nassila-sanad-12b` **S14** (Tier 2, legacy v1.14). **v1.13 NO-GO.** **Laptop smoke PASS** (RTX 4060 8 GB, 2026-06-21). Operator map: NassilaT [`training/POST_V114_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/POST_V114_MAP.md). Sign-off: [`outputs/LAPTOP_SMOKE_SIGNOFF.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/outputs/LAPTOP_SMOKE_SIGNOFF.md).
+> **For agents.** Single entry point for Nassila + NassilaT. Last updated: 2026-07-18.
+> **Ship checkpoints:** `nassila-sanad-e4b` **S12** (default-tier, legacy v1.12) · `nassila-sanad-12b` **S14** (Tier 2, legacy v1.14). **v1.13 NO-GO.** **Laptop smoke PASS** (RTX 4060 8 GB, 2026-06-21). Operator map: NassilaT [`training/OUROBOROS_OPERATOR_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/OUROBOROS_OPERATOR_MAP.md). Sign-off: [`outputs/LAPTOP_SMOKE_SIGNOFF.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/outputs/LAPTOP_SMOKE_SIGNOFF.md).
 > Training pack: [`TRAINING.md`](./TRAINING.md) → NassilaT repo. Do not read every historical walkthrough — use this brief, then drill into linked paths only.
 
 ## 1. Mission
@@ -32,7 +32,7 @@ Do **not** read “no LLM facet yet” as “not part of Ouroboros.” Registry 
 
 **Agent warning:** Future UI work must **not** recreate seven disconnected mini-apps (Hydra). Sanad must ultimately consume **Maktab** + **Masdar** outputs automatically; manual passage/excerpt paste remains a Tier 2 fallback and model test panel only.
 
-**Today (v1 scaffold):** deterministic cores live under `src/engine/`; Sanad manual paste is live; Maktab/Masdar are stubs. **Target:** same logic, loop-first UI per [`DESIGN.md`](./DESIGN.md).
+**Today:** Maktab manuscript extraction is deterministic and live (pdf.js plus Tesseract O1); Masdar-lite deterministically fetches and extracts OA source text. Their optional `doc_extract` / `source_pdf_extract` LLM facets remain planned, and per-reference local PDF attach is not wired yet. **Target:** the same loop-first UI per [`DESIGN.md`](./DESIGN.md), with no peer-worker Hydra.
 
 ```
 Ingest (Maktab) → Sources (Masdar) → Ground (Sanad) → Evidence (Shahid)
@@ -48,8 +48,8 @@ Codenames: `docs/BRAND.md`, `src/shared/nassila-agent-tasks.ts`. Forge **one LLM
 | # | Worker | Arabic | `task` id | Future module (user-facing) | Deterministic core (no LLM replacement) | LLM facet | Phase | Status |
 |---|--------|--------|-----------|----------------------------|----------------------------------------|-----------|-------|--------|
 | 1 | **Sanad** | سند | `l3_grounding` | Ground claims to sources | JSON repair, quote substring checks, caps | Passage vs excerpt → grounding JSON | 1 | **E4B default-tier PASS** (S12 ship); **Tier 2 PASS** (12B S14) |
-| 2 | **Maktab** | مكتب | `doc_extract` | Bring in the manuscript | File I/O, DOCX/PDF routing, plain-text ingest | Structured text/chunks from PDF/DOCX | 2 | Planned |
-| 3 | **Masdar** | مصدر | `source_pdf_extract` | Get source text for citations | OA fetch, chunking, secure desktop I/O | Cited OA PDF → text for Sanad | 2 | Planned |
+| 2 | **Maktab** | مكتب | `doc_extract` | Bring in the manuscript | File I/O, DOCX/PDF routing, pdf.js + Tesseract O1 | Structured text/chunks from PDF/DOCX | 2 | **Deterministic live**; LLM facet planned; O2 planned |
+| 3 | **Masdar** | مصدر | `source_pdf_extract` | Get source text for citations | OA fetch, PDF extraction, chunking, secure desktop I/O | Cited OA PDF → text for Sanad | 2 | **Masdar-lite deterministic live**; LLM facet and local attach planned |
 | 4 | **Shahid** | شاهد | `table_figure_grounding` | Tables & figures as evidence | Region detection (future) | Claims vs table/figure regions | 3+ | Planned (12B) |
 | 5 | **Raqim** | رقيم | `webpage_metadata` | Build & fix reference **records** | **L1/L2 verify**, import parsers (BibTeX/RIS/Zotero), metadata merge, **citeproc export** | Webpage → CSL field suggestions | 2+ | Planned |
 | 6 | **Tasnif** | تصنيف | `webpage_classify` | Sort, type, dedupe, flag risk | **Predatory lists**, **dedup**, reference-type rules | Grey-web / platform typing | 2+ | Planned |
@@ -216,7 +216,7 @@ Manual Sanad paste does **not** satisfy Tier 3 product ship; it is a bridge unti
 
 - **Default tier:** Gemma 4 **E4B** Q6_K — **`nassila-sanad-e4b` S12** = 89.27% combined, E4B default-tier **PASS**
 - **Quality tier:** Gemma 4 **12B** Q6_K — **S14 selected** = 90.43% combined, quote 100%, Tier 2 **PASS** (h-045/h-088 fixed); v1.12 12B = 94.20% higher-combined fallback
-- **v1.13:** **NO-GO** — do not publish ([`POST_V114_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/POST_V114_MAP.md))
+- **v1.13:** **NO-GO** — do not publish ([`OUROBOROS_OPERATOR_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/OUROBOROS_OPERATOR_MAP.md))
 - **Shahid:** 12B when multimodal worker forges (unchanged)
 - **v1.11:** trained, **NO-GO** (80.58% regression) — do not publish
 - **v1.12 E4B:** **GO** — archive [`PHASE2_11_V112_WALKTHROUGH.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/archive/PHASE2_11_V112_WALKTHROUGH.md)
@@ -231,7 +231,7 @@ Manual Sanad paste does **not** satisfy Tier 3 product ship; it is a bridge unti
 - **HF release verify** — [`HF_RELEASE_VERIFY.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/HF_RELEASE_VERIFY.md)
 - Ouroboros loop UI (Nassila `docs/PRODUCT.md`, `docs/DESIGN.md`) — primary IA correction after laptop smoke pass
 - Maktab/Masdar → Tier 3 — [`PHASE3_TIER3_GROUNDWORK.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/PHASE3_TIER3_GROUNDWORK.md)
-- Optional **v1.15** combined-score recovery (not default)
+- **S15 parked** while NassilaT curates field notes and Tier 3 data
 
 ## 13. NassilaT operator index
 
@@ -239,7 +239,7 @@ Repo: [jamalesam93/NassilaT](https://github.com/jamalesam93/NassilaT). See [`TRA
 
 | Need | Path (NassilaT) |
 |------|-----------------|
-| **Current map** | `training/POST_V114_MAP.md` |
+| **Current map** | `training/OUROBOROS_OPERATOR_MAP.md` |
 | Laptop smoke | `training/LAPTOP_SMOKE_TEST.md` |
 | Tier 3 plan | `training/PHASE3_TIER3_GROUNDWORK.md` |
 | Next Vast | `training/PHASE2_14_12B_MULTI_CLAIM_WALKTHROUGH.md` |

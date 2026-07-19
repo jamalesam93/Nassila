@@ -3,13 +3,14 @@ import type { LayerVerdict } from './types'
 import { THRESHOLDS } from './thresholds'
 import { resolveIdentifier } from '../resolver'
 import { resolveOpenAlexDoi, resolveOpenAlexPmid, searchOpenAlex } from '../resolver/openalex'
-import { resolvePubMedByDoi, resolvePmid } from '../resolver/pubmed'
+import { pmcidToPmid, resolvePubMedByDoi, resolvePmid } from '../resolver/pubmed'
+import { isDataCiteDoi, resolveDataCiteDoi } from '../resolver/datacite'
 import { normalizeDoiFromMeta } from '../resolver/url'
 import { searchCrossRef } from '../resolver/crossref'
 import { verifyAgainstCrossRef } from '../verifier/crossref-verify'
 import { verifyAgainstPubMed } from '../verifier/pubmed-verify'
 
-export type RegistrySource = 'crossref' | 'pubmed' | 'openalex' | 'none'
+export type RegistrySource = 'crossref' | 'datacite' | 'pubmed' | 'openalex' | 'none'
 
 export interface RegistryResolution {
   source: RegistrySource
@@ -59,6 +60,24 @@ export async function resolveRegistry(item: CslItem): Promise<RegistryResolution
     }
   }
 
+  const pmcid =
+    item.PMCID ??
+    item.URL?.match(/pmc\.ncbi\.nlm\.nih\.gov\/articles\/(PMC\d+)/i)?.[1]
+  if (pmcid) {
+    const pmid = await pmcidToPmid(pmcid)
+    if (pmid) {
+      const pmidResult = await resolvePmidAcrossRegistries(pmid)
+      if (pmidResult.canonical) {
+        return { source: pmidResult.source, canonical: pmidResult.canonical, l1: { status: 'pass' } }
+      }
+    }
+    return {
+      source: 'pubmed',
+      canonical: null,
+      l1: { status: 'fail', reasons: ['PMCID could not be mapped to a resolvable PubMed record'] }
+    }
+  }
+
   // Many legitimate references (reports/web pages/theses) are not consistently indexed in Crossref/OpenAlex.
   // Do not mass-flag these as "insufficient evidence"; treat as grey/non-indexed and let the user decide.
   if (item.type === 'webpage' || item.type === 'report' || item.type === 'thesis' || item.type === 'post' || item.type === 'post-weblog') {
@@ -102,6 +121,11 @@ export async function resolveRegistry(item: CslItem): Promise<RegistryResolution
 async function resolveDoiAcrossRegistries(rawDoi: string): Promise<{ source: RegistrySource; canonical: CslItem | null }> {
   const doi = normalizeDoiFromMeta(rawDoi) ?? rawDoi.trim()
   if (!doi) return { source: 'crossref', canonical: null }
+
+  if (isDataCiteDoi(doi)) {
+    const datacite = await resolveDataCiteDoi(doi)
+    if (datacite) return { source: 'datacite', canonical: datacite }
+  }
 
   const crossref = await resolveIdentifier(doi)
   if (crossref) return { source: 'crossref', canonical: crossref }

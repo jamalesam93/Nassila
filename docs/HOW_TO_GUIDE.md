@@ -91,7 +91,11 @@ When verify finds fields that still disagree with Crossref, PubMed, or OpenAlex 
 
 The figure above shows **L1/L2 pass** summaries after a successful verify run; when mismatches remain, additional **yellow** cards stack in this panel with a click-to-jump hint.
 
-> **L3** (manuscript-level checks) is **not** part of the current product UI. Legacy code may remain in the repository but is not shown in the app.
+> **L3** is live in the **Manuscript** loop when Passage grounding is enabled. It compares manuscript passages with registry abstracts or open-access source text through Sanad; L1/L2 remain the authoritative registry and metadata layers. Per-reference local PDF attach is not wired yet.
+
+### Manuscript audit and source coverage
+
+Upload or paste a manuscript with a References section, then choose **Run audit**. Maktab deterministically extracts manuscript text (DOCX/text, pdf.js, or Tesseract O1 for scans); Masdar-lite resolves and extracts open-access source text when available; Sanad performs optional L3 grounding. Tesseract O1 downloads a selected language's traineddata on first use; bundled/offline packs and enhanced OCR controls are planned for O2.
 
 ---
 
@@ -130,7 +134,7 @@ Theme (light/dark) follows your preference where the app exposes it; use the the
 
 ## 10. Network, privacy, and offline use
 
-**Outbound services** may include **Crossref**, **PubMed/NCBI**, **OpenAlex**, and (in retained non-UI code paths) **Unpaywall** / **Europe PMC**. **Do not** paste secrets, credentials, or private unrelated text into citation fields.
+**Outbound services** may include **Crossref**, **PubMed/NCBI**, **OpenAlex**, **Unpaywall**, and **Europe PMC** during user-triggered verification and manuscript audits. The first Tesseract OCR use for a language may also download its traineddata pack. **Do not** paste secrets, credentials, or private unrelated text into citation fields.
 
 **Offline:** parsing, editing, validation, and export of **already loaded** data work without the internet. **Verify**, identifier **Resolve**, and online enhancement require connectivity.
 

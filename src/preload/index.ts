@@ -1,7 +1,20 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import type { AppMenuCommand } from '../shared/app-menu-commands'
 import type { ManuscriptAuditPrefsV1 } from '../shared/manuscript-audit-prefs'
+import {
+  MANUSCRIPT_AUDIT_CANCEL_CHANNEL,
+  MANUSCRIPT_AUDIT_PROGRESS_CHANNEL,
+  MANUSCRIPT_AUDIT_START_CHANNEL,
+  type ManuscriptAuditProgressEvent,
+  type ManuscriptAuditStartRequest
+} from '../shared/manuscript-audit-contract'
+import type { AuditReport } from '../engine/manuscript/types'
 import type { PredatoryList, PredatoryListMeta, UpdateCheckResult } from '../shared/predatory'
+import {
+  SOURCE_ARTIFACT_ATTACH_CHANNEL,
+  type SourceArtifact
+} from '../shared/source-artifact'
+import type { RaqimLookupRequest, RaqimResolveCandidate } from '../shared/raqim-resolve'
 
 export type ThemeMode = 'light' | 'dark' | 'system'
 export type NetworkStatus = 'online' | 'offline'
@@ -99,6 +112,26 @@ const api = {
     layersByCitationId: Record<string, unknown>
   }> => ipcRenderer.invoke('registry:verifyUnified', citations, maxItems),
 
+  lookupRaqimCandidates: (
+    request: RaqimLookupRequest
+  ): Promise<RaqimResolveCandidate[]> =>
+    ipcRenderer.invoke('registry:lookupRaqimCandidates', request),
+
+  resolveManuscriptRegistry: (
+    item: unknown
+  ): Promise<{
+    source: 'crossref' | 'pubmed' | 'openalex' | 'none'
+    canonical: unknown | null
+    l1: unknown
+  }> => ipcRenderer.invoke('registry:resolveManuscriptItem', item),
+
+  alignManuscriptMetadata: (
+    userItem: unknown,
+    canonical: unknown,
+    source: 'crossref' | 'pubmed' | 'openalex' | 'none'
+  ): Promise<{ l2: unknown; mismatchedFields: string[] }> =>
+    ipcRenderer.invoke('registry:alignManuscriptMetadata', userItem, canonical, source),
+
   // ── Open Access (main-process only) ────────────────────────────────────
   unpaywall: (doi: string, email?: string): Promise<unknown> =>
     ipcRenderer.invoke('oa:unpaywall', doi, email),
@@ -138,6 +171,9 @@ const api = {
   ): Promise<import('../engine/maktab/types').MaktabExtractionResult> =>
     ipcRenderer.invoke('maktab:ocrExtract', pdfBytes, options ?? {}),
 
+  attachSourcePdf: (filePath: string): Promise<SourceArtifact> =>
+    ipcRenderer.invoke(SOURCE_ARTIFACT_ATTACH_CHANNEL, filePath),
+
   // ── Secrets / LLM (main-process only) ───────────────────────────────────
   isEncryptionAvailable: (): Promise<boolean> =>
     ipcRenderer.invoke('secrets:isEncryptionAvailable'),
@@ -159,6 +195,22 @@ const api = {
 
   saveManuscriptAuditPrefs: (prefs: ManuscriptAuditPrefsV1): Promise<void> =>
     ipcRenderer.invoke('manuscriptAudit:savePrefs', prefs),
+
+  startManuscriptAudit: (request: ManuscriptAuditStartRequest): Promise<AuditReport | null> =>
+    ipcRenderer.invoke(MANUSCRIPT_AUDIT_START_CHANNEL, request),
+
+  cancelManuscriptAudit: (runId: string): Promise<boolean> =>
+    ipcRenderer.invoke(MANUSCRIPT_AUDIT_CANCEL_CHANNEL, runId),
+
+  onManuscriptAuditProgress: (
+    callback: (progress: ManuscriptAuditProgressEvent) => void
+  ): (() => void) => {
+    const listener = (_event: Electron.IpcRendererEvent, progress: ManuscriptAuditProgressEvent) => {
+      callback(progress)
+    }
+    ipcRenderer.on(MANUSCRIPT_AUDIT_PROGRESS_CHANNEL, listener)
+    return () => ipcRenderer.removeListener(MANUSCRIPT_AUDIT_PROGRESS_CHANNEL, listener)
+  },
 
   // ── Templates (userData) ───────────────────────────────────────────────
   listTemplates: (): Promise<StructureTemplate[]> =>

@@ -13,6 +13,7 @@ import { previewManuscript } from '../../utils/manuscript-preview'
 import { pushToast } from '../../lib/notify'
 import LoopAuditDetail from './LoopAuditDetail'
 import ManuscriptSanadBar from './ManuscriptSanadBar'
+import SharhLitePanel from './SharhLitePanel'
 
 const RUNNING_STEPS: AuditStep[] = ['parsing', 'l1', 'l2', 'oa_fetch', 'l3', 'llm']
 
@@ -96,6 +97,11 @@ export default function OuroborosLoopWorkspace() {
   const handleRun = useCallback(() => {
     if (!raw.trim() || running) return
     void runAudit(raw)
+  }, [raw, runAudit, running])
+
+  const handleReaudit = useCallback((bibKey: string) => {
+    if (!raw.trim() || running) return
+    void runAudit(raw, { bibKeyFilter: bibKey })
   }, [raw, runAudit, running])
 
   const handleExportRefs = useCallback(async () => {
@@ -303,8 +309,27 @@ export default function OuroborosLoopWorkspace() {
                     <th className="bg-background px-2 py-2 font-medium">{t('loop.colPassage')}</th>
                   </tr>
                 </thead>
-                <tbody>
-                  {findings.map((f) => {
+                <tbody
+                  onKeyDown={(e) => {
+                    if (findings.length === 0) return
+                    const idx = findings.findIndex((f) => f.bibKey === selectedBibKey)
+                    if (e.key === 'ArrowDown') {
+                      e.preventDefault()
+                      const next = findings[Math.min(findings.length - 1, Math.max(0, idx) + 1)]
+                      if (next) setSelectedBibKey(next.bibKey)
+                    } else if (e.key === 'ArrowUp') {
+                      e.preventDefault()
+                      const prev = findings[Math.max(0, (idx < 0 ? 0 : idx) - 1)]
+                      if (prev) setSelectedBibKey(prev.bibKey)
+                    } else if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      if (selectedBibKey) {
+                        document.getElementById('loop-audit-detail')?.focus()
+                      }
+                    }
+                  }}
+                >
+                  {findings.map((f, index) => {
                     const label =
                       f.resolvedItem?.title?.slice(0, 72) ||
                       f.evidence[0]?.text?.slice(0, 72) ||
@@ -313,8 +338,12 @@ export default function OuroborosLoopWorkspace() {
                     return (
                       <tr
                         key={f.bibKey}
-                        className={`cursor-pointer border-t border-border ${active ? 'bg-accent/50' : 'hover:bg-muted/40'}`}
+                        tabIndex={active || (!selectedBibKey && index === 0) ? 0 : -1}
+                        role="row"
+                        aria-selected={active}
+                        className={`cursor-pointer border-t border-border outline-none focus-visible:ring-2 focus-visible:ring-ring ${active ? 'bg-accent/50' : 'hover:bg-muted/40'}`}
                         onClick={() => setSelectedBibKey(f.bibKey)}
+                        onFocus={() => setSelectedBibKey(f.bibKey)}
                       >
                         <td className="px-3 py-2 align-top">
                           <span className="line-clamp-2 font-medium">{label}</span>
@@ -350,7 +379,14 @@ export default function OuroborosLoopWorkspace() {
                   </p>
                 </div>
               ) : step === 'done' ? (
-                <LoopAuditDetail finding={selectedFinding} />
+                <div className="flex h-full min-h-0 flex-col overflow-hidden">
+                  <div className="min-h-0 flex-1 overflow-hidden" id="loop-audit-detail" tabIndex={-1}>
+                    <LoopAuditDetail finding={selectedFinding} onReaudit={handleReaudit} />
+                  </div>
+                  <div className="max-h-[40%] shrink-0 overflow-auto">
+                    <SharhLitePanel report={report} />
+                  </div>
+                </div>
               ) : (
                 <div className="flex h-full items-center p-4 text-sm text-muted-foreground">
                   <p>{t('loop.auditDetailLocked')}</p>

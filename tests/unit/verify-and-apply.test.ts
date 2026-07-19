@@ -37,9 +37,15 @@ describe('prioritizeVerifiableCitations', () => {
     expect(outlierIndex).toBeGreaterThan(24)
   })
 
-  it('drops rows without DOI or PMID even if year is odd', () => {
+  it('drops rows without a registry identifier even if year is odd', () => {
     const a = row({ id: 'a', issued: { 'date-parts': [[3000]] } })
     const b = row({ id: 'b', DOI: '10.x/b', issued: { 'date-parts': [[3000]] } })
     expect(prioritizeVerifiableCitations([a, b])).toEqual([b])
+  })
+
+  it('includes PMCID-only rows in unified L1 verification priority', () => {
+    const pmc = row({ id: 'pmc', PMCID: 'PMC12919426' })
+    const unkeyed = row({ id: 'unkeyed' })
+    expect(prioritizeVerifiableCitations([unkeyed, pmc])).toEqual([pmc])
   })
 })

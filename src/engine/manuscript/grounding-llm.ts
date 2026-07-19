@@ -1,5 +1,8 @@
-import type { ClaimGroundingRow, ClaimSupportVerdict, EvidenceSnippet, InTextSpan, LayerVerdict } from './types'
+import type { ClaimGroundingRow, ClaimSupportVerdict, EvidenceSnippet, LayerVerdict } from './types'
 import { parseGroundingJsonWithRepair } from './grounding-json-repair'
+
+/** Version of the production system/user prompt contract mirrored by NassilaT. */
+export const GROUNDING_PROMPT_CONTRACT_VERSION = 'sanad-grounding-v1'
 
 /** Max chars for manuscript passage sent to the grounding LLM (Phase 0.5). */
 export const GROUNDING_PASSAGE_MAX_CHARS = 1500
@@ -217,6 +220,36 @@ export function findInvalidSourceQuotes(
   return issues
 }
 
+/** Attach per-claim verbatim quote presence without changing the Sanad claim verdict. */
+export function withQuoteValidationState(
+  claims: ClaimGroundingRow[],
+  sourceExcerpt: string
+): ClaimGroundingRow[] {
+  return claims.map((claim) => {
+    const quotes = claim.sourceQuotes?.filter((quote) => quote.trim().length > 0) ?? []
+    if (quotes.length === 0) {
+      return {
+        ...claim,
+        quoteValidation: {
+          status: claim.verdict === 'supported' ? 'not_found' : 'not_applicable',
+          checkedQuotes: 0,
+          matchedQuotes: 0
+        }
+      }
+    }
+
+    const matchedQuotes = quotes.filter((quote) => isVerbatimQuoteSubstring(quote, sourceExcerpt)).length
+    return {
+      ...claim,
+      quoteValidation: {
+        status: matchedQuotes === quotes.length ? 'found' : 'not_found',
+        checkedQuotes: quotes.length,
+        matchedQuotes
+      }
+    }
+  })
+}
+
 /** Maps structured claims (+ optional overlap) into a passage layer verdict. */
 export function passageVerdictFromGroundingClaims(
   claims: ClaimGroundingRow[],
@@ -279,6 +312,23 @@ export function passageVerdictFromGroundingClaims(
   return { status: 'pass' }
 }
 
+/**
+ * Grounding cannot pass unless the LLM ran and returned parseable claims.
+ * Deterministic overlap remains retrieval confidence on CiteGroundingSite.
+ */
+export function passageVerdictWithoutParsedGrounding(
+  outcome: { kind: 'disabled' } | { kind: 'parse_fail'; hint?: string }
+): LayerVerdict {
+  if (outcome.kind === 'disabled') {
+    return { status: 'skipped', reason: 'llm_disabled' }
+  }
+
+  return {
+    status: 'warn',
+    reasons: ['LLM grounding output could not be parsed', outcome.hint].filter(Boolean) as string[]
+  }
+}
+
 export function evidenceFromGroundingParse(
   meta: { source: EvidenceSnippet['source']; url?: string },
   rawLlm: string,
@@ -338,8 +388,4 @@ export function worstDeterministicBucket(
   if (sites.some((s) => s.deterministicBucket === 'low')) return 'low'
   if (sites.some((s) => s.deterministicBucket === 'medium')) return 'medium'
   return 'high'
-}
-
-export function syntheticSpanForBodyPreview(): InTextSpan {
-  return { start: 0, end: 0, raw: '' }
 }

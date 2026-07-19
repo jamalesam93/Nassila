@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { buildBibEntriesFromReferencesText, mapInTextToBibliography } from '../../src/engine/manuscript/mapping'
+import {
+  buildBibEntriesFromReferencesText,
+  mapInTextToBibliography,
+  selectMappedBibliographyEntries,
+  summarizeCitationMappings
+} from '../../src/engine/manuscript/mapping'
 import { parseInTextCitations } from '../../src/engine/manuscript/intext'
 
 describe('bibliography parsing + mapping', () => {
@@ -16,6 +21,19 @@ References
     const inText = parseInTextCitations('See [2] for details.')
     const mapped = mapInTextToBibliography(inText.citations, bib.entries)
     expect(mapped[0].matchedBibKeys).toEqual(['2'])
+  })
+
+  it('reports zero mappings without selecting bibliography fallback entries', async () => {
+    const bib = await buildBibEntriesFromReferencesText('[1] Smith J. Title one. Journal. 2020.')
+    const inText = parseInTextCitations('An unsupported citation appears here [9].')
+    const mapped = mapInTextToBibliography(inText.citations, bib.entries)
+
+    expect(summarizeCitationMappings(mapped)).toEqual({
+      matched: 0,
+      ambiguous: 0,
+      unmatched: 1
+    })
+    expect(selectMappedBibliographyEntries(bib.entries, mapped)).toEqual([])
   })
 })
 

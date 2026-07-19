@@ -15,7 +15,18 @@
     "drawerTitle": "Style and issues",
     "drawerClose": "Close",
     "drawerAria": "Bibliography settings drawer",
-    "exportAudit": "Export audit report"
+    "exportAudit": "Export audit report",
+    "firstRunBanner": "Tip: import and clean your bibliography first, then audit the manuscript.",
+    "firstRunDismiss": "Got it",
+    "firstRunOpenBib": "Open Bibliography"
+  },
+  "project": {
+    "newSessionConfirm": "Start a new session? This clears the manuscript, bibliography, attached sources, and audit report.",
+    "openConfirmDirty": "Open a project and replace the current session?",
+    "opened": "Project opened",
+    "openFailed": "Could not open project",
+    "saved": "Project saved",
+    "saveFailed": "Could not save project"
   },
   "toolbar": {
     "brandSubtitle": "Verify your references. Ground your claims.",
@@ -83,8 +94,10 @@
       "unpaywallEmail": "Unpaywall email",
       "unpaywallPlaceholder": "you@institution.edu",
       "privacy": "Saved once on this computer only. Sent to api.unpaywall.org when auditing DOIs — not to Nassila servers.",
-      "institutionalNote": "This is not university paywall login. It only enables Unpaywall to find legally open copies. Subscription PDFs require Masdar (attach PDFs) or future institutional access.",
-      "savedHint": "Saved. Open-access lookups will use this address on future audits."
+      "institutionalNote": "This is not university paywall login. It only enables Unpaywall to find legally open copies. You can attach a local PDF in Masdar; institutional access is future work.",
+      "savedHint": "Saved. Open-access lookups will use this address on future audits.",
+      "enhancedOcr": "Enhanced OCR for scanned PDFs",
+      "enhancedOcrHint": "Prefer on-device Tesseract (bundled eng/fra/ara) when extracting manuscript or attached PDFs."
     },
     "localModels": {
       "title": "Passage grounding",
@@ -401,6 +414,48 @@
       "no-doi": "No DOI"
     }
   },
+  "raqimResolve": {
+    "open": "Resolve…",
+    "close": "Close resolve",
+    "verifyRow": "Verify row",
+    "autocorrectRow": "Autocorrect row",
+    "hint": "Search scholarly registries and artifact hosts. A candidate is never applied until you select it.",
+    "keyType": "Lookup key type",
+    "keyPlaceholder": "Title, DOI, PMID, PMCID, or URL",
+    "search": "Find matches",
+    "searching": "Searching…",
+    "offline": "Connect to search registries and hosts.",
+    "noCandidates": "No sufficiently close candidates found. Check the lookup key or keep this row unchanged.",
+    "lookupFailed": "Candidate lookup failed",
+    "confidence": "{{score}}% confidence",
+    "matchedFields": "Matched: {{fields}}",
+    "mismatchReasons": "Differs: {{fields}}",
+    "selectionRequired": "Select one candidate before applying.",
+    "applySelected": "Apply selected",
+    "lookupKind": {
+      "title": "Title",
+      "doi": "DOI",
+      "pmid": "PMID",
+      "pmcid": "PMCID",
+      "url": "URL"
+    },
+    "provider": {
+      "crossref": "Crossref",
+      "pubmed": "PubMed",
+      "openalex": "OpenAlex",
+      "datacite": "DataCite / Zenodo",
+      "huggingface": "Hugging Face",
+      "kaggle": "Kaggle",
+      "github": "GitHub"
+    },
+    "candidateKind": {
+      "artifact_citation": "Artifact citation",
+      "model_card": "Model card",
+      "dataset": "Dataset",
+      "software_release": "Software release",
+      "scholarly_report": "Scholarly report"
+    }
+  },
   "predatoryPanel": {
     "flaggedCount": "{{count}} predatory / suspicious",
     "tierPredatory": "Predatory",
@@ -529,7 +584,7 @@
       "partial": "Partial",
       "stub": "Planned"
     },
-    "stubTier3Note": "Full-text manuscript and cited-paper ingest (Tier 3) is planned. This worker will activate when Maktab and Masdar ship.",
+    "stubTier3Note": "Deterministic Maktab extraction and Masdar-lite OA source ingest are live. Their LLM facets and the full Tier 3 workflow are planned.",
     "raqim": {
       "name": "Raqim",
       "tagline": "Reference library — import, validate, verify, export"
@@ -549,13 +604,13 @@
     },
     "maktab": {
       "name": "Maktab",
-      "tagline": "Manuscript ingest (planned)",
-      "stubBody": "Import full manuscripts (DOCX, PDF) and segment them for audit. Requires Tier 3 training and Maktab worker."
+      "tagline": "Manuscript ingest (deterministic live)",
+      "stubBody": "DOCX, text, pdf.js, and Tesseract O1 extraction are live. The Maktab LLM facet and O2 offline language packs are planned."
     },
     "masdar": {
       "name": "Masdar",
-      "tagline": "Cited source full text (planned)",
-      "stubBody": "Fetch and chunk open-access full text for cited papers so Sanad can ground against more than abstracts."
+      "tagline": "Open-access source text (deterministic live)",
+      "stubBody": "Masdar fetches open-access source text and extracts locally attached PDFs today. The Masdar LLM facet remains planned."
     },
     "shahid": {
       "name": "Shahid",
@@ -606,7 +661,7 @@
     "retryNotice": "Recovered on a second LLM attempt.",
     "showQuotes": "Show source quotes",
     "hideQuotes": "Hide quotes",
-    "tier3FutureNote": "Full manuscript and cited-PDF workflows will route through Maktab and Masdar when Tier 3 ships.",
+    "tier3FutureNote": "Deterministic manuscript extraction, OA source fetch, and local PDF attach already route through Maktab and Masdar. The evaluated Tier 3 workflow remains planned.",
     "verdict": {
       "pass": "Supported",
       "fail": "Not supported",
@@ -631,7 +686,7 @@
       "bibliography": "Bibliography"
     },
     "title": "Manuscript audit",
-    "intro": "Upload your manuscript, resolve cited sources from scholarly databases or attach PDFs, then audit claims and references in one flow.",
+    "intro": "Upload your manuscript, resolve cited sources through scholarly databases and open-access services, then audit claims and references in one flow. Attach a local PDF to re-audit one source in place.",
     "importManuscript": "Upload manuscript…",
     "sanadBar": {
       "grounding": "Sanad grounding",
@@ -667,7 +722,7 @@
     "llmOff": "Sanad grounding off",
     "sourcesTitle": "Cited sources",
     "sourcesHint": "Resolved via Crossref, PubMed, OpenAlex, and open-access APIs. Select a row for grounding details.",
-    "pipelineGap": "Cited PDFs: manual attach live · automated source fetch planned (Masdar).",
+    "pipelineGap": "Open-access source fetch and local PDF attach are live (Masdar).",
     "unpaywallHint": "Add your Unpaywall email once in Settings → General to unlock OA full-text fetch for DOIs.",
     "unpaywallConfigure": "Open Settings",
     "statusFindings": "{{count}} sources audited",
@@ -689,11 +744,18 @@
     "sourceExcerptHeading": "Source excerpt (used for grounding)",
     "sourceExcerptLink": "Open source URL",
     "noSourceExcerpt": "No source excerpt was retrieved for this cite.",
-    "overlapHint": "Lexical overlap {{pct}}% ({{bucket}})",
+    "overlapHint": "Source retrieval confidence · lexical overlap {{pct}}% ({{bucket}})",
+    "locator": "Locator",
+    "sanadVerdictLabel": "Sanad verdict",
     "claimQuotes": "Verbatim quotes from source",
+    "quoteFound": "Quote found in source",
+    "quoteNotFound": "Quote not found in source",
+    "quoteMatchCaveat": "Quote presence checks verbatim text only; it does not prove the claim is true.",
+    "contradictedClaims": "Contradicted claims",
+    "otherCautions": "Other cautions",
     "noClaims": "No per-claim breakdown (grounding off, skipped, or parse failed).",
     "noCiteSites": "No in-text cites were evaluated for this reference.",
-    "masdarPlanned": "Cited PDF ingest and full-paper excerpts are planned (Masdar worker). Today Sanad uses registry abstracts and open-access text from Europe PMC / Unpaywall.",
+    "masdarPlanned": "Masdar uses registry abstracts, open-access text from Europe PMC / Unpaywall, and locally attached PDFs. Broader automatic full-paper coverage remains planned.",
     "sourceProvider": {
       "europePmc": "Europe PMC",
       "unpaywall": "Unpaywall OA",
@@ -704,7 +766,7 @@
       "unknown": "Source"
     },
     "attachPdfTitle": "Attach cited PDF (optional)",
-    "attachPdfNote": "Stored for a future Masdar pass. The audit still uses database and open-access fetch today (Tier 2).",
+    "attachPdfNote": "Extracted once and cached locally by file hash. Attaching re-audits every cite site for this reference.",
     "attachPdfAction": "Attach PDF…",
     "attachPdfClear": "Remove",
     "pdfAttached": "PDF attached",
@@ -739,5 +801,21 @@
       "abstractOnly": "Abstract only",
       "unavailable": "Source text unavailable"
     }
+  },
+  "sharhLite": {
+    "title": "Evidence summary",
+    "subtitle": "Deterministic roll-up of claim verdicts, mapping, and next steps — no extra LLM call.",
+    "empty": "Run an audit to see an evidence summary.",
+    "supported": "Supported",
+    "weak": "Weak",
+    "contradicted": "Contradicted",
+    "notInSource": "Not in source",
+    "unmapped": "Unmapped cites",
+    "invalidQuotes": "Invalid quotes",
+    "preflight": "Submission preflight",
+    "preflightOk": "No blocking identity or mapping issues.",
+    "nextActions": "Next actions",
+    "exportDiagnostic": "Export diagnostic bundle…",
+    "diagnosticExported": "Diagnostic bundle saved"
   }
 }

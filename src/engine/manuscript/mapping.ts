@@ -21,6 +21,33 @@ export interface CitationMapping {
   warnings: MappingWarning[]
 }
 
+export function summarizeCitationMappings(mappings: CitationMapping[]): {
+  matched: number
+  ambiguous: number
+  unmatched: number
+} {
+  let matched = 0
+  let ambiguous = 0
+  let unmatched = 0
+
+  for (const mapping of mappings) {
+    if (mapping.matchedBibKeys.length > 0) matched++
+    else if (mapping.ambiguity) ambiguous++
+    else unmatched++
+  }
+
+  return { matched, ambiguous, unmatched }
+}
+
+/** Only mapped references are eligible for citation-site grounding. */
+export function selectMappedBibliographyEntries(
+  entries: BibEntry[],
+  mappings: CitationMapping[]
+): BibEntry[] {
+  const mappedKeys = new Set(mappings.flatMap((mapping) => mapping.matchedBibKeys))
+  return entries.filter((entry) => mappedKeys.has(entry.key))
+}
+
 export function mapInTextToBibliography(
   citations: ParsedInTextCitation[],
   bibEntries: BibEntry[]

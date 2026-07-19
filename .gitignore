@@ -1,6 +1,7 @@
 node_modules/
 out/
 dist/
+dist-smoke-*/
 release-artifacts/*.exe
 release-artifacts/*.blockmap
 *.log

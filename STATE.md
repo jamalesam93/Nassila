@@ -11,67 +11,41 @@ Read this at the start of every agent session. Update when focus, blockers, or s
 
 | Priority | Track | Status |
 |----------|-------|--------|
-| **P0** | App **1.2.2 Throughput** — concurrency (#7) only | **Next ship** |
-| **P1** | App train — **1.2.3 Quote chip** (#6+#15) → **1.2.4 Masdar attach** (#5) → Raqim **1.2.5–1.2.6** → TBD **1.2.7–1.2.9** → **1.3.0 Sharh-lite** | Planned |
-| **P1∥** | **Maktab OCR O2** — golden fixtures, hardware smoke (parallel; any 1.2.x) | Parallel |
-| **P2∥** | **S15+** Sanad refinement (NassilaT; parallel with 1.2.x / 1.3.0) | Parked until Tier 3 corpus |
+| **P0** | GitHub release cut for **1.3.0** | **Ready** (packaged GUI smoke PASS) |
+| **P1∥** | NassilaT field-note labels (14/49; S12/S14 re-eval done) | Parallel |
 
-**Latest app:** **1.2.1 Masdar UX** — [GitHub Release v1.2.1](https://github.com/jamalesam93/Nassila/releases/tag/v1.2.1).
-
-**Locked release train**
-
-```text
-1.2.2  Throughput       #7
-1.2.3  Quote chip       #6 + #15
-1.2.4  Masdar attach    #5 (+ re-audit this ref)
-1.2.5  Raqim Repair     #14
-1.2.6  Raqim Resolve    #14b
-1.2.7–1.2.9  TBD
-1.3.0  Sharh-lite       #9–11
-∥      Maktab OCR O2    parallel
-∥      S15+             NassilaT parallel
-```
-
-**Models on Hub:** Sanad **S12** (E4B default) · **S14** (12B quality). No change with app 1.2.1.
-
-**Licensing:** App remains **MIT / free for all features**. Monetization (if any) deferred — no Free/Pro feature gates.
+**Latest app:** **1.3.0** implemented locally. Packaged smoke build: `dist-smoke-130/win-unpacked` (may be cleaned; rebuild if needed).
 
 ---
 
-## Product loop stage status
+## Post-1.3.0 practical progress (2026-07-18)
 
-| Stage | Worker | Deterministic | LLM facet | App status |
-|-------|--------|---------------|-----------|------------|
-| Extract | Maktab | pdf.js + **Tesseract O1** | `doc_extract` planned | **Live**; **O2** parallel fixtures/smoke |
-| Sources | Masdar | OA fetch + `extractFromPdf` | `source_pdf_extract` planned | **Masdar-lite 1.2.0** + UX **1.2.1**; attach → **1.2.4** |
-| References | Raqim / Tasnif | L1/L2, citeproc, dedup | planned | Live; Repair **1.2.5** / Resolve **1.2.6** |
-| Ground | Sanad | JSON repair, quote guard | `l3_grounding` | Live; quote chip UI → **1.2.3** |
-| Explain | Sharh | i18n mismatch copy | `issue_explain` planned | Deterministic; Sharh-lite → **1.3.0** |
-| Evidence | Shahid | — | `table_figure_grounding` | Tier 3+ |
+| Step | Status |
+|------|--------|
+| Packaged unpack + OCR packs + IPC/CSP in build | **PASS** (`PACKAGED_SMOKE_SIGNOFF_1.3.0.md`) |
+| Automated boundary unit smoke | **PASS** (`packaged-boundary-smoke.test.ts`) |
+| Manual GUI L1 under CSP (LLM off) | **PASS** — L1 Supported, L2 title mismatch, L3 insufficient (Sanad off); see `PACKAGED_AUDIT_SMOKE.md` |
+| Prompt goldens byte-identical + pytest | **PASS** |
+| S12 holdout under production prompt | **PASS (single-seed)** — combined 93.68%, parse 100%, quote holdout 100%; see `PROMPT_CONTRACT_REEVAL.md` |
+| S14 holdout under production prompt | **PASS (single-seed, Ollama)** — combined 93.68%, parse 100%, quote holdout 94.74% (Tier 2 quote gate miss); LM Studio peg-gemma4 blocked |
+| Field-note review queue | **In progress** — 14/49 labeled (parse_error + echo_support); see `CURATION_CHECKLIST.md` |
+| GitHub release tag 1.3.0 | **Not started** — smoke PASS; cut when operator confirms |
+
+**Locked train (implemented):** Phase 0 → 1.2.2…1.3.0 · S15 parked (prompt contract approved for continued use)
+
+**Models:** Sanad **S12** / **S14** — prefer **Ollama** for S14 locally until LM Studio peg-gemma4 is fixed
 
 ---
 
 ## Blockers
 
-- **Tier 3 eval:** needs Maktab/Masdar corpus (NassilaT `PHASE3_TIER3_GROUNDWORK.md`).
-
----
-
-## Last run
-
-| Date | Action | Result |
-|------|--------|--------|
-| 2026-07-18 | **Lock release train** — 1.2.2→1.3.0; OCR O2 + S15+ parallel | Docs aligned |
-| 2026-07-17 | **Ship 1.2.1 Masdar UX** — [GitHub Release v1.2.1](https://github.com/jamalesam93/Nassila/releases/tag/v1.2.1) | #4b, #4c, #8, icon I2 |
-| 2026-07-15 | **Ship 1.2.0 Masdar-lite** — GitHub Release v1.2.0 | OA PDF grounding, audit N/M, Maktab OCR O1, icon I0/I1 |
-| 2026-07-13 | OA-PDF smoke sign-off | PASS (offline + live arXiv) |
+- **S15:** parked — field-note curation (+ optional multi-seed); not blocked on prompt contract.
+- Default `dist/win-unpacked` may be file-locked (EBUSY); use `dist-smoke-130` or close holders.
 
 ---
 
 ## Next actions (ordered)
 
-1. **1.2.2 Throughput** — bounded concurrency (#7) only.
-2. **1.2.3 Quote chip** — #6 + #15 header wordmark.
-3. **1.2.4 Masdar attach** — #5 + single-`bibKey` re-audit.
-4. **∥ Parallel:** Maktab OCR O2 fixtures/smoke whenever bandwidth allows.
-5. Then **1.2.5–1.2.6** Raqim → TBD **1.2.7–9** → **1.3.0** Sharh-lite; **∥ S15+** on NassilaT when Tier 3 corpus exists.
+1. When ready to publish: `npm run build:win` + SHA-256 + `gh release create v1.3.0` (confirm before publish).
+2. Continue field-note labels (`echo_other` next) → export boost JSONL when ready.
+3. Optional: multi-seed S12/S14; investigate S14 `h-003` quote miss / Tier 2 98% quote bar.

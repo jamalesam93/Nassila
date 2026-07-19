@@ -35,6 +35,7 @@ interface PageBlock {
 export interface PdfManuscriptExtraction {
   text: string
   pageCount: number
+  pageBoundaries: Array<{ page: number; start: number; end: number }>
   warnings: string[]
 }
 
@@ -57,6 +58,7 @@ export async function extractManuscriptFromPdf(
 
   let fullText = ''
   let totalGlyphCount = 0
+  const pageTexts: string[] = []
 
   for (let i = 1; i <= pageCount; i++) {
     const page = await pdf.getPage(i)
@@ -71,13 +73,13 @@ export async function extractManuscriptFromPdf(
     const lines = blocksToLines(ordered)
     const pageText = linesToText(lines)
 
-    fullText += pageText + '\n\n'
-    if (fullText.length > MAX_EXTRACTED_TEXT_CHARS) {
+    pageTexts.push(postProcess(pageText))
+    if (pageTexts.reduce((length, text) => length + text.length, 0) > MAX_EXTRACTED_TEXT_CHARS) {
       throw new Error('PDF text extraction exceeded the safe size limit (4 MB of text).')
     }
   }
 
-  fullText = postProcess(fullText)
+  fullText = pageTexts.join('\n\n').trim()
 
   if (totalGlyphCount === 0) {
     throw new Error(
@@ -92,7 +94,13 @@ export async function extractManuscriptFromPdf(
     )
   }
 
-  return { text: fullText, pageCount, warnings }
+  let offset = 0
+  const pageBoundaries = pageTexts.map((text, index) => {
+    const boundary = { page: index + 1, start: offset, end: offset + text.length }
+    offset = boundary.end + 2
+    return boundary
+  })
+  return { text: fullText, pageCount, pageBoundaries, warnings }
 }
 
 /**

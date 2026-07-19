@@ -1,10 +1,16 @@
 # Features & Tweaks — Nassila app
 
-**Status:** 2026-07-13. Companion to NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) and the [website docs](https://nassila-web.vercel.app/en/docs/sanad-setup) (now canonical). Scope is the **desktop app** ([Nassila](https://github.com/jamalesam93/Nassila)). Items are grouped by priority and each has an effort, a blast radius, and acceptance checks so they can be picked off independently.
+**Status:** 2026-07-18. Companion to NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) and the [website docs](https://nassila-web.vercel.app/en/docs/sanad-setup) (now canonical). Scope is the **desktop app** ([Nassila](https://github.com/jamalesam93/Nassila)). Items are grouped by priority and each has an effort, a blast radius, and acceptance checks so they can be picked off independently.
 
-> **Version streams:** App semver (**Nassila 1.1.x**) and Sanad checkpoint **SNN** (**S12** / **S14**) are independent — see NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) § App release train.
+> **Version streams:** App releases (**Nassila 1.2.x**) and Sanad checkpoint **SNN** (**S12** / **S14**) are independent — see NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) § App release train.
 
 > **Red line reminder (from the website docs spec):** no training methodology, corpus, QLoRA, eval scorecards, or NassilaT internals surface in the app. All copy must stay user-facing.
+
+> **Locked authority sequence:** **Phase 0 Trust reset** (before 1.2.2) → **1.2.2 Throughput** → **1.2.3 Quote chip** → **1.2.4 Raqim Repair** → **1.2.5 Masdar attach** → **1.2.6 Raqim Resolve** → **1.2.7 Projects + Help + onboarding** → **1.2.8 OCR O2 + a11y** → **1.2.9 Preflight + quality ledger** → **1.3.0 Sharh-lite**. In parallel, NassilaT curates field notes / Tier 3 data; **S15 is parked**.
+
+### Phase 0-A — Trust reset (before 1.2.2)
+
+Stabilize the production trust boundary before throughput work: move manuscript registry/network ownership out of the renderer, align the production prompt with evaluation, prevent false L3 passes and synthetic-span grounding, report mapping ambiguity/coverage, settle first-use OCR language-pack behavior, and add packaged Windows audit smoke plus basic CI. Exit gates are defined in [`Nassila-Ouroboros-Future.md`](./Nassila-Ouroboros-Future.md) §5.
 
 ---
 
@@ -67,13 +73,13 @@ renderer/hooks/use-task-notifier.ts ← new: subscribes to long-task stores, fir
 **Effort:** medium. ~4 new files + ~6 call-site additions + 1 settings toggle. Blast radius: low (additive only; nothing existing is removed).
 
 **Acceptance.**
-- [ ] Run a manuscript audit, blur/minimize the window → OS notification fires on completion; stays in-app when focused.
-- [ ] Verify, autocorrect, DOI find, export each show a completion toast.
-- [ ] Error path (offline verify, failed export, audit error) shows a warn/error toast.
-- [ ] "Notify when tasks finish" toggle in Settings disables OS notifications; in-app toasts still work.
-- [ ] EN + AR toasts render RTL-correct; `prefers-reduced-motion` disables slide.
-- [ ] No manuscript/reference text appears in OS notification bodies (only counts).
-- [ ] Unit test: `notify-store` queue/dismiss/auto-dismiss; `use-task-notifier` fires on `step` transition.
+- [x] Run a manuscript audit, blur/minimize the window → OS notification fires on completion; stays in-app when focused.
+- [x] Verify, autocorrect, DOI find, export each show a completion toast.
+- [x] Error path (offline verify, failed export, audit error) shows a warn/error toast.
+- [x] "Notify when tasks finish" toggle in Settings disables OS notifications; in-app toasts still work.
+- [x] EN + AR toasts render RTL-correct; `prefers-reduced-motion` disables slide.
+- [x] No manuscript/reference text appears in OS notification bodies (only counts).
+- [x] Unit test: `notify-store` queue/dismiss/auto-dismiss; `use-task-notifier` fires on `step` transition.
 
 ---
 
@@ -102,12 +108,12 @@ Specifically in `SanadSetupModal.tsx`:
 **Effort:** small. ~1 file rewrite + i18n key additions. Blast radius: contained to one modal.
 
 **Acceptance.**
-- [ ] Modal shows intro + HF links + "Full setup guide" + existing actions; no runner walkthrough.
-- [ ] Guide link is locale-aware (`/en/` vs `/ar/`).
-- [ ] Opens in system browser (existing `setWindowOpenHandler` path); works in packaged build (production CSP).
-- [ ] AR layout is RTL-correct; existing `dir` attribute handling unchanged.
-- [ ] "Open Settings" still routes to the Local Models tab.
-- [ ] No duplicated content between modal and `/docs/sanad-setup`.
+- [x] Modal shows intro + HF links + "Full setup guide" + existing actions; no runner walkthrough.
+- [x] Guide link is locale-aware (`/en/` vs `/ar/`).
+- [x] Opens in system browser (existing `setWindowOpenHandler` path); works in packaged build (production CSP).
+- [x] AR layout is RTL-correct; existing `dir` attribute handling unchanged.
+- [x] "Open Settings" still routes to the Local Models tab.
+- [x] No duplicated content between modal and `/docs/sanad-setup`.
 
 ---
 
@@ -170,7 +176,7 @@ These were identified in the cross-repo review and confirmed by the 2026-06-28 s
 
 ### 5. Per-reference source PDF attach
 
-**Ship:** **1.2.4 Masdar attach**. The website itself documents this as a planned Masdar feature. Minimal version: on a selected `CitationFinding`, "Attach source PDF" → file picker → pdf.js extract → re-ground just that reference. Closes "Sanad without manual copy-paste" for the common case where the user has the PDF locally. Needs `runAudit` to accept an optional single-`bibKey` filter (small refactor). **Acceptance:** attach a local PDF → that finding's L3 updates from abstract-only/skipped to full-text grounded.
+**Ship:** **1.2.5 Masdar attach**, after Raqim Repair. The website itself documents this as a planned Masdar feature. Minimal version: on a selected `CitationFinding`, "Attach source PDF" → file picker → pdf.js extract → re-ground just that reference. Closes "Sanad without manual copy-paste" for the common case where the user has the PDF locally. Needs `runAudit` to accept an optional single-`bibKey` filter (small refactor). **Acceptance:** attach a local PDF → that finding's L3 updates from abstract-only/skipped to full-text grounded.
 
 ### 6. Per-claim quote-verification chip
 
@@ -189,7 +195,7 @@ These were identified in the cross-repo review and confirmed by the 2026-06-28 s
 - **Jump to Bibliography** per finding → scroll to `manuscript-ref:{bibKey}` row.
 - **Re-audit this reference** — deferred with #5 (needs single-`bibKey` audit).
 
-**Acceptance:** shortcuts documented in website `shortcuts.mdx` and `HOW_TO_GUIDE.md`; each action has a toast (#1).
+**Acceptance:** [x] Shortcuts are documented in website `shortcuts.mdx` and `HOW_TO_GUIDE.md`; shipped actions have toast feedback (#1). Re-audit remains scoped to #5.
 
 ### 13. Icon system (Lucide via react-icons)
 
@@ -206,10 +212,10 @@ These were identified in the cross-repo review and confirmed by the 2026-06-28 s
 **Effort:** small (I0/I1) + medium (I2). Blast radius: low if Lucide-only discipline holds.
 
 **Acceptance.**
-- [ ] Only `react-icons/lu` imports in renderer (lint or review gate).
-- [ ] Issue severity icons consistent size/color in EN + AR RTL layouts.
-- [ ] Icon-only controls have `aria-label` + existing `Tooltip` where applicable.
-- [ ] No new items from DESIGN.md **Absolute bans** (icon tiles, hero grids).
+- [x] Only `react-icons/lu` imports in renderer (lint or review gate).
+- [x] Issue severity icons consistent size/color in EN + AR RTL layouts.
+- [x] Icon-only controls have `aria-label` + existing `Tooltip` where applicable.
+- [x] No new items from DESIGN.md **Absolute bans** (icon tiles, hero grids).
 
 ---
 
@@ -230,7 +236,7 @@ These were identified in the cross-repo review and confirmed by the 2026-06-28 s
 | **Genre-aware APA** | preprints / chapters / reports do not get `apa-volume-required` meant for journal articles |
 | **Kaggle datasets** *(stretch)* | dataset refs with Kaggle publisher → URL lookup when no DOI |
 
-**Ship:** **1.2.5** · **Effort:** medium · **Blast radius:** `src/engine/manuscript/verify.ts`, `autocorrect/enhance.ts`, `parser/plain-text.ts`, `resolver/*`, `validator/rules/`
+**Ship:** **1.2.4**, before Masdar attach · **Effort:** medium · **Blast radius:** `src/engine/manuscript/verify.ts`, `autocorrect/enhance.ts`, `parser/plain-text.ts`, `resolver/*`, `validator/rules/`
 
 **Regression fixtures:** operator manuscript cases documented in NassilaT `OUROBOROS_OPERATOR_MAP.md` § Raqim track.
 
@@ -304,17 +310,17 @@ Do not pull these into a tweak batch:
 
 ## Implementation order
 
-1. **P0 #1 (notifications)** and **P0 #2 (modal shortening)** — **shipped 1.1.3**.
-2. **P1 #3 + #4** ("Masdar-lite + responsive audit") — **shipped 1.2.0**. **#4b** refined loop panel UX in **1.2.1**.
-3. **P1 #4b + #4c + #8 + #13 (I2)** — **shipped 1.2.1 Masdar UX**.
-4. **Icon I0/I1** — **1.2.0**; **I2** — **1.2.1**.
-5. **P1 #7** → **1.2.2 Throughput** (concurrency only).
-6. **P1 #6 + #15** → **1.2.3 Quote chip**.
-7. **P1 #5** → **1.2.4 Masdar attach** (incl. re-audit this reference).
-8. **P1 #14 (R1)** → **1.2.5 Raqim Repair**.
-9. **P1 #14b (R2–R3)** → **1.2.6 Raqim Resolve**.
-10. **1.2.7–1.2.9** — TBD.
-11. **P1 #9–11** → **1.3.0 Sharh-lite**.
-12. **∥ Parallel:** **Maktab OCR O2** (any 1.2.x); **S15+** on NassilaT when Tier 3 corpus exists. Opportunistic P2 (#12 site metrics, etc.).
+1. **Shipped:** #1–#2 in **1.1.3**; #3–#4 + icon I0/I1 in **1.2.0**; #4b–#4c + #8 + #13 I2 in **1.2.1**.
+2. **Phase 0 Trust reset** — stabilization and exit gates before any 1.2.2 implementation.
+3. **P1 #7** → **1.2.2 Throughput**.
+4. **P1 #6 + #15** → **1.2.3 Quote chip**.
+5. **P1 #14 (R1)** → **1.2.4 Raqim Repair**.
+6. **P1 #5** → **1.2.5 Masdar attach** (including single-reference re-audit).
+7. **P1 #14b (R2–R3)** → **1.2.6 Raqim Resolve**.
+8. **1.2.7 Projects + Help + onboarding** — local save/open/recovery, website Help links, first-run bibliography path.
+9. **1.2.8 OCR O2 + a11y** — offline/bundled language packs, golden fixtures, OCR controls/provenance/cache, loop-table keyboard navigation.
+10. **1.2.9 Preflight + quality ledger** — unresolved-identity gate, mapping coverage, accessibility pass, local diagnostic/quality-ledger export.
+11. **P1 #9–11 remainder** → **1.3.0 Sharh-lite**.
+12. **∥ NassilaT:** field-note curation / Tier 3 data only; **S15 parked**.
 
 **Red-line check before each merge:** no training/corpus/eval content surfaces in app UI or copy (see top of file).

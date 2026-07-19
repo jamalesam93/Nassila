@@ -8,15 +8,29 @@ files:
   - package.json
   - build/icon.png
   - build/icon.ico
+extraResources:
+  - from: resources/tesseract
+    to: tesseract
+    filter:
+      - '*.traineddata'
+      - checksums.sha256
+      - README.md
+  # Real filesystem paths — nativeImage often cannot load .ico from inside asar.
+  - from: build/icon.ico
+    to: app-icon.ico
+  - from: build/icon.png
+    to: app-icon.png
 win:
   target:
     - target: nsis
       arch:
         - x64
-  icon: build/icon.png
+  icon: build/icon.ico
   artifactName: ${productName} Setup ${version}.${ext}
+  # Builder pairs rcedit with signing. We stamp via scripts/stamp-win-exe-icon.mjs
+  # AFTER --dir and BEFORE --prepackaged nsis/portable (see package.json build:win).
+  # Stamping only after a one-shot --win nsis leaves the installer with Electron branding.
   signAndEditExecutable: false
-afterPack: scripts/win-after-pack.mjs
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
@@ -26,6 +40,9 @@ nsis:
   createStartMenuShortcut: true
   shortcutName: Nassila
   uninstallDisplayName: Nassila
+  installerIcon: build/icon.ico
+  uninstallerIcon: build/icon.ico
+  installerHeaderIcon: build/icon.ico
 mac:
   target:
     - dmg

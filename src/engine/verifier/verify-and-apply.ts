@@ -14,16 +14,16 @@ export function isUnusualIssuedYear(
   return year != null && (year < 1450 || year > referenceCalendarYear + 2)
 }
 
-/** DOI/PMID entries with unusual `issued` year first, then the rest (stable within each group). */
+/** DOI/PMID/PMCID entries with unusual `issued` year first, then the rest (stable within each group). */
 export function prioritizeVerifiableCitations(items: CslItem[], referenceCalendarYear = new Date().getFullYear()): CslItem[] {
-  const withIdentifier = items.filter((item) => item.DOI || item.PMID)
+  const withIdentifier = items.filter((item) => item.DOI || item.PMID || item.PMCID)
   const unusual = withIdentifier.filter((i) => isUnusualIssuedYear(i, referenceCalendarYear))
   const unusualIds = new Set(unusual.map((i) => i.id))
   const usual = withIdentifier.filter((i) => !unusualIds.has(i.id))
   return [...unusual, ...usual]
 }
 
-/** DOI/PMID prioritized first, then other rows, capped — one pass for L1/L2 without duplicate fetches. */
+/** DOI/PMID/PMCID prioritized first, then other rows, capped — one pass for L1/L2 without duplicate fetches. */
 export function prioritizeForUnifiedRegistryCheck(
   items: CslItem[],
   maxItems: number,

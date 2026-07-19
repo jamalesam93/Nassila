@@ -13,6 +13,14 @@ import { useManuscriptAuditStore } from '../stores/manuscript-audit-store'
 import { useShellStore } from '../stores/shell-store'
 import { useThemeStore } from '../stores/theme-store'
 import { manuscriptAuditExportTimestamp } from '../utils/export-timestamp'
+import {
+  applyNassilaProject,
+  clearFullSession,
+  parseNassilaProject,
+  serializeNassilaProject,
+  sessionIsDirty,
+  snapshotNassilaProject
+} from '../utils/nassila-project-io'
 
 type ThemeMode = 'light' | 'dark' | 'system'
 
@@ -78,7 +86,10 @@ export function useAppCommands() {
           const buf = await window.api?.readFileBinary(first)
           if (buf) {
             const { extractFromPdf } = await import('../../engine/maktab/extract')
-            const extraction = await extractFromPdf(buf, { mode: 'auto' })
+            const enhancedOcr = useManuscriptAuditStore.getState().enhancedOcr
+            const extraction = await extractFromPdf(buf, {
+              mode: enhancedOcr ? 'ocr_preferred' : 'auto'
+            })
             text = extraction.text
             sourceFormat = 'pdf'
             if (extraction.warnings.length > 0) {
@@ -263,8 +274,46 @@ export function useAppCommands() {
 
     switch (command) {
       case APP_MENU_COMMANDS.NEW_SESSION:
-        store.clearCitations()
+        if (sessionIsDirty()) {
+          const ok = window.confirm(t('project.newSessionConfirm'))
+          if (!ok) return
+        }
+        clearFullSession()
         return
+      case APP_MENU_COMMANDS.OPEN_PROJECT: {
+        if (sessionIsDirty()) {
+          const ok = window.confirm(t('project.openConfirmDirty'))
+          if (!ok) return
+        }
+        const paths = await window.api?.openFileDialog({
+          filters: [{ name: 'Nassila project', extensions: ['nassila', 'json'] }],
+          multiSelections: false
+        })
+        if (!paths?.[0] || !window.api) return
+        try {
+          const raw = await window.api.readFile(paths[0])
+          applyNassilaProject(parseNassilaProject(raw))
+          pushToast(t('project.opened'))
+        } catch (err) {
+          pushToast(err instanceof Error ? err.message : t('project.openFailed'))
+        }
+        return
+      }
+      case APP_MENU_COMMANDS.SAVE_PROJECT: {
+        if (!window.api) return
+        const path = await window.api.saveFileDialog({
+          defaultPath: 'manuscript.nassila',
+          filters: [{ name: 'Nassila project', extensions: ['nassila'] }]
+        })
+        if (!path) return
+        try {
+          await window.api.writeFile(path, serializeNassilaProject(snapshotNassilaProject()))
+          pushToast(t('project.saved'))
+        } catch (err) {
+          pushToast(err instanceof Error ? err.message : t('project.saveFailed'))
+        }
+        return
+      }
       case APP_MENU_COMMANDS.IMPORT_REFERENCES:
         await importReferences()
         return
@@ -282,6 +331,10 @@ export function useAppCommands() {
         return
       case APP_MENU_COMMANDS.CLEAR_CITATIONS:
         store.clearCitations()
+        return
+      case APP_MENU_COMMANDS.OPEN_DOCS:
+      case APP_MENU_COMMANDS.REPORT_ISSUE:
+        // Handled in main menu via shell.openExternal
         return
       case APP_MENU_COMMANDS.RUN_AUTOCORRECT:
         await runAutocorrectWithNotify(true)
@@ -336,6 +389,7 @@ export function useAppCommands() {
     setAboutModalOpen,
     setSettingsModalOpen,
     setThemeMode,
+    t,
     verifyReferences
   ])
 

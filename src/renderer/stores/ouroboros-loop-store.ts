@@ -1,26 +1,27 @@
 import { create } from 'zustand'
+import type { SourceArtifact } from '../../shared/source-artifact'
 
 interface OuroborosLoopState {
   selectedBibKey: string | null
-  /** User-attached source PDF paths per bibliography key (Masdar Tier 3; not yet used in audit). */
-  attachedPdfByBibKey: Record<string, string>
+  /** Content-addressed local source PDFs and extraction provenance per bibliography key. */
+  sourceArtifactsByBibKey: Record<string, SourceArtifact>
   setSelectedBibKey: (bibKey: string | null) => void
-  attachSourcePdf: (bibKey: string, filePath: string) => void
+  attachSourcePdf: (bibKey: string, artifact: SourceArtifact) => void
   clearAttachedSourcePdf: (bibKey: string) => void
 }
 
 export const useOuroborosLoopStore = create<OuroborosLoopState>((set) => ({
   selectedBibKey: null,
-  attachedPdfByBibKey: {},
+  sourceArtifactsByBibKey: {},
   setSelectedBibKey: (selectedBibKey) => set({ selectedBibKey }),
-  attachSourcePdf: (bibKey, filePath) =>
+  attachSourcePdf: (bibKey, artifact) =>
     set((s) => ({
-      attachedPdfByBibKey: { ...s.attachedPdfByBibKey, [bibKey]: filePath }
+      sourceArtifactsByBibKey: { ...s.sourceArtifactsByBibKey, [bibKey]: artifact }
     })),
   clearAttachedSourcePdf: (bibKey) =>
     set((s) => {
-      const next = { ...s.attachedPdfByBibKey }
+      const next = { ...s.sourceArtifactsByBibKey }
       delete next[bibKey]
-      return { attachedPdfByBibKey: next }
+      return { sourceArtifactsByBibKey: next }
     })
 }))

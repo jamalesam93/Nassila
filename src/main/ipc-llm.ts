@@ -44,6 +44,75 @@ async function getLlmKey(): Promise<string> {
   return safeStorage.decryptString(encrypted)
 }
 
+async function getOrCreateAuditLlmKey(baseUrl: string): Promise<string> {
+  try {
+    return await getLlmKey()
+  } catch (error) {
+    let local = false
+    try {
+      const url = new URL(baseUrl.trim().startsWith('http') ? baseUrl.trim() : `http://${baseUrl.trim()}`)
+      local = url.hostname === 'localhost' || url.hostname === '127.0.0.1'
+    } catch {
+      local = false
+    }
+    if (!local) throw error
+    requireEncryption()
+    const encrypted = safeStorage.encryptString('local')
+    const secrets = await readSecrets()
+    secrets.llmKeyBase64 = Buffer.from(encrypted).toString('base64')
+    await writeSecrets(secrets)
+    return 'local'
+  }
+}
+
+export function isLlmEncryptionAvailable(): boolean {
+  return safeStorage.isEncryptionAvailable()
+}
+
+export async function executeLlmChat(
+  config: LlmConfig,
+  messages: ChatMessage[],
+  signal?: AbortSignal
+): Promise<string> {
+  if (!config || typeof config !== 'object') throw new Error('Invalid LLM config')
+  if (typeof config.baseUrl !== 'string' || typeof config.model !== 'string') throw new Error('Invalid LLM config')
+  if (!Array.isArray(messages) || messages.length === 0) throw new Error('Invalid messages')
+
+  const apiKey = await getOrCreateAuditLlmKey(config.baseUrl)
+  let url: string
+  try {
+    url = buildLlmChatCompletionsUrl(config.baseUrl)
+  } catch (error) {
+    throw new Error(error instanceof Error ? error.message : 'llm_url_not_allowed')
+  }
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model: config.model,
+      messages,
+      temperature: 0.2
+    }),
+    signal
+  })
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '')
+    throw new Error(`LLM request failed: ${response.status} ${text}`.slice(0, 500))
+  }
+
+  const data = await response.json() as {
+    choices?: { message?: { content?: string } }[]
+  }
+  const content = data.choices?.[0]?.message?.content
+  if (!content) throw new Error('LLM returned no content')
+  return content
+}
+
 export function registerLlmIpcHandlers(): void {
   ipcMain.handle('secrets:isEncryptionAvailable', () => safeStorage.isEncryptionAvailable())
 
@@ -76,43 +145,7 @@ export function registerLlmIpcHandlers(): void {
   })
 
   ipcMain.handle('llm:chat', async (_event, config: LlmConfig, messages: ChatMessage[]) => {
-    const apiKey = await getLlmKey()
-
-    if (!config || typeof config !== 'object') throw new Error('Invalid LLM config')
-    if (typeof config.baseUrl !== 'string' || typeof config.model !== 'string') throw new Error('Invalid LLM config')
-    if (!Array.isArray(messages) || messages.length === 0) throw new Error('Invalid messages')
-
-    let url: string
-    try {
-      url = buildLlmChatCompletionsUrl(config.baseUrl)
-    } catch (e) {
-      throw new Error(e instanceof Error ? e.message : 'llm_url_not_allowed')
-    }
-
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        'authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: config.model,
-        messages,
-        temperature: 0.2
-      })
-    })
-
-    if (!response.ok) {
-      const text = await response.text().catch(() => '')
-      throw new Error(`LLM request failed: ${response.status} ${text}`.slice(0, 500))
-    }
-
-    const data = await response.json() as {
-      choices?: { message?: { content?: string } }[]
-    }
-    const content = data.choices?.[0]?.message?.content
-    if (!content) throw new Error('LLM returned no content')
-    return content
+    return executeLlmChat(config, messages)
   })
 }
 

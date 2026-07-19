@@ -6,10 +6,13 @@ import {
   buildGroundingUserPrompt,
   buildGroundingLlmMessages,
   findInvalidSourceQuotes,
+  GROUNDING_PROMPT_CONTRACT_VERSION,
   isVerbatimQuoteSubstring,
   parseGroundingJson,
   passageVerdictFromGroundingClaims,
-  rollupPassageFromSites
+  passageVerdictWithoutParsedGrounding,
+  rollupPassageFromSites,
+  withQuoteValidationState
 } from '../../src/engine/manuscript/grounding-llm'
 
 describe('parseGroundingJson', () => {
@@ -81,6 +84,27 @@ describe('passageVerdictFromGroundingClaims', () => {
   })
 })
 
+describe('passageVerdictWithoutParsedGrounding', () => {
+  it('marks LLM-off grounding as not run instead of passing', () => {
+    expect(passageVerdictWithoutParsedGrounding({ kind: 'disabled' })).toEqual({
+      status: 'skipped',
+      reason: 'llm_disabled'
+    })
+  })
+
+  it('warns on parse failure instead of using lexical overlap as a pass', () => {
+    const verdict = passageVerdictWithoutParsedGrounding({
+      kind: 'parse_fail',
+      hint: 'Invalid JSON from model'
+    })
+
+    expect(verdict.status).toBe('warn')
+    if (verdict.status === 'warn') {
+      expect(verdict.reasons).toContain('Invalid JSON from model')
+    }
+  })
+})
+
 describe('findInvalidSourceQuotes', () => {
   it('returns empty when all quotes valid', () => {
     const excerpt = 'Protocol compliance was high across all study sites.'
@@ -89,6 +113,48 @@ describe('findInvalidSourceQuotes', () => {
       excerpt
     )
     expect(issues).toHaveLength(0)
+  })
+})
+
+describe('withQuoteValidationState', () => {
+  const excerpt = 'Protocol compliance was high across all study sites.'
+
+  it('records found and not-found state per claim without changing Sanad verdicts', () => {
+    const claims = withQuoteValidationState(
+      [
+        {
+          claim: 'Compliance was high',
+          verdict: 'supported',
+          sourceQuotes: ['Protocol compliance was high']
+        },
+        {
+          claim: 'Compliance was perfect',
+          verdict: 'supported',
+          sourceQuotes: ['Compliance was perfect']
+        }
+      ],
+      excerpt
+    )
+
+    expect(claims.map((claim) => claim.verdict)).toEqual(['supported', 'supported'])
+    expect(claims[0].quoteValidation).toEqual({
+      status: 'found',
+      checkedQuotes: 1,
+      matchedQuotes: 1
+    })
+    expect(claims[1].quoteValidation).toEqual({
+      status: 'not_found',
+      checkedQuotes: 1,
+      matchedQuotes: 0
+    })
+  })
+
+  it('marks a supported claim without a quote as not found', () => {
+    const [claim] = withQuoteValidationState(
+      [{ claim: 'Compliance was high', verdict: 'supported' }],
+      excerpt
+    )
+    expect(claim.quoteValidation?.status).toBe('not_found')
   })
 })
 
@@ -140,6 +206,7 @@ describe('buildGroundingLlmMessages', () => {
   const userGolden = readFileSync(userGoldenPath, 'utf8').replace(/\r\n/g, '\n').trimEnd()
 
   it('matches canonical system + user golden prompts', () => {
+    expect(GROUNDING_PROMPT_CONTRACT_VERSION).toBe('sanad-grounding-v1')
     expect(buildGroundingSystemPrompt()).toBe(systemGolden)
     expect(buildGroundingUserPrompt(fixture.passage, fixture.sourceExcerpt, fixture.meta)).toBe(userGolden)
   })

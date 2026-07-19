@@ -1,0 +1,157 @@
+{
+  "version": "1.2.4",
+  "cases": [
+    {
+      "id": "oup-jamia-article-abstract",
+      "track": "R1",
+      "input": {
+        "type": "article-journal",
+        "title": "A scoping review of open-source software in health informatics",
+        "URL": "https://academic.oup.com/jamia/article-abstract/31/7/ocae123/7654321"
+      },
+      "mock": {
+        "doi": "10.1093/jamia/ocae123"
+      },
+      "expected": {
+        "type": "article-journal",
+        "DOI": "10.1093/jamia/ocae123"
+      }
+    },
+    {
+      "id": "pmcid-l1-pmc12919426",
+      "track": "R1",
+      "input": {
+        "type": "article-journal",
+        "title": "PMC-only operator reference",
+        "URL": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12919426/",
+        "PMCID": "PMC12919426"
+      },
+      "mock": {
+        "pmid": "41680725",
+        "canonicalTitle": "Canonical PubMed title for PMC12919426"
+      },
+      "expected": {
+        "registrySource": "pubmed",
+        "l1": "pass"
+      }
+    },
+    {
+      "id": "arxiv-2507-19530",
+      "track": "R1",
+      "input": {
+        "type": "article",
+        "title": "Operator arXiv preprint",
+        "URL": "https://arxiv.org/abs/2507.19530v2"
+      },
+      "mock": {
+        "doi": "10.48550/arXiv.2507.19530",
+        "resourceTypeGeneral": "Preprint",
+        "version": "v2"
+      },
+      "expected": {
+        "type": "article",
+        "DOI": "10.48550/arXiv.2507.19530",
+        "version": "v2",
+        "genre": "Preprint"
+      }
+    },
+    {
+      "id": "delong-pmid-3203132",
+      "track": "R1",
+      "input": {
+        "type": "article-journal",
+        "raw": "DeLong, E. R., DeLong, D. M., Clarke-Pearson, D. L., et al. Comparing the areas under two or more correlated receiver operating characteristic curves: a nonparametric approach. Biometrics. 1988;44(3):837-845. PMID: 3203132."
+      },
+      "mock": {
+        "pmid": "3203132",
+        "canonicalTitle": "Comparing the areas under two or more correlated receiver operating characteristic curves: a nonparametric approach",
+        "canonicalAuthors": [
+          { "family": "DeLong", "given": "E R" },
+          { "family": "DeLong", "given": "D M" },
+          { "family": "Clarke-Pearson", "given": "D L" }
+        ]
+      },
+      "expected": {
+        "titleNot": "R., et al",
+        "firstAuthorFamily": "DeLong",
+        "PMID": "3203132"
+      }
+    },
+    {
+      "id": "qlora-neurips-baseline",
+      "track": "baseline",
+      "input": {
+        "type": "paper-conference",
+        "title": "QLoRA: Efficient Finetuning of Quantized LLMs",
+        "DOI": "10.48550/arXiv.2305.14314"
+      },
+      "expected": {
+        "identityChange": false
+      }
+    },
+    {
+      "id": "gemma-report-no-registry-hit",
+      "track": "R2",
+      "input": {
+        "type": "report",
+        "title": "Gemma technical report",
+        "publisher": "Google DeepMind"
+      },
+      "expected": {
+        "automaticIdentityChange": false
+      }
+    },
+    {
+      "id": "dwork-lncs-chapter",
+      "track": "R1",
+      "input": {
+        "type": "article-journal",
+        "title": "Calibrating Noise to Sensitivity in Private Data Analysis",
+        "URL": "https://link.springer.com/chapter/10.1007/11681878_14",
+        "DOI": "10.1007/11681878_14"
+      },
+      "mock": {
+        "crossrefType": "book-chapter",
+        "containerTitle": "Theory of Cryptography",
+        "volume": "3876"
+      },
+      "expected": {
+        "type": "chapter",
+        "volume": "3876"
+      }
+    },
+    {
+      "id": "kaggle-dataset-manual",
+      "track": "R3",
+      "input": {
+        "type": "dataset",
+        "title": "Hospital Admissions Data",
+        "publisher": "Kaggle",
+        "URL": "https://www.kaggle.com/datasets/example/hospital-admissions"
+      },
+      "expected": {
+        "automaticIdentityChange": false
+      }
+    },
+    {
+      "id": "nature-npj-wrong-title",
+      "track": "R2",
+      "input": {
+        "type": "article-journal",
+        "title": "User-supplied npj article title",
+        "DOI": "10.1038/s41598-024-00001-1",
+        "URL": "https://www.nature.com/articles/s41598-024-00001-1"
+      },
+      "mock": {
+        "canonicalTitle": "Different registry title",
+        "canonicalAuthors": [
+          { "family": "Different", "given": "A" }
+        ]
+      },
+      "expected": {
+        "automaticIdentityChange": false,
+        "manualResolutionRequired": true
+      }
+    }
+  ]
+}

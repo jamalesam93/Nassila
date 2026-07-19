@@ -7,15 +7,22 @@ import type { Plugin } from 'vite'
 function copyAppIcons(): Plugin {
   return {
     name: 'copy-app-icons',
+    buildStart() {
+      copyIcons()
+    },
     closeBundle() {
-      const root = resolve(__dirname)
-      const dest = join(root, 'out/main/assets')
-      mkdirSync(dest, { recursive: true })
-      for (const name of ['icon.png', 'icon.ico']) {
-        const src = join(root, 'build', name)
-        if (existsSync(src)) cpSync(src, join(dest, name))
-      }
+      copyIcons()
     }
+  }
+}
+
+function copyIcons(): void {
+  const root = resolve(__dirname)
+  const dest = join(root, 'out/main/assets')
+  mkdirSync(dest, { recursive: true })
+  for (const name of ['icon.png', 'icon.ico']) {
+    const src = join(root, 'build', name)
+    if (existsSync(src)) cpSync(src, join(dest, name))
   }
 }
 

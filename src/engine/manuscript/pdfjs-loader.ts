@@ -15,16 +15,18 @@ export async function loadPdfJs(): Promise<typeof import('pdfjs-dist')> {
 }
 
 export async function configurePdfJsWorker(pdfjsLib: typeof import('pdfjs-dist')): Promise<void> {
-  if (pdfjsLib.GlobalWorkerOptions.workerSrc) return
-
   if (isNodePdfJsRuntime()) {
+    // Always overwrite: electron-vite may pre-set a chunk-relative workerSrc
+    // (e.g. …/out/main/chunks/pdf.worker.mjs) that does not exist on disk.
     const { pathToFileURL } = await import('node:url')
     const { createRequire } = await import('node:module')
     const require = createRequire(import.meta.url)
     const workerPath = require.resolve('pdfjs-dist/legacy/build/pdf.worker.min.mjs')
     pdfjsLib.GlobalWorkerOptions.workerSrc = pathToFileURL(workerPath).href
-  } else {
-    const { configurePdfJsWorkerBrowser } = await import('./pdfjs-loader.browser')
-    configurePdfJsWorkerBrowser(pdfjsLib)
+    return
   }
+
+  if (pdfjsLib.GlobalWorkerOptions.workerSrc) return
+  const { configurePdfJsWorkerBrowser } = await import('./pdfjs-loader.browser')
+  configurePdfJsWorkerBrowser(pdfjsLib)
 }

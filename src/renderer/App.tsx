@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import AppHeader from './components/shell/AppHeader'
+import FirstRunBibliographyBanner from './components/shell/FirstRunBibliographyBanner'
 import StatusBar from './components/StatusBar'
 import WorkerShell from './components/workers/WorkerShell'
 import ConfirmDialog from './components/ui/confirm-dialog'
@@ -76,6 +77,7 @@ export default function App() {
   return (
     <div className="flex h-screen flex-col overflow-hidden">
       <AppHeader />
+      <FirstRunBibliographyBanner />
       <AboutModal />
       <SanadSetupModal />
       <SettingsModal />

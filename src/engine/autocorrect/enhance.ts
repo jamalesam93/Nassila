@@ -150,7 +150,22 @@ async function enhanceByType(item: CslItem): Promise<{ item: CslItem; log: Corre
       : await resolveDoiWithPreprintFallback(item.DOI)
 
     if (resolved) {
-      merged = mergeFields(merged, resolved, log)
+      if (!registryIdentityCompatible(item, resolved)) {
+        return { item, log: [] }
+      }
+      const replaceMetadata = metadataLooksImplausible(merged)
+      merged = mergeFields(merged, resolved, log, { replaceImplausibleAuthors: replaceMetadata })
+      if (replaceMetadata && resolved.title && merged.title !== resolved.title) {
+        const oldTitle = merged.title
+        merged.title = resolved.title
+        log.push({
+          citationId: item.id,
+          field: 'title',
+          oldValue: oldTitle,
+          newValue: resolved.title,
+          rule: 'registry-identity-repair'
+        })
+      }
       if (!isDataCiteDoi(item.DOI) && /^10\.1101\//i.test(item.DOI ?? '') && resolved.DOI) {
         const kIn = canonicalize1101PreprintDoi(item.DOI).toLowerCase()
         const kResolved = canonicalize1101PreprintDoi(resolved.DOI).toLowerCase()
@@ -179,6 +194,15 @@ async function enhanceByType(item: CslItem): Promise<{ item: CslItem; log: Corre
           newValue: resolved.type,
           rule: 'reclassify-from-doi'
         })
+      } else if (resolved.type === 'chapter' && item.type !== 'chapter') {
+        merged = { ...merged, type: 'chapter' }
+        log.push({
+          citationId: item.id,
+          field: 'type',
+          oldValue: item.type,
+          newValue: 'chapter',
+          rule: 'reclassify-book-chapter'
+        })
       }
       return { item: merged, log }
     }
@@ -192,7 +216,10 @@ async function enhanceByType(item: CslItem): Promise<{ item: CslItem; log: Corre
   if (pmid) {
     const resolved = await resolvePmid(pmid)
     if (resolved) {
-      const replaceMetadata = authorsLookImplausible(merged.author, merged.title)
+      if (!registryIdentityCompatible(item, resolved)) {
+        return { item, log: [] }
+      }
+      const replaceMetadata = metadataLooksImplausible(merged)
       merged = mergeFields(merged, resolved, log, { replaceImplausibleAuthors: replaceMetadata })
       if (replaceMetadata && resolved.title) {
         const oldTitle = merged.title
@@ -235,7 +262,10 @@ async function enhanceByType(item: CslItem): Promise<{ item: CslItem; log: Corre
     if (oupDoi) {
       const oupResolved = await resolveDoi(oupDoi)
       if (oupResolved) {
-        const replaceMetadata = authorsLookImplausible(merged.author, merged.title)
+        if (!registryIdentityCompatible(item, oupResolved)) {
+          return { item, log: [] }
+        }
+        const replaceMetadata = metadataLooksImplausible(merged)
         merged = mergeFields(merged, oupResolved, log, { replaceImplausibleAuthors: replaceMetadata })
         if (!merged.DOI) {
           merged.DOI = oupDoi
@@ -276,7 +306,10 @@ async function enhanceByType(item: CslItem): Promise<{ item: CslItem; log: Corre
     if (meta?.DOI) {
       const resolved = await resolveDoiWithPreprintFallback(meta.DOI)
       if (resolved) {
-        const replaceMetadata = authorsLookImplausible(merged.author, merged.title)
+        if (!registryIdentityCompatible(item, resolved)) {
+          return { item, log: [] }
+        }
+        const replaceMetadata = metadataLooksImplausible(merged)
         merged = mergeFields(merged, resolved, log, { replaceImplausibleAuthors: replaceMetadata })
         if (!merged.DOI) {
           merged.DOI = meta.DOI
@@ -687,6 +720,35 @@ function authorsLookImplausible(authors?: CslName[], title?: string): boolean {
     }
   }
   return false
+}
+
+function titleLooksImplausible(title?: string): boolean {
+  const t = title?.trim()
+  if (!t || isPlaceholderTitle(t)) return true
+  if (t.length < 8) return true
+  if (/^(?:[A-Z]\.?\s*){1,4},?\s*(?:et\s+al\.?)?$/i.test(t)) return true
+  if (/^[A-Z]\.,?\s*et\s+al\.?$/i.test(t)) return true
+  return false
+}
+
+function metadataLooksImplausible(item: CslItem): boolean {
+  return titleLooksImplausible(item.title) || authorsLookImplausible(item.author, item.title)
+}
+
+/**
+ * Registry metadata may fill a row only when it still describes the same work.
+ * Implausible parser output is repairable; plausible conflicting titles stay manual-only.
+ */
+function registryIdentityCompatible(local: CslItem, canonical: CslItem): boolean {
+  if (!local.title?.trim() || !canonical.title?.trim()) return true
+  if (titleLooksImplausible(local.title)) return true
+  if (
+    authorsLookImplausible(local.author, local.title) &&
+    local.title.trim().split(/\s+/).length <= 4
+  ) {
+    return true
+  }
+  return titleSimilarity(local.title.toLowerCase(), canonical.title.toLowerCase()) >= 0.45
 }
 
 function mergeFields(

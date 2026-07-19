@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { LuExternalLink } from 'react-icons/lu'
 import type { CitationFinding, CiteGroundingSite, EvidenceSource, L3Coverage, LayerVerdict } from '../../../engine/manuscript/types'
@@ -9,6 +10,7 @@ import { scrollToCitationRow } from '../../utils/citation-row-dom'
 import { notifyCopied, pushToast } from '../../lib/notify'
 import { useShellStore } from '../../stores/shell-store'
 import { useCitationStore } from '../../stores/citation-store'
+import { useOuroborosLoopStore } from '../../stores/ouroboros-loop-store'
 import { Button } from '../ui/button'
 import { Icon } from '../ui/icon'
 
@@ -18,6 +20,8 @@ function coverageLabelKey(coverage: L3Coverage): string {
       return 'loop.coverage.fullTextEpmc'
     case 'full_text_oa_unpaywall':
       return 'loop.coverage.fullTextOa'
+    case 'full_text_attached_pdf':
+      return 'loop.pdfAttached'
     case 'abstract_only_closed':
       return 'loop.coverage.abstractOnly'
     default:
@@ -31,6 +35,8 @@ function sourceProviderKey(source: EvidenceSource | undefined): string {
       return 'loop.sourceProvider.europePmc'
     case 'unpaywall':
       return 'loop.sourceProvider.unpaywall'
+    case 'local_pdf':
+      return 'loop.attachPdfTitle'
     case 'abstract':
       return 'loop.sourceProvider.abstract'
     case 'crossref':
@@ -58,6 +64,19 @@ function StatusPill({ verdict, compact }: { verdict: LayerVerdict; compact?: boo
   return (
     <span className={`inline-flex shrink-0 rounded font-medium ${size} ${STATUS_PILL[verdict.status]}`}>
       {t(layerVerdictI18nKey(verdict))}
+    </span>
+  )
+}
+
+function QuoteValidationChip({ status }: { status: 'found' | 'not_found' }) {
+  const { t } = useTranslation()
+  const tone =
+    status === 'found'
+      ? 'bg-sky-100 text-sky-900 dark:bg-sky-950/50 dark:text-sky-100'
+      : 'bg-red-100 text-red-900 dark:bg-red-950/50 dark:text-red-100'
+  return (
+    <span className={`inline-flex shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium ${tone}`}>
+      {t(status === 'found' ? 'loop.quoteFound' : 'loop.quoteNotFound')}
     </span>
   )
 }
@@ -146,6 +165,11 @@ function SiteBlock({ site, index, defaultOpen }: { site: CiteGroundingSite; inde
         <p className="mt-0.5 text-[10px] text-muted-foreground">
           {t('loop.overlapHint', { pct: overlapPct, bucket: site.deterministicBucket })}
         </p>
+        {site.inTextSpan.locator ? (
+          <p className="mt-0.5 text-[10px] text-muted-foreground">
+            {t('loop.locator')}: {site.inTextSpan.locator}
+          </p>
+        ) : null}
       </summary>
 
       <div className="space-y-1 border-t border-border/60 px-1 pb-3 pt-2">
@@ -157,40 +181,48 @@ function SiteBlock({ site, index, defaultOpen }: { site: CiteGroundingSite; inde
         <ExcerptBlock site={site} />
 
         {site.claimGrounding?.length ? (
-          <ul className="mt-3 space-y-2">
-            {site.claimGrounding.map((claim, ci) => (
-              <li key={ci} className="rounded border border-border/80 bg-background p-2.5 text-sm">
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <span className="text-xs font-medium leading-snug">{claim.claim}</span>
-                  <span className="shrink-0 text-xs font-medium text-muted-foreground">
-                    {t(claimVerdictI18nKey(claim.verdict))}
-                  </span>
-                </div>
-                {claim.sourceQuotes?.length ? (
-                  <div className="mt-2">
-                    <p className="text-[10px] font-medium text-muted-foreground">{t('loop.claimQuotes')}</p>
-                    <ul className="mt-1 space-y-1">
-                      {claim.sourceQuotes.map((quote, qi) => (
-                        <li
-                          key={qi}
-                          className="border-s-2 border-primary/40 ps-2 text-xs italic leading-relaxed text-foreground rtl:border-s-0 rtl:border-e-2 rtl:ps-0 rtl:pe-2"
-                        >
-                          {quote}
-                        </li>
+          <>
+            <p className="mt-3 text-[10px] leading-relaxed text-muted-foreground">{t('loop.quoteMatchCaveat')}</p>
+            <ul className="mt-2 space-y-2">
+              {site.claimGrounding.map((claim, ci) => (
+                <li key={ci} className="rounded border border-border/80 bg-background p-2.5 text-sm">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <span className="text-xs font-medium leading-snug">{claim.claim}</span>
+                    <div className="flex flex-wrap items-center justify-end gap-1.5">
+                      <span className="shrink-0 text-xs font-medium text-muted-foreground">
+                        {t('loop.sanadVerdictLabel')}: {t(claimVerdictI18nKey(claim.verdict))}
+                      </span>
+                      {claim.quoteValidation?.status === 'found' || claim.quoteValidation?.status === 'not_found' ? (
+                        <QuoteValidationChip status={claim.quoteValidation.status} />
+                      ) : null}
+                    </div>
+                  </div>
+                  {claim.sourceQuotes?.length ? (
+                    <div className="mt-2">
+                      <p className="text-[10px] font-medium text-muted-foreground">{t('loop.claimQuotes')}</p>
+                      <ul className="mt-1 space-y-1">
+                        {claim.sourceQuotes.map((quote, qi) => (
+                          <li
+                            key={qi}
+                            className="border-s-2 border-primary/40 ps-2 text-xs italic leading-relaxed text-foreground rtl:border-s-0 rtl:border-e-2 rtl:ps-0 rtl:pe-2"
+                          >
+                            {quote}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
+                  {claim.rationale?.length ? (
+                    <ul className="mt-2 space-y-0.5 text-[11px] text-muted-foreground">
+                      {claim.rationale.map((line, ri) => (
+                        <li key={ri}>{line}</li>
                       ))}
                     </ul>
-                  </div>
-                ) : null}
-                {claim.rationale?.length ? (
-                  <ul className="mt-2 space-y-0.5 text-[11px] text-muted-foreground">
-                    {claim.rationale.map((line, ri) => (
-                      <li key={ri}>{line}</li>
-                    ))}
-                  </ul>
-                ) : null}
-              </li>
-            ))}
-          </ul>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          </>
         ) : (
           <p className="mt-3 text-xs text-muted-foreground">{t('loop.noClaims')}</p>
         )}
@@ -205,12 +237,19 @@ function SiteBlock({ site, index, defaultOpen }: { site: CiteGroundingSite; inde
 
 interface LoopAuditDetailProps {
   finding: CitationFinding | null
+  onReaudit: (bibKey: string) => void
 }
 
-export default function LoopAuditDetail({ finding }: LoopAuditDetailProps) {
+export default function LoopAuditDetail({ finding, onReaudit }: LoopAuditDetailProps) {
   const { t } = useTranslation()
+  const [attaching, setAttaching] = useState(false)
   const setAppSurface = useShellStore((s) => s.setAppSurface)
   const citations = useCitationStore((s) => s.citations)
+  const artifact = useOuroborosLoopStore((s) =>
+    finding ? s.sourceArtifactsByBibKey[finding.bibKey] : undefined
+  )
+  const attachSourcePdf = useOuroborosLoopStore((s) => s.attachSourcePdf)
+  const clearAttachedSourcePdf = useOuroborosLoopStore((s) => s.clearAttachedSourcePdf)
 
   if (!finding) {
     return (
@@ -226,6 +265,11 @@ export default function LoopAuditDetail({ finding }: LoopAuditDetailProps) {
     finding.bibKey
 
   const citeCount = finding.citeSites?.length ?? 0
+  const claims = finding.citeSites?.flatMap((site) => site.claimGrounding ?? []) ?? []
+  const contradictionCount = claims.filter((claim) => claim.verdict === 'contradicted').length
+  const otherCautionCount = claims.filter(
+    (claim) => claim.verdict !== 'supported' && claim.verdict !== 'contradicted'
+  ).length
 
   const handleCopyEvidence = async () => {
     const ok = await copyToClipboard(formatFindingEvidenceMarkdown(finding))
@@ -244,6 +288,24 @@ export default function LoopAuditDetail({ finding }: LoopAuditDetailProps) {
     }, 80)
   }
 
+  const handleAttachPdf = async () => {
+    setAttaching(true)
+    try {
+      const paths = await window.api.openFileDialog({
+        filters: [{ name: 'PDF', extensions: ['pdf'] }]
+      })
+      const path = paths?.[0]
+      if (!path) return
+      const attached = await window.api.attachSourcePdf(path)
+      attachSourcePdf(finding.bibKey, attached)
+      onReaudit(finding.bibKey)
+    } catch (error) {
+      pushToast('error', error instanceof Error ? error.message : String(error))
+    } finally {
+      setAttaching(false)
+    }
+  }
+
   return (
     <div className="flex h-full flex-col overflow-auto">
       <header className="border-b border-border px-4 py-3">
@@ -256,7 +318,33 @@ export default function LoopAuditDetail({ finding }: LoopAuditDetailProps) {
           <Button type="button" variant="outline" size="sm" className="h-7 text-xs" onClick={handleJumpToBibliography}>
             {t('loop.jumpToBibliography')}
           </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-7 text-xs"
+            disabled={attaching}
+            onClick={() => void handleAttachPdf()}
+          >
+            {t('loop.attachPdfAction')}
+          </Button>
+          {artifact ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-7 text-xs"
+              onClick={() => clearAttachedSourcePdf(finding.bibKey)}
+            >
+              {t('loop.attachPdfClear')}
+            </Button>
+          ) : null}
         </div>
+        {artifact ? (
+          <p className="mt-2 truncate text-[11px] text-muted-foreground" title={artifact.path}>
+            {t('loop.pdfAttached')} · {artifact.pageCount} · {artifact.tier} · {artifact.sha256.slice(0, 12)}
+          </p>
+        ) : null}
       </header>
 
       <section className="border-b border-border px-4 py-3">
@@ -273,6 +361,11 @@ export default function LoopAuditDetail({ finding }: LoopAuditDetailProps) {
         <p className="mt-3 text-xs text-muted-foreground">
           {t('loop.sourceCoverage')}: {t(coverageLabelKey(finding.l3Coverage))}
         </p>
+        {claims.length > 0 ? (
+          <p className="mt-1 text-xs text-muted-foreground">
+            {t('loop.contradictedClaims')}: {contradictionCount} · {t('loop.otherCautions')}: {otherCautionCount}
+          </p>
+        ) : null}
       </section>
 
       {citeCount > 0 ? (

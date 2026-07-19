@@ -21,7 +21,7 @@ Deterministic and AI-assisted work for **grey-web** and messy webpage references
 | Platform / grey-literature typing | `webpage_classify` | YouTube, social, Substack, etc. |
 | Explain fetch failures to users | `issue_explain` | PDF URL, Cloudflare, dead link |
 
-Train after **Sanad Tier 2** on 12B (`nassila-sanad-12b` **v1.14**) or as facets merged into **`nassila-agent-*`**. Ship checkpoints: E4B **v1.12**, 12B **v1.14** — see NassilaT [`POST_V114_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/POST_V114_MAP.md).
+Train after **Sanad Tier 2** on 12B (`nassila-sanad-12b` **S14**, legacy v1.14) or as facets merged into **`nassila-agent-*`**. Ship checkpoints: E4B **S12**, 12B **S14** — see NassilaT [`OUROBOROS_OPERATOR_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/OUROBOROS_OPERATOR_MAP.md).
 
 ---
 

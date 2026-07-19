@@ -34,7 +34,7 @@ Worker codenames (Raqim, Sanad, Maktab, …) remain **product vocabulary** and *
 The intended main screen is a **single connected workflow**, not a worker picker:
 
 1. **Upload manuscript** (top) — DOCX, PDF, or text; extract structure and in-text citations (**Maktab**).
-2. **Cited sources** (bottom) — attach PDFs for cited papers **or** let the app resolve via Crossref / PubMed / OpenAlex and fetch open-access text where available (**Masdar** + **Raqim** L1/L2).
+2. **Cited sources** (bottom) — resolve via Crossref / PubMed / OpenAlex and fetch open-access text where available (**Masdar-lite** + **Raqim** L1/L2). Per-reference local PDF attach is planned for Masdar.
 3. **Audit** — ground claims against source excerpts (**Sanad**); flag duplicates, predatory journals, and validation issues (**Tasnif**); surface table/figure evidence when Tier 3 ships (**Shahid**).
 4. **Explain** — deterministic mismatch and risk copy today; richer narrative later (**Sharh**).
 5. **Export** — corrected bibliography and audit summary (**Raqim** citeproc).
@@ -72,10 +72,10 @@ The loop ships **export refs → Raqim** and **audit from Bibliography store** (
 
 Seven workers map to stages in the loop. Maturity varies; honest gaps only — no fake progress.
 
-| Worker | Arabic | Loop stage | End-state role | Current scaffold |
-|--------|--------|------------|----------------|------------------|
-| **Maktab** | مكتب | Ingest | Manuscript upload and segmentation | Stub — required for Tier 3 loop |
-| **Masdar** | مصدر | Sources | Cited-paper text (user PDF or OA fetch) | Stub — required for Tier 3 loop |
+| Worker | Arabic | Loop stage | End-state role | Current status |
+|--------|--------|------------|----------------|----------------|
+| **Maktab** | مكتب | Ingest | Manuscript upload and segmentation | **Deterministic live:** DOCX/text plus pdf.js/Tesseract O1; `doc_extract` LLM facet and O2 bundled/offline packs planned |
+| **Masdar** | مصدر | Sources | Cited-paper text (user PDF or OA fetch) | **Deterministic live:** Masdar-lite OA fetch + PDF extraction; `source_pdf_extract` LLM facet and local attach planned |
 | **Sanad** | سند | Ground | Passage vs source excerpt → verdicts | Live manual paste (Tier 2 bridge) |
 | **Shahid** | شاهد | Evidence | Tables and figures as evidence | Disabled — Tier 3+ |
 | **Raqim** | رقيم | Records | Import, verify, export | Live — bibliography mode + loop feed |
@@ -100,7 +100,7 @@ The shipping app may still expose a **seven-item worker nav** from the first Our
 1. User opens **Manuscript** (default) or switches to **Bibliography** (Raqim).
 2. In the loop: upload/paste manuscript → **Run audit** → L1/L2 per cite, OA/abstract fetch, L3 Sanad when Passage grounding is enabled.
 3. **Tasnif** / **Sharh** copy appears inline in loop detail; bibliography drawer opens Raqim filters.
-4. **Maktab**, **Masdar** (user PDF attach), and **Shahid** remain honest stubs — not separate peer tabs.
+4. **Maktab** and **Masdar-lite** deterministic stages are live; their LLM facets and Masdar local-PDF attach remain planned. **Shahid** remains planned — none are separate peer tabs.
 5. Engine applies JSON repair + quote-substring guardrails; LLM is advisory.
 
 **Target (full Ouroboros):**
@@ -136,5 +136,5 @@ The shipping app may still expose a **seven-item worker nav** from the first Our
 - Docs and future UI treat **Ouroboros loop** as primary IA; worker nav is secondary or advanced.
 - Sanad wired to `nassila-sanad-e4b` (S12) / `nassila-sanad-12b` (S14) with Tier 2b guardrails (invalid quotes never show as pass).
 - Raqim + Tasnif remain usable for bibliography-only users during transition.
-- Copy states Tier 2 = abstract excerpts + manual bridge; Tier 3 = Maktab/Masdar in the app loop (full manuscript / cited-PDF audit).
+- Copy distinguishes live deterministic Maktab/Masdar-lite from planned LLM facets and local-PDF attach; Tier 3 adds the full evaluated manuscript/source pipeline.
 - RTL parity; no AI-template UI tells per `DESIGN.md`.
