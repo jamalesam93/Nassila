@@ -70,7 +70,7 @@ export function stripSpuriousLatinInArabic(text: string): string {
   let out = text
   // Latin scrap (1–5 letters + optional digits) between Arabic, with optional BiDi marks
   const scrap = String.raw`${BIDI}[A-Za-z]{1,5}\d{0,2}${BIDI}`
-  out = out.replace(new RegExp(String.raw`([\u0600-\u06FF\u064B-\u065F])\s*${scrap}\s*(?=[\u0600-\u06FF])`, 'g'), '$1 ')
+  out = out.replace(new RegExp(String.raw`([\u0600-\u06FF])\s*${scrap}\s*(?=[\u0600-\u06FF])`, 'g'), '$1 ')
   out = out.replace(new RegExp(String.raw`([\u0600-\u06FF])\s+${scrap}(?=\s*[\u0600-\u06FF]|$)`, 'gm'), '$1')
   out = out.replace(new RegExp(String.raw`(?:^|\n)\s*${scrap}\s+(?=[\u0600-\u06FF])`, 'gm'), '\n')
   // Standalone BiDi-wrapped scrap mid-line after Arabic dash/space
