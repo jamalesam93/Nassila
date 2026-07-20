@@ -35,7 +35,7 @@ export function registerMaktabIpcHandlers(): void {
     }
 
     const opts = options && typeof options === 'object' ? (options as Record<string, unknown>) : {}
-    const languages = parseLanguages(opts.languages) ?? ['eng', 'fra', 'ara']
+    const languages = parseLanguages(opts.languages) ?? ['eng', 'fra']
     const dpi = typeof opts.dpi === 'number' && Number.isFinite(opts.dpi) ? Math.min(400, Math.max(150, opts.dpi)) : 300
 
     try {

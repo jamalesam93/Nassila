@@ -36,11 +36,12 @@ describe('packaged production boundaries', () => {
     expect(main).toMatch(/resolveRegistry|resolveManuscript/)
   })
 
-  it('bundled OCR packs exist for offline first-use', () => {
-    for (const lang of ['eng', 'fra', 'ara']) {
+  it('bundled OCR packs exist for offline first-use (Latin only)', () => {
+    for (const lang of ['eng', 'fra']) {
       const path = join(root, 'resources/tesseract', `${lang}.traineddata`)
       expect(existsSync(path), `missing ${lang}.traineddata`).toBe(true)
     }
+    expect(existsSync(join(root, 'resources/tesseract', 'ara.traineddata'))).toBe(false)
   })
 
   it('electron-builder unpacks native OCR deps used by Maktab', () => {

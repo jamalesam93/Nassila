@@ -73,7 +73,7 @@ export async function extractPdfWithTesseract(
   const dpi = options.dpi ?? 300
   const languages = options.languages?.length
     ? options.languages
-    : (['eng', 'fra', 'ara'] as MaktabLanguage[])
+    : (['eng', 'fra'] as MaktabLanguage[])
 
   const [{ createWorker, OEM, PSM }, { loadPdfJs, configurePdfJsWorker }, { app }] = await Promise.all([
     import('tesseract.js'),

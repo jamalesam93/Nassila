@@ -14,12 +14,14 @@ Windows installer `Nassila Setup 1.3.1.exe`. **GitHub Release:** [v1.3.1](https:
 - **IPC clone errors** — copy PDF buffers before pdf.js / OCR so detached `ArrayBuffer`s no longer throw “An object could not be cloned”; return plain JSON from OCR IPC.
 - **Bibliography import** — skip resume/CV preamble before the references block; every OutputPanel row has a delete control.
 - **Manuscript PDF** — detect character-reversed Arabic ToUnicode; raise soft OCR page budget **50 → 200**; clearer DOCX guidance when encoding is broken.
+- **CI lint** — fix `no-misleading-character-class` in Arabic OCR strip regex.
 
 ### Changed
 
 - **Arabic Tesseract deferred** — Arabic-heavy or character-reversed PDFs keep embedded text and warn to prefer **DOCX**; Enhanced OCR runs **eng/fra** only for Latin scans until vision/LLM OCR ships. Settings hint and import warnings updated (EN/AR).
+- **Installer size** — do not ship unused `ara.traineddata` (~12 MB); Latin packs remain `eng`/`fra` only until vision/LLM Arabic OCR.
 - **OCR progress** — per-page progress IPC (`maktab:ocrProgress`) with loop banner + status bar during long imports.
-- **Language packs** — download script keeps `eng`/`fra` from `tessdata_fast`; bundles `ara` from `tessdata_best` for future use (not selected at runtime).
+- **Language packs** — download script ships `eng`/`fra` from `tessdata_fast` only.
 - **Raqim Resolve** — EU legislation / EUR-Lex ELI lookup path for statute-style references.
 
 ### Added (tests / tooling)

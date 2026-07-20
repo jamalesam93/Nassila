@@ -4,11 +4,10 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const TESSDATA_VERSION = '4.1.0'
-/** eng/fra: fast packs. ara: best LSTM pack — denser Arabic body pages need the accuracy. */
+/** Latin OCR only — Arabic Tesseract deferred until vision/LLM OCR (saves ~12 MB). */
 const LANGUAGE_SOURCES = [
   { language: 'eng', repo: 'tessdata_fast' },
-  { language: 'fra', repo: 'tessdata_fast' },
-  { language: 'ara', repo: 'tessdata_best' }
+  { language: 'fra', repo: 'tessdata_fast' }
 ]
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const outputDir = join(root, 'resources', 'tesseract')
@@ -39,6 +38,9 @@ for (const { language, repo } of LANGUAGE_SOURCES) {
   checksums.push(`${checksum}  ${fileName}`)
   console.log(`  ${fileName}: ${(data.byteLength / 1024 / 1024).toFixed(1)} MB`)
 }
+
+// Drop deferred Arabic pack if a previous download left it behind.
+await rm(join(outputDir, 'ara.traineddata'), { force: true })
 
 await writeFile(join(outputDir, 'checksums.sha256'), `${checksums.join('\n')}\n`)
 console.log(`Installed ${LANGUAGE_SOURCES.length} language packs in ${outputDir}`)

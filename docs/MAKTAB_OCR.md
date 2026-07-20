@@ -62,7 +62,7 @@ DOCX ingest remains separate (parser/document path); OCR applies to PDF and imag
 
 1. **Rasterize** PDF pages (~300 DPI quality / 200 DPI fast).
 2. **Preprocess** — grayscale, deskew, denoise (Nassila-owned heuristics).
-3. **Language packs** — `eng` / `fra` from official `tessdata_fast` (and optional bundled `ara` for future vision/LLM work) under `resources/tesseract/`. **Runtime Tesseract does not select `ara`** until Maktab LLM/vision OCR ships.
+3. **Language packs** — `eng` / `fra` from official `tessdata_fast` under `resources/tesseract/`. **`ara` is not shipped** until Maktab LLM/vision OCR; Arabic PDFs prefer DOCX.
 4. **Recognize** — Tesseract.js runs in the **main process** through validated IPC.
 5. **Post-process** — de-hyphenation, Unicode normalize, Arabic policy (conservative).
 6. **Cache** — key = `sha256(file) + page + dpi + lang pack version`.
@@ -77,7 +77,7 @@ Install or refresh the pinned language packs before packaging:
 npm run ocr:langpacks
 ```
 
-The script downloads the official language packs (`tessdata_fast` for eng/fra, `tessdata_best` for ara) pinned to 4.1.0 and writes `resources/tesseract/checksums.sha256`. Electron Builder copies that directory to the installed app's resources. In development, OCR reads the same files directly from the repository.
+The script downloads the official `tessdata_fast` packs for eng/fra (pinned to 4.1.0) and writes `resources/tesseract/checksums.sha256`. Electron Builder copies that directory to the installed app's resources. In development, OCR reads the same files directly from the repository.
 
 **Not in scope v1:** custom OCR model training; MinerU or other layout-VLM backends (optional plugin track only).
 
