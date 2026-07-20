@@ -78,14 +78,14 @@ For each in-text citation, expand **Passage grounding** to review:
 - **Open-access full text** — Europe PMC text or an OA PDF discovered through Unpaywall was extracted and used (the excerpt may still be chunk-selected).
 - **Source text unavailable** — No abstract and no OA text; passage checks are limited.
 
-Cited **local PDF attach** is not wired into audits yet; it remains planned for Masdar. Masdar-lite already fetches and extracts open-access source text when available.
+Cited **local PDF attach** is available for cited sources in the manuscript loop (Masdar). Open-access PDF text is still fetched when available.
 
 - **Tasnif** (classification) and **Sharh** (explanation) appear inline in the loop detail and bibliography drawer — not as separate tabs.
 - **Raqim** (numbering) works in bibliography mode.
 - Grounding runs automatically through Sanad when the loop audit is triggered.
-- **Maktab** manuscript extraction is live through DOCX/text and pdf.js/Tesseract O1; **Masdar-lite** OA source extraction is live. Their LLM facets, local-PDF attach, and **Shahid** evidence remain planned.
+- **Maktab** manuscript extraction is live through DOCX/text and pdf.js; **Enhanced OCR** (bundled **eng/fra** Tesseract) helps Latin scanned PDFs. **Arabic** theses with broken PDF encoding: prefer **DOCX** — Tesseract Arabic is deferred until vision/LLM OCR. **Masdar** OA fetch and per-reference PDF attach are live. **Shahid** evidence remains planned.
 
-For scanned PDFs, Tesseract O1 supports English, Arabic, and French OCR. The first OCR use for a language currently downloads its traineddata pack from the Tesseract.js CDN; offline/bundled packs and enhanced OCR controls are planned for O2.
+For scanned **Latin** PDFs, turn on **Enhanced OCR** in Settings (offline **eng/fra** packs). For **Arabic** manuscripts, import **DOCX** when the PDF text looks reversed or garbled.
 
 ## L1 and L2 (bibliography mode)
 

@@ -74,8 +74,8 @@ Seven workers map to stages in the loop. Maturity varies; honest gaps only — n
 
 | Worker | Arabic | Loop stage | End-state role | Current status |
 |--------|--------|------------|----------------|----------------|
-| **Maktab** | مكتب | Ingest | Manuscript upload and segmentation | **Deterministic live:** DOCX/text plus pdf.js/Tesseract O1; `doc_extract` LLM facet and O2 bundled/offline packs planned |
-| **Masdar** | مصدر | Sources | Cited-paper text (user PDF or OA fetch) | **Deterministic live:** Masdar-lite OA fetch + PDF extraction; `source_pdf_extract` LLM facet and local attach planned |
+| **Maktab** | مكتب | Ingest | Manuscript upload and segmentation | **Deterministic live:** DOCX/text + pdf.js; Enhanced OCR (**eng/fra** bundled) for Latin scans; Arabic PDF OCR deferred (prefer DOCX); `doc_extract` / vision OCR planned |
+| **Masdar** | مصدر | Sources | Cited-paper text (user PDF or OA fetch) | **Deterministic live:** OA fetch + PDF extraction + per-reference local attach; `source_pdf_extract` LLM facet planned |
 | **Sanad** | سند | Ground | Passage vs source excerpt → verdicts | Live manual paste (Tier 2 bridge) |
 | **Shahid** | شاهد | Evidence | Tables and figures as evidence | Disabled — Tier 3+ |
 | **Raqim** | رقيم | Records | Import, verify, export | Live — bibliography mode + loop feed |

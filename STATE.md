@@ -1,6 +1,6 @@
 # Ouroboros loop state
 
-**Last updated:** 2026-07-18  
+**Last updated:** 2026-07-20  
 **Operator:** Nassila maintainer
 
 Read this at the start of every agent session. Update when focus, blockers, or ship gates change.
@@ -11,27 +11,27 @@ Read this at the start of every agent session. Update when focus, blockers, or s
 
 | Priority | Track | Status |
 |----------|-------|--------|
-| **P0** | GitHub release cut for **1.3.0** | **Ready** (packaged GUI smoke PASS) |
-| **P1∥** | NassilaT field-note labels (14/49; S12/S14 re-eval done) | Parallel |
+| **P0** | Post-**1.3.1** ops (docs sync, website) | **Done** (app docs + nassila-web roadmap/changelog/train) |
+| **P1** | **1.4.0 Raqim Statute** planning / implementation | Next app cut |
+| **P1∥** | NassilaT field-note labels; S15 parked | Parallel |
 
-**Latest app:** **1.3.0** implemented locally. Packaged smoke build: `dist-smoke-130/win-unpacked` (may be cleaned; rebuild if needed).
+**Latest app:** **1.3.1** (Maktab OCR hardening) — tagged, release notes live; local unpack/installer rebuilt without `ara.traineddata`.
 
 ---
 
-## Post-1.3.0 practical progress (2026-07-18)
+## 1.3.1 ship notes (2026-07-20)
 
 | Step | Status |
 |------|--------|
-| Packaged unpack + OCR packs + IPC/CSP in build | **PASS** (`PACKAGED_SMOKE_SIGNOFF_1.3.0.md`) |
-| Automated boundary unit smoke | **PASS** (`packaged-boundary-smoke.test.ts`) |
-| Manual GUI L1 under CSP (LLM off) | **PASS** — L1 Supported, L2 title mismatch, L3 insufficient (Sanad off); see `PACKAGED_AUDIT_SMOKE.md` |
-| Prompt goldens byte-identical + pytest | **PASS** |
-| S12 holdout under production prompt | **PASS (single-seed)** — combined 93.68%, parse 100%, quote holdout 100%; see `PROMPT_CONTRACT_REEVAL.md` |
-| S14 holdout under production prompt | **PASS (single-seed, Ollama)** — combined 93.68%, parse 100%, quote holdout 94.74% (Tier 2 quote gate miss); LM Studio peg-gemma4 blocked |
-| Field-note review queue | **In progress** — 14/49 labeled (parse_error + echo_support); see `CURATION_CHECKLIST.md` |
-| GitHub release tag 1.3.0 | **Not started** — smoke PASS; cut when operator confirms |
+| OCR packaging (canvas / Tesseract natives) | **PASS** |
+| Arabic Tesseract deferred; eng/fra only; drop `ara` pack (~12 MB) | **PASS** |
+| GitHub **v1.3.1** tag + release notes | **PASS** |
+| Fresh `build:win` (no ara in `resources/tesseract`) | **PASS** (~151 MB installer) |
+| CI lint fix (`no-misleading-character-class`) | **PASS** |
 
-**Locked train (implemented):** Phase 0 → 1.2.2…1.3.0 · S15 parked (prompt contract approved for continued use)
+**Locked train:** Phase 0 → 1.2.2…1.3.0 · **1.3.1** OCR hardening · S15 parked
+
+**Next map:** 1.4.0 Raqim Statute → 1.5.0 Raqim Web → 1.6.0 Maktab Loop → 1.7.0 Integrity Bundle → 1.8.0 Shahid (see `docs/Nassila-Ouroboros-Future.md` §5)
 
 **Models:** Sanad **S12** / **S14** — prefer **Ollama** for S14 locally until LM Studio peg-gemma4 is fixed
 
@@ -40,12 +40,12 @@ Read this at the start of every agent session. Update when focus, blockers, or s
 ## Blockers
 
 - **S15:** parked — field-note curation (+ optional multi-seed); not blocked on prompt contract.
-- Default `dist/win-unpacked` may be file-locked (EBUSY); use `dist-smoke-130` or close holders.
+- Vision/LLM Arabic OCR — deferred; DOCX is the supported Arabic ingest path.
 
 ---
 
 ## Next actions (ordered)
 
-1. When ready to publish: `npm run build:win` + SHA-256 + `gh release create v1.3.0` (confirm before publish).
-2. Continue field-note labels (`echo_other` next) → export boost JSONL when ready.
-3. Optional: multi-seed S12/S14; investigate S14 `h-003` quote miss / Tier 2 98% quote bar.
+1. Next product cut: **1.4.0 Raqim Statute** (legislation Resolve beyond EU ELI).
+2. Continue field-note labels → export boost JSONL when ready.
+3. Start **1.4.0** legislation Resolve scope when ready to cut.
