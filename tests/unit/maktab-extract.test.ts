@@ -7,6 +7,7 @@ import {
   type MaktabOcrBackend
 } from '@engine/maktab'
 import * as pdfExtract from '@engine/manuscript/pdf-extract'
+import { ARABIC_OCR_DEFERRED_WARNING } from '../../src/engine/maktab/ocr/post-process'
 
 describe('maktab extractFromPdf', () => {
   beforeEach(() => {
@@ -78,27 +79,97 @@ describe('maktab extractFromPdf', () => {
     )
   })
 
-  it('ocr_preferred calls backend when available', async () => {
-    const pdfSpy = vi.spyOn(pdfExtract, 'extractManuscriptFromPdf')
+  it('ocr_preferred keeps reversed Arabic embedded and skips Tesseract', async () => {
+    vi.spyOn(pdfExtract, 'extractManuscriptFromPdf').mockResolvedValue({
+      text: 'يف حتقيق االستقرار '.repeat(40),
+      pageCount: 2,
+      warnings: [
+        'Arabic text from this PDF looks character-reversed (broken font encoding). Prefer the DOCX.'
+      ]
+    })
 
-    const mockBackend: MaktabOcrBackend = {
+    const extractSpy = vi.fn()
+    setMaktabOcrBackend({
       id: 'test-ocr',
       isAvailable: () => true,
-      extractFromPdf: async () => ({
-        text: 'Direct OCR path.',
-        pageCount: 3,
-        warnings: [],
-        tier: 'ocr',
-        languages: ['eng', 'fra', 'ara'],
-        needsReview: false
-      })
-    }
-    setMaktabOcrBackend(mockBackend)
+      extractFromPdf: extractSpy
+    })
 
     const result = await extractFromPdf(new ArrayBuffer(8), { mode: 'ocr_preferred', ocrDpi: 200 })
 
+    expect(result.tier).toBe('embedded_text')
+    expect(result.needsReview).toBe(true)
+    expect(result.warnings).toContain(ARABIC_OCR_DEFERRED_WARNING)
+    expect(extractSpy).not.toHaveBeenCalled()
+  })
+
+  it('ocr_preferred keeps good embedded text without calling OCR', async () => {
+    vi.spyOn(pdfExtract, 'extractManuscriptFromPdf').mockResolvedValue({
+      text: 'Introduction\n\nMethods and results follow.',
+      pageCount: 2,
+      warnings: []
+    })
+
+    const extractSpy = vi.fn()
+    const mockBackend: MaktabOcrBackend = {
+      id: 'test-ocr',
+      isAvailable: () => true,
+      extractFromPdf: extractSpy
+    }
+    setMaktabOcrBackend(mockBackend)
+
+    const result = await extractFromPdf(new ArrayBuffer(8), { mode: 'ocr_preferred' })
+
+    expect(result.tier).toBe('embedded_text')
+    expect(extractSpy).not.toHaveBeenCalled()
+  })
+
+  it('auto does not escalate reversed Arabic to Tesseract', async () => {
+    vi.spyOn(pdfExtract, 'extractManuscriptFromPdf').mockResolvedValue({
+      text: 'يف حتقيق '.repeat(50),
+      pageCount: 1,
+      warnings: [
+        'Arabic text from this PDF looks character-reversed (broken font encoding). Prefer the DOCX.'
+      ]
+    })
+
+    const extractSpy = vi.fn()
+    setMaktabOcrBackend({
+      id: 'test-ocr',
+      isAvailable: () => true,
+      extractFromPdf: extractSpy
+    })
+
+    const result = await extractFromPdf(new ArrayBuffer(8), { mode: 'auto' })
+    expect(result.tier).toBe('embedded_text')
+    expect(result.warnings).toContain(ARABIC_OCR_DEFERRED_WARNING)
+    expect(extractSpy).not.toHaveBeenCalled()
+  })
+
+  it('ocr_preferred still uses Latin OCR when embedded is sparse', async () => {
+    vi.spyOn(pdfExtract, 'extractManuscriptFromPdf').mockResolvedValue({
+      text: 'ab',
+      pageCount: 1,
+      warnings: ['Very little text was extracted. The PDF may be partially scanned.']
+    })
+
+    setMaktabOcrBackend({
+      id: 'test-ocr',
+      isAvailable: () => true,
+      extractFromPdf: async (_buf, opts) => ({
+        text: 'Recovered Latin scan text.',
+        pageCount: 1,
+        warnings: [],
+        tier: 'ocr',
+        languages: opts.languages ?? ['eng', 'fra'],
+        needsReview: false
+      })
+    })
+
+    const result = await extractFromPdf(new ArrayBuffer(8), { mode: 'ocr_preferred' })
     expect(result.tier).toBe('ocr')
-    expect(pdfSpy).not.toHaveBeenCalled()
+    expect(result.languages).toEqual(['eng', 'fra'])
+    expect(result.text).toContain('Recovered Latin')
   })
 })
 

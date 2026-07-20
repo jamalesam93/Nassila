@@ -97,7 +97,7 @@
       "institutionalNote": "This is not university paywall login. It only enables Unpaywall to find legally open copies. You can attach a local PDF in Masdar; institutional access is future work.",
       "savedHint": "Saved. Open-access lookups will use this address on future audits.",
       "enhancedOcr": "Enhanced OCR for scanned PDFs",
-      "enhancedOcrHint": "Prefer on-device Tesseract (bundled eng/fra/ara) when extracting manuscript or attached PDFs."
+      "enhancedOcrHint": "Prefer on-device Tesseract (bundled eng/fra) for Latin scanned PDFs. Arabic theses: import DOCX — Tesseract Arabic is deferred until vision/LLM OCR."
     },
     "localModels": {
       "title": "Passage grounding",
@@ -253,7 +253,10 @@
     "importFailed": "Import failed: {{message}}",
     "pdfWarning": {
       "scan": "This PDF contains no extractable text — it is likely a scan. Run it through OCR (e.g. ocrmypdf, Adobe Acrobat) and re-import.",
-      "littleText": "Very little text was extracted. The PDF may be partially scanned or use embedded fonts without a Unicode map."
+      "littleText": "Very little text was extracted. The PDF may be partially scanned or use embedded fonts without a Unicode map.",
+      "ocrLowConfidence": "OCR confidence was low on some pages; kept embedded text there. For best Arabic fidelity, import the DOCX.",
+      "reversedArabic": "Arabic text from this PDF looks character-reversed (broken font encoding). Prefer the DOCX.",
+      "arabicOcrDeferred": "Arabic PDF OCR via Tesseract is disabled for now. Prefer importing the DOCX; vision/LLM OCR is planned."
     },
     "phase": {
       "idle": "Idle",
@@ -267,6 +270,10 @@
       "error": "Error"
     },
     "progress": "{{processed}} / {{total}}",
+    "importingReading": "Reading file…",
+    "importingChecking": "Checking PDF text…",
+    "importingOcr": "OCR in progress — page {{processed}} of {{total}} ({{percent}}%)",
+    "importingOcrEta": " · ~{{minutes}} min left",
     "auditRunning": "Audit in progress — you can cancel from the toolbar.",
     "emptyManuscriptTitle": "No manuscript loaded",
     "emptyManuscriptHint": "Paste text or import DOCX / PDF via the toolbar (File menu or Ctrl+I). You can drag a manuscript file onto this area when the desktop provides a file path.",
@@ -446,7 +453,8 @@
       "datacite": "DataCite / Zenodo",
       "huggingface": "Hugging Face",
       "kaggle": "Kaggle",
-      "github": "GitHub"
+      "github": "GitHub",
+      "eli": "EU ELI / EUR-Lex"
     },
     "candidateKind": {
       "artifact_citation": "Artifact citation",

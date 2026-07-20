@@ -1,6 +1,7 @@
 import { ipcMain } from 'electron'
 import type { MaktabLanguage } from '../engine/maktab/types'
 import { extractPdfWithTesseract, isTesseractOcrAvailable } from './maktab/tesseract-ocr'
+import { MAKTAB_OCR_PROGRESS_CHANNEL } from '../shared/maktab-ocr-progress'
 
 const MAX_PDF_BYTES = 12 * 1024 * 1024
 const ALLOWED_LANGS = new Set<MaktabLanguage>(['eng', 'fra', 'ara'])
@@ -27,7 +28,7 @@ function bufferFromPayload(raw: unknown): ArrayBuffer | null {
 export function registerMaktabIpcHandlers(): void {
   ipcMain.handle('maktab:ocrAvailable', async () => isTesseractOcrAvailable())
 
-  ipcMain.handle('maktab:ocrExtract', async (_event, payload: unknown, options: unknown) => {
+  ipcMain.handle('maktab:ocrExtract', async (event, payload: unknown, options: unknown) => {
     const buffer = bufferFromPayload(payload)
     if (!buffer || buffer.byteLength === 0 || buffer.byteLength > MAX_PDF_BYTES) {
       throw new Error('Invalid PDF buffer for OCR')
@@ -37,6 +38,32 @@ export function registerMaktabIpcHandlers(): void {
     const languages = parseLanguages(opts.languages) ?? ['eng', 'fra', 'ara']
     const dpi = typeof opts.dpi === 'number' && Number.isFinite(opts.dpi) ? Math.min(400, Math.max(150, opts.dpi)) : 300
 
-    return extractPdfWithTesseract(buffer, { languages, dpi })
+    try {
+      const result = await extractPdfWithTesseract(buffer, { languages, dpi }, (progress) => {
+        if (!event.sender.isDestroyed()) {
+          event.sender.send(MAKTAB_OCR_PROGRESS_CHANNEL, progress)
+        }
+      })
+      // Structured-cloneable plain object for IPC (no class instances / Buffers).
+      return {
+        text: String(result.text ?? ''),
+        pageCount: Number(result.pageCount) || 1,
+        pageBoundaries: (result.pageBoundaries ?? []).map((b) => ({
+          page: Number(b.page),
+          start: Number(b.start),
+          end: Number(b.end)
+        })),
+        warnings: (result.warnings ?? []).map(String),
+        tier: result.tier === 'ocr' ? 'ocr' : 'embedded_text',
+        languages: [...(result.languages ?? languages)],
+        needsReview: Boolean(result.needsReview),
+        pageConfidences: Array.isArray(result.pageConfidences)
+          ? result.pageConfidences.map((c) => Number(c) || 0)
+          : undefined
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err)
+      throw new Error(message)
+    }
   })
 }

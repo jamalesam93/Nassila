@@ -97,7 +97,7 @@
       "institutionalNote": "هذا ليس تسجيل دخول إلى مكتبة الجامعة. يتيح لـ Unpaywall العثور على نسخ مفتوحة قانونيًا فقط. يمكنك إرفاق PDF محلي في مصدر؛ الوصول المؤسسي عمل مستقبلي.",
       "savedHint": "تم الحفظ. عمليات البحث عن الوصول المفتوح ستستخدم هذا العنوان في التدقيقات القادمة.",
       "enhancedOcr": "تعرّف ضوئي محسّن لملفات PDF الممسوحة",
-      "enhancedOcrHint": "يفضّل Tesseract على الجهاز (eng/fra/ara المضمّنة) عند استخراج المخطوطة أو ملفات PDF المرفقة."
+      "enhancedOcrHint": "يفضّل Tesseract على الجهاز (eng/fra المضمّنة) لملفات PDF اللاتينية الممسوحة. للأطروحات العربية: استورد DOCX — التعرّف الضوئي العربي عبر Tesseract مؤجّل حتى OCR بالرؤية/النموذج."
     },
     "localModels": {
       "title": "توثيق الادعاءات بالمصدر",
@@ -253,7 +253,10 @@
     "importFailed": "فشل الاستيراد: {{message}}",
     "pdfWarning": {
       "scan": "لا يحتوي هذا PDF على نص قابل للاستخراج — غالباً مسح ضوئي. مرّره عبر OCR (مثل ocrmypdf أو Adobe Acrobat) ثم أعد الاستيراد.",
-      "littleText": "استُخرج نص قليل جداً. قد يكون PDF مسحاً جزئياً أو يستخدم خطوطاً مضمّنة دون خريطة Unicode."
+      "littleText": "استُخرج نص قليل جداً. قد يكون PDF مسحاً جزئياً أو يستخدم خطوطاً مضمّنة دون خريطة Unicode.",
+      "ocrLowConfidence": "ثقة التعرّف الضوئي كانت منخفضة في بعض الصفحات؛ أُبقي النص المضمّن هناك. لأفضل دقة عربية، استورد ملف DOCX.",
+      "reversedArabic": "النص العربي في هذا PDF يبدو مقلوب الأحرف (ترميز خط معطوب). يُفضَّل استيراد DOCX.",
+      "arabicOcrDeferred": "التعرّف الضوئي لملفات PDF العربية عبر Tesseract معطّل حالياً. يُفضَّل استيراد DOCX؛ OCR بالرؤية/النموذج مخطّط لاحقاً."
     },
     "phase": {
       "idle": "خامل",
@@ -267,6 +270,10 @@
       "error": "خطأ"
     },
     "progress": "{{processed}} / {{total}}",
+    "importingReading": "جارٍ قراءة الملف…",
+    "importingChecking": "جارٍ فحص نص PDF…",
+    "importingOcr": "التعرّف الضوئي قيد التنفيذ — الصفحة {{processed}} من {{total}} ({{percent}}٪)",
+    "importingOcrEta": " · تبقّى نحو {{minutes}} د",
     "auditRunning": "التدقيق قيد التشغيل — يمكن الإلغاء من الشريط العلوي.",
     "emptyManuscriptTitle": "لا مخطوطة محمّلة",
     "emptyManuscriptHint": "الصق النص أو استورد DOCX/PDF من شريط الأدوات. يمكنك إفلات ملف مخطوطة هنا إن زوَّد المتصفح بمساره.",
@@ -446,7 +453,8 @@
       "datacite": "DataCite / Zenodo",
       "huggingface": "Hugging Face",
       "kaggle": "Kaggle",
-      "github": "GitHub"
+      "github": "GitHub",
+      "eli": "الاتحاد الأوروبي (ELI)"
     },
     "candidateKind": {
       "artifact_citation": "مرجع مادة بحثية",

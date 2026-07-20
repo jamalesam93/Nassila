@@ -12,9 +12,9 @@ export const MAKTAB_DEFAULT_LANGUAGES: readonly MaktabLanguage[] = ['eng', 'fra'
 export type MaktabExtractionTier = 'embedded_text' | 'ocr'
 
 /**
- * - auto: pdf.js first; OCR when embedded text missing or very sparse
+ * - auto: pdf.js first; OCR when embedded text missing or very sparse (Latin); Arabic deferred to DOCX
  * - embedded_only: pdf.js only (current fast path)
- * - ocr_preferred: OCR when backend available; else fail with clear message
+ * - ocr_preferred: try embedded first; OCR when sparse/empty for Latin; Arabic-heavy / reversed → DOCX warning
  */
 export type MaktabExtractionMode = 'auto' | 'embedded_only' | 'ocr_preferred'
 
@@ -30,6 +30,8 @@ export interface MaktabExtractionResult {
   pageCount: number
   /** Character offsets for each extracted page in `text`. */
   pageBoundaries?: Array<{ page: number; start: number; end: number }>
+  /** Per-page Tesseract confidence (0–100) when tier is OCR. */
+  pageConfidences?: number[]
   warnings: string[]
   tier: MaktabExtractionTier
   languages: MaktabLanguage[]

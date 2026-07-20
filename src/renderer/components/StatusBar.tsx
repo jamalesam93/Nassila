@@ -20,6 +20,7 @@ export default function StatusBar() {
   const raw = useManuscriptAuditStore((s) => s.rawManuscriptText)
   const step = useManuscriptAuditStore((s) => s.step)
   const auditProgress = useManuscriptAuditStore((s) => s.auditProgress)
+  const importProgress = useManuscriptAuditStore((s) => s.importProgress)
   const report = useManuscriptAuditStore((s) => s.report)
 
   const manuscriptPreview = useMemo(() => previewManuscript(raw), [raw])
@@ -32,7 +33,23 @@ export default function StatusBar() {
     const running = step !== 'idle' && step !== 'done' && step !== 'error'
     return (
       <div className={baseClass}>
-        {manuscriptPreview.ok ? (
+        {importProgress ? (
+          <span role="status">
+            {importProgress.phase === 'ocr' && importProgress.total > 0
+              ? t('manuscriptAudit.importingOcr', {
+                  processed: importProgress.processed,
+                  total: importProgress.total,
+                  percent: Math.min(
+                    100,
+                    Math.round((importProgress.processed / importProgress.total) * 100)
+                  )
+                })
+              : importProgress.phase === 'checking'
+                ? t('manuscriptAudit.importingChecking')
+                : t('manuscriptAudit.importingReading')}
+          </span>
+        ) : null}
+        {!importProgress && manuscriptPreview.ok ? (
           <span>
             {t('loop.previewStats', {
               words: manuscriptPreview.wordCount,
@@ -40,7 +57,7 @@ export default function StatusBar() {
             })}
           </span>
         ) : null}
-        {running ? (
+        {!importProgress && running ? (
           <span>
             {t('manuscriptAudit.phase.' + step)}
             {auditProgress && auditProgress.total > 0
@@ -51,7 +68,9 @@ export default function StatusBar() {
               : null}
           </span>
         ) : null}
-        {findingCount > 0 ? <span>{t('loop.statusFindings', { count: findingCount })}</span> : null}
+        {!importProgress && findingCount > 0 ? (
+          <span>{t('loop.statusFindings', { count: findingCount })}</span>
+        ) : null}
       </div>
     )
   }

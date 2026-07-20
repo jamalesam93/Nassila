@@ -42,4 +42,11 @@ describe('packaged production boundaries', () => {
       expect(existsSync(path), `missing ${lang}.traineddata`).toBe(true)
     }
   })
+
+  it('electron-builder unpacks native OCR deps used by Maktab', () => {
+    const yml = readFileSync(join(root, 'electron-builder.yml'), 'utf8')
+    expect(yml).toContain('asarUnpack:')
+    expect(yml).toMatch(/node_modules\/canvas\/\*\*\/\*/)
+    expect(yml).toMatch(/node_modules\/tesseract\.js\/\*\*\/\*/)
+  })
 })

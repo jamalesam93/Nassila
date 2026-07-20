@@ -8,6 +8,19 @@ files:
   - package.json
   - build/icon.png
   - build/icon.ico
+  # Native / worker deps externalized from the main bundle (see electron.vite.config.ts).
+  - node_modules/canvas/**/*
+  - node_modules/@napi-rs/canvas/**/*
+  - node_modules/@napi-rs/canvas-*/**/*
+  - node_modules/tesseract.js/**/*
+  - node_modules/tesseract.js-core/**/*
+# Native .node, worker scripts, and WASM must load from a real filesystem path (not asar).
+asarUnpack:
+  - node_modules/canvas/**/*
+  - node_modules/@napi-rs/canvas/**/*
+  - node_modules/@napi-rs/canvas-*/**/*
+  - node_modules/tesseract.js/**/*
+  - node_modules/tesseract.js-core/**/*
 extraResources:
   - from: resources/tesseract
     to: tesseract

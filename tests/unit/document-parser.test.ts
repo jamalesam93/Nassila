@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { extractReferenceSection, splitReferenceEntries } from '../../src/engine/parser/document'
+import { extractReferenceSection, splitReferenceEntries, trimReferencesPreamble } from '../../src/engine/parser/document'
 
 describe('document parser reference extraction', () => {
   it('extracts bracket-numbered bibliography at document start', () => {
@@ -67,5 +67,25 @@ https://doi.org/10.1038/s41746-023-00887-8
     expect(entries[0]).toContain('10.1038')
     expect(entries[1]).toContain('Azam M')
     expect(entries[2]).toContain('Food and Drug')
+  })
+
+  it('skips resume preamble and subsection headings in Arabic thesis references', () => {
+    const refs = `السيرة الذاتية للباحث
+حصل على بكالوريوس الصيدلة من جامعة صنعاء عام 2010.
+عمل في مجال التعليم الصيدلاني لعدة سنوات.
+
+أولاً: المراجع باللغة العربية (Arabic References)
+
+الكتاب، أحمد محمد. عنوان البحث. دار النشر. 2020.
+
+ثانياً: المراجع باللغة الإنجليزية (English References)
+
+Smith J. Example paper. Journal Name. 2021. https://doi.org/10.1234/example.1`
+    const trimmed = trimReferencesPreamble(refs)
+    const entries = splitReferenceEntries(trimmed)
+    expect(entries).toHaveLength(2)
+    expect(entries[0]).toContain('2020')
+    expect(entries[1]).toContain('Smith J')
+    expect(entries.some((e) => /السيرة|بكالوريوس/.test(e))).toBe(false)
   })
 })

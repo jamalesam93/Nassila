@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { LuX } from 'react-icons/lu'
 import { useCitationStore, type CitationStatus } from '../stores/citation-store'
 import { useShellStore } from '../stores/shell-store'
 import { requestConfirm } from '../stores/confirm-store'
@@ -492,6 +493,18 @@ export default function OutputPanel() {
                       <RaqimResolvePanel item={item} />
                     </div>
                     <div className="flex shrink-0 flex-col items-end gap-1">
+                      <button
+                        type="button"
+                        className="rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        title={t('outputPanel.deleteEntry')}
+                        aria-label={t('outputPanel.deleteEntry')}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          deleteCitation(item.id, index)
+                        }}
+                      >
+                        <LuX className="h-4 w-4" aria-hidden />
+                      </button>
                       <span
                         className={`rounded px-1.5 py-0.5 text-xs font-medium ${
                           isGrayLitType(item.type)

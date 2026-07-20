@@ -1,8 +1,10 @@
 # Nassila-Ouroboros Future
 
-**Date:** 2026-07-18  
+**Date:** 2026-07-20  
 **Scope:** Nassila (app) · NassilaT (training) · nassila-web (docs)  
 **Sources reviewed:** `NassilaT/training/OUROBOROS_OPERATOR_MAP.md`, `Nassila/docs/FEATURES-AND-TWEAKS.md`, `STATE.md`, `PRODUCT.md`, `OUROBOROS_CONTEXT.md`, `CHANGELOG.md`, engine/renderer code, field notes, website release train
+
+**App baseline:** **1.3.0 · Sharh-lite** (2026-07-20). **Sanad checkpoints:** S12 (E4B) · S14 (12B). **S15:** parked (NassilaT).
 
 ---
 
@@ -12,7 +14,7 @@ Nassila has a strong and differentiated product idea: a local-first submission-i
 
 The “Ouroboros, not Hydra” direction is correct. The deterministic-core / LLM-assistant boundary is also exactly right.
 
-However, the current roadmap prioritizes feature cadence and model iterations ahead of several trust-critical gaps. **Do not implement 1.2.2 as “bounded concurrency only.”** Before making audits faster, Nassila needs to ensure that the packaged app is running the same pipeline that was evaluated, cannot produce unsupported pass states, and can preserve work across sessions.
+However, the product must keep prioritizing **trust and production parity** over feature cadence. The **1.2.2–1.2.9** train shipped consolidated as **1.3.0**; post-1.3.0 work should follow the **Future release map** in §5 before new model facets or multimodal scope.
 
 ### Recommended priority
 
@@ -113,176 +115,77 @@ The renamed-map links should be treated as a high-priority documentation defect 
 
 ---
 
-## 3. Trust-critical implementation findings
+## 3. Trust-critical findings — status after 1.3.0
 
-### 3.1 Packaged manuscript registry resolution needs a production-parity fix
+Findings below were written during the trust-reset design. **Status lines reflect the 1.3.0 codebase** (2026-07-20). Residual open work feeds **1.6–1.7** and NassilaT §6 — not a re-open of Phase 0.
 
-The production renderer CSP explicitly says external network traffic must use IPC (`connect-src 'self'`). Bibliography verification follows that architecture through `registry:verifyUnified`. The manuscript audit does not: its renderer hook directly calls the registry engine, whose resolvers use normal `fetch`.
+### 3.1 Packaged manuscript registry resolution
 
-This is architecturally incompatible with the production CSP and can soft-fail as “unresolved” instead of exposing the actual transport problem.
+**Status:** **Shipped** in 1.3.0 (main-process audit IPC).
 
-**Before concurrency:**
+Manuscript audit no longer runs registry `fetch` in the renderer. The hook calls `window.api.startManuscriptAudit`; main owns `resolveRegistry` / OA / LLM (`ipc-manuscript-audit.ts`). Packaged GUI L1 under CSP smoke: **PASS** (`STATE.md`, `PACKAGED_AUDIT_SMOKE.md`).
 
-- Move manuscript registry resolution to main-process IPC.
-- Add packaged-build coverage, not only dev smoke.
-- Return canonical metadata needed by L3, not merely mismatch counts.
-- Add validation tests for the new IPC contract.
+**Residual (1.7.0):** rate limiting under concurrency; confirm AbortSignal / cancel mid-call; keep packaged parity in CI on every release cut.
 
-### 3.2 Current logic can report a passage pass without valid LLM grounding
+### 3.2 Passage pass without valid LLM grounding
 
-For full-text sources, both a parse failure and disabled LLM can become a `pass` when lexical overlap is medium/high (`use-manuscript-audit.ts`).
+**Status:** **Shipped** invariant in engine (Phase 0-C).
 
-That undermines the product promise. Lexical overlap is useful evidence retrieval, but it is not claim grounding.
+`audit-runner` / `passageVerdictWithoutParsedGrounding`: disabled or unparseable LLM output cannot produce `pass`. Quote chips + structured quote validation shipped in 1.3.0.
 
-**Required invariant:**
+**Residual:** keep retrieval confidence visually separate from Sanad verdict in denser reports; never reintroduce overlap-as-pass shortcuts.
 
-- No L3 `pass` unless structured claims parsed successfully and every supported claim has valid source quotes.
-- LLM disabled → `not run`, not pass.
-- Parse failure → warning/error, never pass.
-- Deterministic overlap should be displayed separately as retrieval confidence.
-- Quote validation should become structured engine output, not text embedded in a top-level reason.
+### 3.3 Failed citation mapping → synthetic-span grounding
 
-The quote chip is therefore not only a UI enhancement; it needs a stronger result model.
+**Status:** **Shipped** — only mapped bibliography keys enter L3 (`selectMappedBibliographyEntries`). Sharh-lite surfaces unmapped citation counts.
 
-### 3.3 Failed citation mapping can audit unrelated references against the manuscript opening
+**Residual (1.7.0 Preflight+):** stronger mapping-coverage gate in UI before a full audit; clearer matched / ambiguous / unmatched UX; manual mapping assist.
 
-When no citation mapping succeeds, the code selects up to the first 80 bibliography entries. Entries without a cite span then receive a synthetic span at the start of the manuscript.
+### 3.4 Passage construction vs Sanad quality
 
-For a trust product, this fallback should not produce L3 findings.
+**Status:** **Partial** — sentence/paragraph-bounded windows shipped (`passage-window.ts`, cite sentence ±1, cap 1500 chars). The old ±260 mid-word slice is gone.
 
-**Instead:**
+July field notes (`masdar-lite-jul13`) remain useful raw material (captured under the older window):
 
-- Report mapping coverage before running L3.
-- Distinguish matched, ambiguous, and unmatched citations.
-- Do not ground unmatched references.
-- Offer bibliography repair or manual mapping.
-- Set a minimum mapping-coverage gate before a full audit.
+- 49 grounding calls; 18 full-text / 31 abstract fallback.
+- Many `truncated` / echo heuristics — **re-ground after the new window** before treating as train labels.
+- Human adjudication **in progress:** **14/49** labeled (2026-07-18); not yet boost JSONL.
 
-### 3.4 Passage construction is likely hurting Sanad more than another training cycle would help
+**Still before S15:** source-side paragraph/page chunking + locators (**1.6.0**); evaluate context quality separately from model quality; finish field-note labels → boost JSONL (never into frozen holdout).
 
-`buildPassageWindow` uses a fixed ±260-character slice. It can begin and end mid-word or mid-sentence.
+### 3.5 App vs training prompt contract
 
-The July field notes (`masdar-lite-jul13`) show:
+**Status:** **Shipped** for continued use — contract `sanad-grounding-v1`; Nassila ↔ NassilaT goldens byte-identical; S12/S14 single-seed production-prompt re-eval recorded (`PROMPT_CONTRACT_REEVAL.md`). **S15 still parked.**
 
-- 49 grounding calls.
-- 18 full-text and 31 abstract fallbacks.
-- 45 calls flagged as truncated passages.
-- 19 heuristic quote/claim echo flags.
-- One parse error.
-- Zero human labels across all 49 calls and 142 extracted claims.
+**Residual:** optional multi-seed re-eval; investigate S14 quote bar miss on Ollama run; keep prompt version/hash on model cards and audit exports; train S15 only on a measured model gap after §6.
 
-This should lead to **context engineering before S15:**
+### 3.6 Arabic Sanad validation
 
-- Build sentence- or paragraph-bounded windows.
-- Preserve the cited sentence plus adjacent context.
-- Remove reference markers from claim text where safe.
-- Avoid swallowing section headings, tables, or neighboring unrelated claims.
-- Record exact manuscript offsets.
-- Evaluate context quality independently from model quality.
+**Status:** **Open** — unchanged.
 
-The field notes are useful raw material but not yet training data because their expected-verdict columns are entirely unreviewed.
+UI AR support is live; Sanad training JSONL has **zero** Arabic-script grounding rows (~18k). Qualify Arabic grounding as **unvalidated** until a native AR slice exists.
 
-### 3.5 App and training prompts are no longer equivalent
+### 3.7 OCR offline first use
 
-The app now uses:
+**Status:** **Shipped** — bundled `eng` / `fra` / `ara` tessdata + `langPath` resolution (`tesseract-ocr.ts`); packaged OCR smoke PASS.
 
-- A substantial system prompt.
-- Explicit untrusted-data instructions.
-- XML-delimited manuscript and source blocks.
+**Residual:** if packs are missing, Tesseract may still network-fallback — surface that warning honestly; keep offline-first-use coverage in release smoke.
 
-NassilaT’s `validate_dataset.py` still:
+### 3.8 Project persistence
 
-- Places the full older instructions inside the user message.
-- Adds a separate one-line system message.
-- Uses `PASSAGE:` / `SOURCE_EXCERPT:` formatting.
-- Tests against its own old single-file golden fixture.
+**Status:** **Partial** — `.nassila` save/open shipped (1.3.0 / former 1.2.7).
 
-**Consequences:**
+**Residual (1.7.0):** dirty-close warning; crash recovery; action log; save/reopen edge-case fidelity (mappings, decisions, export history).
 
-- S12/S14 metrics describe the prior inference contract.
-- They do not directly establish performance under the currently shipped prompt.
-- Security prompt changes may help or hurt JSON, quotes, and verdict distributions.
+### 3.9 Release reliability foundation
 
-**Do not retrain immediately.** First:
+**Status:** **Partial**.
 
-1. Establish one versioned production prompt contract.
-2. Run existing S12 and S14 binaries on the 115-row harness using the exact app messages.
-3. Run the same test on the curated real-manuscript set.
-4. Record prompt-contract version/hash in model cards and audit exports.
-5. Train S15 only if the result identifies a model—not pipeline—gap.
+- CI workflow exists (`.github/workflows/ci.yml`).
+- Local packaged smoke + boundary unit smoke PASS for 1.3.0; GitHub **release tag** still pending operator cut.
+- Still thin: installer SHA-256/SBOM automation, code signing, milestones/issues hygiene, Gemma license metadata check.
 
-### 3.6 Arabic product support is stronger than Arabic Sanad validation
-
-Both model cards declare English and Arabic. A scan of the current grounding JSONL artifacts found **zero Arabic-script rows** across 18,207 grounding rows. The few Arabic rows in the repository occur in the broader paper corpus, not the Sanad task data.
-
-This does not prove Gemma cannot handle Arabic. It does mean the Sanad task is not currently validated in Arabic.
-
-**Honest options:**
-
-- Qualify Arabic as unvalidated for grounding, while retaining Arabic UI support; or
-- Build an Arabic grounding train/eval slice with domain reviewers.
-
-Translated English tests alone are insufficient. Arabic scientific writing needs native passages, mixed Arabic/Latin terminology, Arabic numerals, DOI strings, and RTL evidence rendering.
-
-### 3.7 OCR is local processing but not currently offline on first use
-
-The shipped OCR path calls `createWorker(langArg)` without a bundled `langPath`. Tesseract.js downloads missing `eng`, `fra`, and `ara` traineddata from jsDelivr on cache miss. There are no traineddata assets in the repository or installer resources.
-
-Therefore:
-
-- Manuscript content remains local.
-- But first-use OCR needs network access.
-- First-use OCR can fail offline.
-- The current “on-device only / offline” wording is incomplete.
-
-**O2 should decide explicitly between:**
-
-- Bundling language packs; or
-- An explicit, consented language-pack download manager with checksums, versions, licenses, cache location, and removal controls.
-
-Also include an offline-first-use packaged smoke test. The present O2 plan of fixtures/hardware smoke is not enough.
-
-### 3.8 A long-running workstation needs project persistence
-
-Citation rows, manuscript text, report state, user decisions, and attached source paths are ordinary in-memory Zustand state. There is no project save/open flow, crash recovery, or dirty-close warning.
-
-This is more important than several planned polish items. A user can spend minutes auditing and repairing a manuscript, close the app, and lose the working state.
-
-**A minimal local project should preserve:**
-
-- Manuscript snapshot and source format.
-- Canonical `CslItem` library.
-- Cite-to-reference mappings.
-- Attached-source metadata and hashes.
-- Audit configuration.
-- Model and prompt-contract version.
-- Findings and user decisions.
-- Unresolved conflicts.
-- Export history.
-
-A versioned `.nassila` JSON project is sufficient initially. PDFs need not be embedded by default; store path, hash, size, and extraction cache metadata.
-
-### 3.9 The release process needs a reliability foundation
-
-The app repository currently has:
-
-- No GitHub CI workflows.
-- No open issues or milestones despite a locked release train.
-- Locally produced installers.
-- No visible checksum/SBOM or automated release gate.
-- No automated packaged Electron smoke.
-- No code-signing configuration.
-
-**Before broader institutional adoption:**
-
-- Add CI for tests, lint, build, prompt-contract checks, links, and i18n parity.
-- Add a Windows packaged smoke.
-- Publish installer SHA-256 checksums.
-- Verify third-party notices for Tesseract, Leptonica/data packs, pdf.js, and other bundled components.
-- Verify whether the model-card `apache-2.0` metadata is compatible with the linked Gemma terms.
-- Consider code signing when sustainable.
-
-The recent two-day release cadence is impressive, but it leaves too little room for packaged and real-manuscript verification. Introduce a preview/RC build before stable releases.
+**Before broader institutional adoption:** publish checksums on release; widen CI gates; consider RC builds before stable cuts.
 
 ---
 
@@ -341,34 +244,169 @@ Maktab and Masdar may remain deterministic. Shahid may need a separate multimoda
 
 ## 5. Recommended release sequence
 
-Unlock the “#7 only” restriction. Correctness defects must preempt release-scope purity.
+**Versioning rule (post-1.3.0):** Assign semver at **release cut**. Do not pre-allocate patch numbers on the public website until a cut is ready. Sync `nassila-web/lib/release-train.ts` and roadmap MDX when a version is announced.
 
-### Phase 0 — Trust reset, before 1.2.2
+### Shipped — 1.3.0 · Sharh-lite (2026-07-20)
 
-Estimated scope: one focused stabilization cycle.
+The former **1.2.2–1.2.9** slots shipped together in **1.3.0**:
 
-**Work:**
+| Former slot | Codename | Delivered in 1.3.0 |
+|-------------|----------|-------------------|
+| 1.2.2 | Throughput | Main-process audit scheduler, live progress, cancel-safe runs |
+| 1.2.3 | Quote chip | Per-claim quote chips; evidence provenance; header wordmark cleanup |
+| 1.2.4 | Raqim Repair | PMCID/arXiv/OUP/Springer hardening; parser guards; identity-safe apply |
+| 1.2.5 | Masdar attach | Per-reference PDF attach; content-addressed cache; offline re-ground |
+| 1.2.6 | Raqim Resolve | Repair panel; scholarly registries + HF/Kaggle/GitHub; manual apply only |
+| 1.2.7 | Projects + Help | `.nassila` save/open; first-run tip; Help → website |
+| 1.2.8 | OCR O2 + a11y | Bundled eng/fra/ara tessdata; enhanced OCR; loop keyboard nav |
+| 1.2.9 | Preflight | Submission gates; opt-in diagnostic export |
+| 1.3.0 | Sharh-lite | Deterministic evidence summary; DOCX/PDF split fix; Windows icons |
+| — | Legislation (partial) | EU ELI URL + `Regulation (EU) YYYY/NNN` in Resolve |
+
+Subsections **Phase 0** and **1.2.2–1.2.9** below remain as **design record** for what shipped in 1.3.0.
+
+---
+
+### Future release map (post-1.3.0)
+
+Suggested versions and worker-themed codenames. **Not dates, not public promises** until cut — internal planning and website sync source.
+
+| Version | Codename (EN) | Codename (AR) | Primary worker | User-visible focus |
+|---------|---------------|---------------|----------------|-------------------|
+| **1.4.0** | **Raqim Statute** | **رقيم تشريع** | Raqim | Legislation + gray-lit Resolve; parser hardening for legal refs |
+| **1.5.0** | **Raqim Web** | **رقيم ويب** | Raqim / Tasnif | Webpage & grey-web citations; dead links; host parsers |
+| **1.6.0** | **Maktab Loop** | **حلقة مكتب** | Maktab / Masdar | OCR fixtures; one-upload loop; source chunking polish |
+| **1.7.0** | **Integrity Bundle** | **حزمة النزاهة** | Loop / export | Preflight+; submission export; trust & packaged parity |
+| **1.8.0** | **Shahid** | **شاهد** | Shahid (+ Sanad) | Tier 3+ multimodal; model-assisted grey lit (confirm-before-apply) |
+
+**Recommended cut order:** 1.4.0 → 1.5.0 → 1.6.0 → 1.7.0 → (NassilaT eval gate) → 1.8.0.
+
+#### 1.4.0 — Raqim Statute · رقيم تشريع
+
+**Problem:** Resolve searched scholarly registries for `legislation` rows; EU ELI URLs had no handler (Crossref papers *about* a law surfaced as “fixes”). **Principle:** pattern families + official catalogue URLs — **not** one national API per country.
+
+**Shipped in 1.3.0 (checkpoint):** EU ELI parse; `Regulation (EU) YYYY/NNN`; no Crossref fallback on `europa.eu`; down-rank articles when row is legislation.
+
+**1.4.0 scope:**
+
+| Area | Deliverable |
+|------|-------------|
+| **US federal** | URL patterns: `congress.gov`, `govinfo.gov`, `uscode.house.gov` → `legislation` + `number` + URL |
+| **UK** | `legislation.gov.uk` year/chapter or SI id from URL |
+| **Generic official URL** | Allowlisted `.gov` / parliamentary catalogues: pasted URL = identity; optional conservative metadata |
+| **Resolve UX** | Copy: legal instruments verified against official sources, not Crossref; no scholarly default for legislation |
+| **Parser** | Statute numbers split across PDF/DOCX lines (`2024` + `/1689` → `2024/1689`) |
+| **Fixtures** | EU AI Act + ≥1 US + ≥1 UK operator bibliography case |
+
+**Non-goals:** global legal API; auto-apply fuzzy matches; commentary papers as the law.
+
+#### 1.5.0 — Raqim Web · رقيم ويب
+
+From `WEBPAGE_ROADMAP.md` and website roadmap — deterministic first.
+
+| Area | Deliverable |
+|------|-------------|
+| **Reliability** | HTTP status, content-type, redirect logging; dead-link visibility; paywall/archive hints |
+| **Host parsers** | Stable site-specific extractors (code over model) |
+| **Raqim engine** | OpenAlex consistency when type stays `webpage`; locale-aware accessed-date; batch re-fetch suggestions |
+| **Resolve** | Extend artifact host connectors where URLs are stable |
+
+Registry verify and citeproc remain **deterministic** — not LLM-replaced.
+
+#### 1.6.0 — Maktab Loop · حلقة مكتب
+
+| Area | Deliverable |
+|------|-------------|
+| **Maktab / OCR** | Golden fixtures; scan coverage; page provenance; cache controls |
+| **Manuscript loop** | Less manual module hopping: upload → segment → cited sources → grounding |
+| **Masdar** | Source-fetch polish; paragraph/page chunking baseline before any Masdar *model* |
+| **Sharh** | Richer **deterministic** summaries (no new unconstrained LLM call unless eval proves need) |
+| **A11y** | Loop table keyboard nav; RTL acceptance pass |
+
+#### 1.7.0 — Integrity Bundle · حزمة النزاهة
+
+Trust and submission outputs — finish gaps that overlap 1.3.0 preflight but broaden export and production parity.
+
+| Area | Deliverable |
+|------|-------------|
+| **Preflight+** | Stronger unresolved-identity gate; mapping-coverage summary in UI |
+| **Export** | Submission integrity bundle (audit + bibliography + provenance metadata) |
+| **Projects** | Action log; save/reopen fidelity; edge-case recovery |
+| **Cancel** | Mid-LLM abort when IPC supports `AbortSignal` |
+| **Packaged parity** | Remaining renderer vs main-process registry paths; audit rate limiting under concurrency |
+| **CI** | Packaged smoke gates on release train |
+
+#### 1.8.0 — Shahid · شاهد
+
+**Gate:** Tier 3 full-text holdout (pilot → product gate) and separate retrieval vs grounding vs end-to-end eval — see §6.
+
+| Area | Deliverable |
+|------|-------------|
+| **Shahid** | Table/figure evidence path (today disabled) |
+| **Grey lit (model-assisted)** | Suggest CSL fields from page signals; platform typing — **user confirms before apply** |
+| **Sanad** | S15 **only if** §6 go/no-go after 1.4–1.7 measurements |
+
+---
+
+### Parallel tracks (not app semver)
+
+| Track | Status | Notes |
+|-------|--------|-------|
+| **Sanad S15+** | Parked | NassilaT; un-park when field notes + Tier 3 holdout exist |
+| **NassilaT field notes / Tier 3 data** | Active curation | Never surfaces training/eval copy in app UI |
+| **nassila-web** | Ongoing | Changelog sync; optional Sanad validation table on local-models |
+| **Website release train** | Empty until cut | `RELEASE_TRAIN: []` after 1.3.0 — repopulate when 1.4.0 is announced |
+
+### Worker maturity (direction)
+
+| Worker | Today (1.3.0) | Target (via map above) |
+|--------|----------------|-------------------------|
+| **Raqim** | L1/L2, Resolve, partial EU legislation | 1.4–1.5: statute + web gray lit |
+| **Sanad** | L3; S12/S14 | Deeper Masdar text; S15 only if eval gap |
+| **Masdar** | OA PDF + attach | 1.6: auto cited-PDF ingest; chunking |
+| **Maktab** | pdf.js + OCR O2 | 1.6: fixtures, provenance |
+| **Sharh** | Sharh-lite deterministic | Richer templates; LLM facet only if warranted |
+| **Tasnif** | Inline deterministic | 1.5: grey-web typing with confirm |
+| **Shahid** | Off | 1.8: tables/figures |
+
+### Long-term (not versioned)
+
+**After 1.4–1.8** and the Tier 3 eval gate — no semver, no dates, not on the public release train until promoted deliberately. Canonical list; detail and institutional-access ladder in **§11**.
+
+| Item | Theme | Why long-term / promotion gate |
+|------|-------|--------------------------------|
+| **Merged seven-worker GGUF** | Models | One weight file risks task interference, larger downloads, and E4B tier loss — prefer one Nassila routing experience with independently gated artifacts (§4) |
+| **Shahid full multimodal** | Shahid | **1.8.0** ships a bounded tables/figures slice; full multimodal grounding needs its own eval gate beyond Tier 3 |
+| **Institutional login webview** | Masdar / access | SEC-06, credentials, publisher policy — last resort after OA → attach → browser → proxy (§11) |
+| **Train every worker for naming symmetry** | Training | No user value until each facet passes an independent task gate |
+| **Cloud LLM as default** | Product | Local Sanad (S12/S14) remains primary — `PRODUCT.md` non-goal |
+| **Notification center** | UX | Rejected scope — lightweight toasts only (`FEATURES-AND-TWEAKS.md`) |
+| **Thesis generation / open drafting** | Product | Integrity workflow, not authoring — `OUROBOROS.md` / `PRODUCT.md` non-goal |
+| **Collaboration / cloud project sync** | Product | Needs durable project model, conflict rules, and privacy design beyond `.nassila` |
+| **Fuzzy auto-apply (registry / gray lit)** | Raqim | Conflicts with identity-safe **manual apply** — near-term path is confirm-before-apply (1.5 / 1.8) |
+
+**Promotion rule:** A long-term item gets a version slot only when (a) 1.4–1.8 gaps it addresses are closed or explicitly deferred, (b) acceptance criteria exist in `FEATURES-AND-TWEAKS.md`, and (c) security/privacy review is done where applicable.
+
+---
+
+### Phase 0 — Trust reset (shipped in 1.3.0 train)
+
+Design record for the trust reset that landed with the 1.3.0 consolidation. Items below are **done** unless noted in §3 residuals.
+
+**Work (completed):**
 
 1. Route manuscript registry resolution through main-process IPC.
 2. Add a packaged audit smoke test.
 3. Synchronize the production prompt contract across repositories.
-4. Re-evaluate S12 and S14 under that exact prompt.
+4. Re-evaluate S12 and S14 under that exact prompt (single-seed; optional multi-seed remains).
 5. Eliminate L3 pass on disabled LLM or parse failure.
 6. Remove synthetic-span grounding when mappings fail.
-7. Add mapping coverage and ambiguity reporting.
+7. Add mapping coverage and ambiguity reporting (Sharh-lite + mapping summary).
 8. Replace character-cut passage windows with sentence/paragraph windows.
-9. Decide and implement the OCR language-pack policy.
-10. Add basic CI.
+9. Bundle OCR language packs (eng/fra/ara).
+10. Add basic CI (`.github/workflows/ci.yml`).
 
-**Exit gates:**
-
-- No external registry fetch originates in the production renderer.
-- No passage pass exists without parsed claims and valid quotes.
-- Cancelled or superseded runs cannot append stale findings.
-- Production prompt hash is identical in app and evaluator.
-- S12/S14 production-prompt reports are recorded.
-- Offline first-use OCR behavior matches public documentation.
-- Packaged Windows audit smoke passes.
+**Exit gates:** **Met** for 1.3.0 packaged smoke + prompt re-eval. Residual rate-limit / mid-LLM abort / dirty-close → **1.7.0**.
 
 ### 1.2.2 — Audit scheduler and throughput
 
@@ -460,7 +498,7 @@ By this point, the scheduler supports item-scoped runs.
 - Detect moved/changed source files by hash.
 - Provide clear/remove source actions.
 
-Do not store only a path in `attachedPdfByBibKey`; that existing scaffold is insufficient for reproducibility.
+Do not store only a path — use content-addressed `SourceArtifact` metadata (hash, size, extraction cache). **Shipped in 1.3.0** as `sourceArtifactsByBibKey` (supersedes the earlier `attachedPdfByBibKey` path-only scaffold).
 
 #### 1.2.6 — Raqim Resolve core
 
@@ -484,6 +522,8 @@ Split the current oversized R2/R3 scope.
 
 A Hugging Face model card is not automatically equivalent to a technical report. The UI must distinguish artifact citation, model card, dataset, software release, and scholarly report.
 
+**Legislation (separate extension — see §5 → 1.4.0 Raqim Statute):** Laws, regulations, and directives are not Crossref records. Host connectors for ML artifacts must not be reused as “legislation resolvers.” Prefer structured **official-catalogue URL patterns** (EU ELI first) plus offline field validation — not one bespoke national API per country.
+
 ### 1.2.7–1.2.9, if those slots are retained
 
 Do not label them “TBD.” Recommended outcomes:
@@ -496,25 +536,23 @@ Do not label them “TBD.” Recommended outcomes:
 
 ### 1.3.0 — Sharh-lite
 
-Sharh-lite should summarize structured evidence, not add another unconstrained LLM call.
+Sharh-lite summarizes structured evidence — not another unconstrained LLM call.
 
-**It should produce:**
+**Shipped in 1.3.0:**
 
-- Supported, weak, contradicted, and not-found claim counts.
-- Source-coverage limitations.
-- Unresolved bibliography identities.
-- Unmapped citations.
-- Invalid or missing quote warnings.
-- Concrete next actions.
-- Deep links to the canonical website documentation.
+- Supported / weak / contradicted / not-found style rollups and next actions.
+- Source-coverage limitations and unmapped-citation signals.
+- Invalid or missing quote warnings (with quote chips).
+- Help → website deep links.
 
-**Also complete:**
+**Deferred to later cuts (do not treat as 1.3.0 gaps):**
 
-- Granular cancellation.
-- Project action log.
-- Submission integrity bundle export.
-- Accessibility and RTL acceptance.
-- Five-to-ten real researcher usability sessions.
+- Project action log; fuller submission integrity bundle → **1.7.0**.
+- Mid-LLM abort / AbortSignal → **1.7.0**.
+- Broader RTL acceptance + OCR golden fixtures → **1.6.0**.
+- Five-to-ten real researcher usability sessions → ongoing / post-1.4.
+
+*(Legislation-aware Resolve detail lives under **§5 Future release map → 1.4.0 Raqim Statute**.)*
 
 ---
 
@@ -526,10 +564,10 @@ S12 and S14 are useful shipping baselines. Do not train S15 merely to recover S1
 
 **Immediate sequence:**
 
-1. Evaluate S12/S14 with the exact production prompt.
-2. Curate the July field notes.
-3. Fix mapping, passage-window, and retrieval defects.
-4. Re-run real manuscripts.
+1. ~~Evaluate S12/S14 with the exact production prompt.~~ **Done** (single-seed; see `PROMPT_CONTRACT_REEVAL.md`). Optional multi-seed remains.
+2. Curate the July field notes (**14/49**; continue).
+3. Improve source chunking / locators (**1.6.0**); keep passage-window quality under eval.
+4. Re-run real manuscripts after labels + chunking polish.
 5. Decide whether the remaining errors are model errors.
 6. Only then define S15’s data objective.
 
@@ -600,79 +638,78 @@ Before retaining an unqualified Arabic model claim:
 
 ### Tier 3 workstreams (dependencies)
 
-| # | Workstream | Repo | Depends on | Unblocks |
-|---|------------|------|------------|----------|
-| W1 | App 1.2.2–1.2.4 (throughput, quote chip, Masdar attach) | Nassila | Phase 0 | Real Tier 3 UX + more field notes |
-| W2 | Maktab OCR O2 + O4 golden fixtures | Nassila | O1 | Scan-quality ingest for M01 |
-| W3 | Masdar-lite field-note curation | NassilaT | Operator review | S15+ boost JSONL |
-| W4 | `fetch_oa_fulltext.py` pilot (100 DOIs) | NassilaT | CORPUS_PIPELINE | `source_pdf_extract` rows |
-| W5 | Lock `doc_extract` / `source_pdf_extract` schemas | NassilaT | W4 | M01 / Md01 dataset collection |
-| W6 | `eval_holdout_body_*.jsonl` (30–50 rows) | NassilaT | W4–W5 | Tier 3 Sanad eval |
-| W7 | Maktab gold manuscripts (50–100) | NassilaT + manual | W5 | M01 QLoRA smoke (E4B) |
-| W8 | Tier 3 Sanad train (body chunks) | NassilaT | W6 + W3 | Tier 3 product ship |
-| W9 | S15+ abstract recovery (optional) | NassilaT | W3 + cap policy fix | Higher combined on S14 base |
-| W10 | Raqim R1–R3 | Nassila | — | Bibliography quality (orthogonal) |
+| # | Workstream | Repo | Status | Unblocks |
+|---|------------|------|--------|----------|
+| W1 | App throughput, quote chip, Masdar attach (former 1.2.2–1.2.5) | Nassila | **Done** in 1.3.0 | Real Tier 3 UX + more field notes |
+| W2 | Maktab OCR O2 (bundled packs) | Nassila | **Done** in 1.3.0; O4 golden fixtures → **1.6.0** | Scan-quality ingest for M01 |
+| W3 | Masdar-lite field-note curation | NassilaT | **Active** (14/49 labeled) | S15+ boost JSONL |
+| W4 | `fetch_oa_fulltext.py` pilot (100 DOIs) | NassilaT | Not started | `source_pdf_extract` rows |
+| W5 | Lock `doc_extract` / `source_pdf_extract` schemas | NassilaT | Not started (after W4) | M01 / Md01 dataset collection |
+| W6 | `eval_holdout_body_*.jsonl` (30–50 rows) | NassilaT | Not started (after W4–W5) | Tier 3 Sanad eval |
+| W7 | Maktab gold manuscripts (50–100) | NassilaT + manual | Not started (after W5) | M01 QLoRA smoke (E4B) |
+| W8 | Tier 3 Sanad train (body chunks) | NassilaT | Parked until W6 + W3 | Tier 3 product ship |
+| W9 | S15+ abstract recovery (optional) | NassilaT | Parked | Higher combined on S14 base |
+| W10 | Raqim legislation + web (1.4–1.5) | Nassila | **Next** app cuts | Bibliography quality (orthogonal) |
 
-**Critical path to Tier 3 train:** W4 → W5 → W6 → W8 (W1/W2 parallel on app side).
+**Critical path to Tier 3 train:** W4 → W5 → W6 → W8. App parallel: **1.4 → 1.5 → 1.6 (chunking) → 1.7**, then Tier 3 gate → 1.8.
 
 ### Phased 6–12 month recommendation
 
 | Window | Focus |
 |--------|--------|
-| **Months 0–2** | Stabilize ship; no S15+ Vast. Phase 0 + 1.2.2–1.2.4. Field-note curation. Doc refresh. |
-| **Months 2–4** | Tier 3 data plane: OA fetch pilot, schemas, body holdout draft, tier3 gate stub. |
-| **Months 4–6** | First Tier 3 trains (smoke): M01, Masdar extract, Sanad body-chunk only after holdout exists. |
-| **Months 6–9** | Tier 3 product integration (loop-fed, no peer tabs). Institutional access design spike. |
-| **Months 9–12** | Optional S15+ / merge research only if Tier 3 stable. Phase 6 merge stays non-shipping. |
+| **Now (post-1.3.0)** | Cut public 1.3.0 when ready. No S15 Vast. Field-note curation (W3). Doc refresh. Start **1.4.0 Raqim Statute**. |
+| **Next** | Tier 3 data plane: OA fetch pilot, schemas, body holdout draft (W4–W6). Ship **1.5** then **1.6** (chunking + OCR fixtures). |
+| **Then** | **1.7** Integrity Bundle. First Tier 3 trains only after holdout exists (W8; M01/Md01 only if deterministic fails). |
+| **Later** | Tier 3 product claim → **1.8 Shahid**. Optional S15 / merge research only if Tier 3 stable. Phase 6 merge stays non-shipping. |
 
 ---
 
 ## 7. Product coherence addendum
 
-Findings from cross-repo product review (app + website):
+Cross-repo review notes. Items marked **shipped** were delivered in the 1.3.0 train; remaining gaps map to **1.4–1.7**.
 
 ### Align first-run onboarding
 
-Manuscript is the default surface (`shell-store`), but guidance recommends Bibliography-first. A first-time graduate student lands on Manuscript, sees upload/audit CTA, and only later discovers bibliography-first.
+**Residual.** Manuscript remains the default surface; doctrine still prefers Bibliography-first for first-time users.
 
-**Must-do:** Treat bibliography-first as guided first-run (optional checklist on empty Manuscript, or default first launch to Bibliography with one dismissible banner). Slot: **1.2.7**.
+**Follow-up:** guided first-run checklist or dismissible banner (polish; not blocking 1.4).
 
 ### Define “New Session”
 
-`NEW_SESSION` currently clears citations only; manuscript text and audit report are left untouched. Define a unified session model for what New Session clears.
+**Residual.** Clarify unified clear semantics (citations vs manuscript vs report) when touching session model again (**1.7** projects fidelity).
 
 ### Loop accessibility
 
-The cited-sources findings table is click-only. `DESIGN.md` requires table keyboard navigation. Add roving tabindex + Enter to open detail (**1.2.8**).
+**Partial — shipped in 1.3.0** (loop keyboard nav in former 1.2.8). Re-verify RTL + table edge cases in **1.6** a11y pass.
 
-### Fix copy that over-promises attach
+### PDF attach wiring
 
-i18n strings such as `loop.intro` / `loop.pipelineGap` imply manual PDF attach is live, but `attachedPdfByBibKey` is not wired into audit. Fix now or with 1.2.4/1.2.5.
+**Shipped in 1.3.0** — `sourceArtifactsByBibKey` flows into `startManuscriptAudit`. Re-check i18n for any leftover “coming soon” attach copy during doc refresh (§8).
 
 ### Help and discoverability
 
-Help menu lacks locale-aware docs deep links; `reportIssue` wrongly points at the CSL styles repo. Pull Help → website forward to **1.2.7**.
+**Shipped in 1.3.0** — Help → website. Keep locale-aware deep links honest as docs move.
 
 ### Privacy-respecting quality measurement
 
-No in-app quality signal exists today. Prefer an opt-in, local-first quality ledger (aggregates only; no manuscript text) plus optional user-initiated diagnostic export — not remote telemetry by default (**1.2.9**).
+**Partial — shipped** opt-in diagnostic / preflight path in 1.3.0. Broaden submission integrity bundle in **1.7.0**; still no remote manuscript telemetry by default.
 
-### Coherence scorecard
+### Coherence scorecard (post-1.3.0)
 
 | Dimension | Coherent? | Notes |
 |-----------|-----------|-------|
-| Ouroboros not Hydra | Yes | Renderer matches PRODUCT/DESIGN; Hydra removed |
-| Bibliography-first | Partial | Doctrine strong; default entry weak |
-| Local-model setup | Yes | Web canonical + shortened modal; USER_GUIDE slightly stale |
-| Evidence transparency | Partial | Strong panels; quote chip pending |
-| Bilingual UX | Yes | Parity test + AR docs; Help not linked |
-| Release positioning | Yes | Nassila / nassila-web / STATE aligned at 1.2.1 |
-| Onboarding | Partial | Website good; in-app first-run thin |
-| Documentation | Partial | Web > in-repo HOW_TO; copy over-promises attach |
-| Persistence | No | Major journey gap |
-| Telemetry / quality | No | Not on train |
-| Accessibility | Partial | Criteria documented; loop table gaps |
-| Failure recovery | Partial | Improved 1.2.0–1.2.1; retry/cancel gaps remain |
+| Ouroboros not Hydra | Yes | Renderer matches PRODUCT/DESIGN |
+| Bibliography-first | Partial | Doctrine strong; first-run entry still Manuscript-default |
+| Local-model setup | Yes | Web canonical + settings; keep USER_GUIDE synced |
+| Evidence transparency | Yes | Quote chips + Sharh-lite; denser provenance in 1.6–1.7 |
+| Bilingual UX | Yes | EN/AR parity; Sanad AR **unvalidated** (§3.6) |
+| Release positioning | Yes | Baseline **1.3.0**; website train empty until 1.4 announced |
+| Onboarding | Partial | Website good; in-app first-run still thin |
+| Documentation | Partial | Stub language / dead `POST_V114` links still need §8 pass |
+| Persistence | Partial | `.nassila` save/open live; dirty-close / recovery → 1.7 |
+| Telemetry / quality | Partial | Opt-in local diagnostics; no remote default |
+| Accessibility | Partial | Loop keyboard nav shipped; RTL acceptance → 1.6 |
+| Failure recovery | Partial | Cancel/scheduler shipped; mid-LLM abort → 1.7 |
 
 ---
 
@@ -706,7 +743,7 @@ L6  Technical specs
 
 ### Naming rules
 
-1. **App:** `Nassila 1.2.x` (from `package.json`) — never freeze headers at `1.1.x`.
+1. **App:** current `package.json` version (**1.3.0** baseline) — never freeze headers at `1.1.x` / `1.2.1`.
 2. **Models:** **S12** / **S14** in mixed docs; `v1.12`/`v1.14` only in NassilaT archive walkthroughs.
 3. **Workers:** two columns everywhere — **Deterministic stage** (Live / Partial / Planned) vs **LLM facet** (Planned / M01 / etc.).
 
@@ -719,7 +756,7 @@ On each app release X.Y.Z:
 3. Operator map — move row to Shipped; check §G; bump Last updated.
 4. `STATE.md` — latest app, last run.
 5. FEATURES — `[x]` acceptance for shipped #ids; bump Status date.
-6. nassila-web release-train + roadmap MDX if user-visible.
+6. nassila-web release-train + roadmap MDX when a **future cut** (§5 map) is announced.
 7. USER_GUIDE / HOW_TO for behavior changes.
 8. Grep for `POST_V114_MAP` → replace with `OUROBOROS_OPERATOR_MAP`.
 9. Vision docs quarterly or on milestone only.
@@ -728,11 +765,12 @@ On each app release X.Y.Z:
 
 1. Replace all `POST_V114_MAP.md` → `OUROBOROS_OPERATOR_MAP.md`.
 2. Reconcile Masdar/Maktab maturity language (deterministic live vs LLM facet planned).
-3. Refresh stale headers (FEATURES date, OUROBOROS_CONTEXT date, operator map status, ROADMAP).
-4. Check off shipped FEATURES acceptance (#1, #2, #13; complete #8 docs).
-5. Fix operator map Planned table and #15 scheduling.
-6. Update `MAKTAB_OCR.md`, `LOOP.md`, `USER_GUIDE.md`.
+3. Refresh stale headers (FEATURES date, OUROBOROS_CONTEXT date, operator map status, ROADMAP) to **1.3.0** baseline.
+4. Check off shipped FEATURES acceptance for the 1.3.0 train; archive pre-implementation problem statements.
+5. Fix operator map Planned table vs shipped 1.3.0 consolidation.
+6. Update `MAKTAB_OCR.md`, `LOOP.md`, `USER_GUIDE.md`, `HOW_TO_GUIDE.md` (L3 live; OCR packs bundled).
 7. Annotate CHANGELOG 1.1.3 DOI↔title as superseded by 1.2.1 #4c.
+8. Keep this Future doc’s §3 status lines in sync when residuals close in 1.6–1.7.
 
 ### Website metrics honesty
 
@@ -742,47 +780,66 @@ If Sanad validation metrics appear on the site, do not publish bare “accuracy.
 
 ## 9. Implementation matrix (current vs planned)
 
-**Baseline:** app **1.2.1** (2026-07-17). Models **S12** (E4B) · **S14** (12B).
+**Baseline:** app **1.3.0** (2026-07-20). Models **S12** (E4B) · **S14** (12B).
 
-| Release | Codename | FEATURES | Status |
-|---------|----------|----------|--------|
-| 1.2.1 | Masdar UX | #4b, #4c, #8, I2 | **Shipped** |
-| 1.2.2 | Throughput | #7 | **Missing** (after Phase 0) |
-| 1.2.3 | Quote chip | #6, #15 | **Missing** (engine exists; UI missing) |
-| 1.2.4 | Raqim Repair | #14 R1 | **Mostly missing** (recommended before attach) |
-| 1.2.5 | Masdar attach | #5 + re-audit | **Scaffold only** (`attachedPdfByBibKey`) |
-| 1.2.6 | Raqim Resolve | #14b R2–R3 | **Missing** |
-| 1.2.7 | Projects + Help + onboarding | — | **Recommended** (was TBD) |
-| 1.2.8 | OCR O2 + a11y | O2 | **Partial** (O1 live; O2 UX/fixtures missing) |
-| 1.2.9 | Preflight + quality ledger | — | **Recommended** (was TBD) |
-| 1.3.0 | Sharh-lite | #9–11 | **Missing** |
+### Shipped
 
-### Raqim R1 detail
+| Release | Codename (EN) | Codename (AR) | Status |
+|---------|---------------|---------------|--------|
+| 1.3.0 | Sharh-lite | موجز شرح | **Shipped** 2026-07-20 (consolidates 1.2.2–1.2.9 train + EU ELI partial) |
+| 1.2.1 | Masdar UX | تفاعل مصدر | Shipped |
+| 1.2.0 | Masdar-lite | موجز مصدر | Shipped |
 
-| Item | Status |
+### Planned (see §5 Future release map)
+
+| Release | Codename (EN) | Codename (AR) | Status |
+|---------|---------------|---------------|--------|
+| 1.4.0 | Raqim Statute | رقيم تشريع | Planned — US/UK legislation patterns; parser hardening |
+| 1.5.0 | Raqim Web | رقيم ويب | Planned — webpage / grey-web cites |
+| 1.6.0 | Maktab Loop | حلقة مكتب | Planned — OCR fixtures; loop UX; Masdar chunking |
+| 1.7.0 | Integrity Bundle | حزمة النزاهة | Planned — preflight+; submission export; trust parity |
+| 1.8.0 | Shahid | شاهد | Planned — Tier 3+ gate; tables/figures; confirm-before-apply grey lit |
+
+### Long-term (see §5 · not versioned)
+
+| Item | Theme | Status |
+|------|-------|--------|
+| Merged seven-worker GGUF | Models | Long-term |
+| Shahid full multimodal | Shahid | Long-term (1.8.0 = bounded slice) |
+| Institutional login webview | Masdar / access | Long-term |
+| Train every worker (naming symmetry) | Training | Long-term |
+| Cloud LLM as default | Product | Long-term / non-goal |
+| Notification center | UX | Long-term / rejected |
+| Thesis generation / open drafting | Product | Long-term / non-goal |
+| Collaboration / cloud project sync | Product | Long-term |
+| Fuzzy auto-apply (registry / gray lit) | Raqim | Long-term |
+
+### Residual engine gaps (address across 1.4–1.7 as needed)
+
+| Item | Notes |
 |------|--------|
-| PMCID in L1 `resolveRegistry` | Missing (enhance-only today) |
-| arXiv URL → DOI | Missing |
-| OUP `article-abstract` | Partial (`article`/`article-pdf` only) |
+| PMCID in L1 `resolveRegistry` | Verify packaged + manuscript parity |
+| arXiv URL → DOI | Partial in repair train; fixture coverage |
+| OUP `article-abstract` | Partial |
 | Springer `/chapter/` | Partial |
-| DeLong-class parser | Partial (no regression fixture) |
-| Software false-positive guard | Missing |
-| Genre-aware APA | Missing |
-| Operator regression fixtures | Missing |
+| DeLong-class parser | Regression fixture |
+| Software false-positive guard | Journal titles mentioning “software” |
+| Genre-aware APA | Preprints / chapters / reports |
+| Operator regression fixtures | Expand with legislation + web cases |
 
-### Architecture seams for upcoming work
+### Architecture seams (remaining)
 
 ```text
-Renderer hooks (use-manuscript-audit.ts)
-  ├─ Sequential orchestration — bottleneck for #7
-  ├─ resolveRegistry / alignMetadata — needs main IPC for packaged builds
-  ├─ resolveL3Source → window.api — no AbortSignal threaded
-  └─ runGroundingLlm → window.api.llmChat — blocking IPC, no cancel
+Renderer / main-process
+  ├─ Audit orchestration — shipped 1.3.0; tune rate limits in 1.7.0
+  ├─ resolveRegistry / alignMetadata — verify packaged IPC parity (1.7.0)
+  ├─ resolveL3Source → window.api — AbortSignal threading (1.7.0)
+  └─ runGroundingLlm → window.api.llmChat — cancel mid-call (1.7.0)
 
-Orphan / future seams
-  ├─ ouroboros-loop-store.attachedPdfByBibKey — not wired to audit
-  ├─ evaluateCiteSite pdf_pending branch — dead after Masdar-lite
-  └─ maktab/ocr/backend — unavailable until IPC registration + language packs
+Future seams
+  ├─ Legislation host patterns — EU shipped; US/UK in 1.4.0
+  ├─ Webpage host parsers — 1.5.0
+  └─ Shahid pipeline — 1.8.0 after Tier 3 eval gate
 ```
 
 ---
@@ -815,19 +872,23 @@ Do not add remote manuscript telemetry by default. Prefer an explicit “Export 
 
 ---
 
-## 11. Work that should remain later
+## 11. Long-term (detail)
 
-Do not prioritize yet:
+Canonical table: **§5 → Long-term (not versioned)**. Expanded notes below.
 
-- A merged seven-worker GGUF.
-- Shahid multimodal grounding.
-- Embedded institutional-login webviews.
-- Training every worker for naming symmetry.
-- Cloud LLM as default.
-- A notification center.
-- Generic writing or thesis generation.
-- Collaboration / cloud project sync.
-- Automatic application of fuzzy registry or gray-literature matches.
+**Do not prioritize before 1.4–1.8 + Tier 3 gate unless promoted with acceptance criteria.**
+
+| Item | Notes |
+|------|-------|
+| Merged seven-worker GGUF | Prefer routed multi-artifact setup (§4); merged bundle only if eval proves no regression |
+| Shahid full multimodal | Distinct from **1.8.0** bounded slice — separate multimodal holdout required |
+| Embedded institutional-login webviews | SEC-06; publisher ToS; cookie/credential handling |
+| Train every worker for naming symmetry | Facets train on task gates, not worker count |
+| Cloud LLM as default | Non-goal — local Sanad path stays primary |
+| Notification center | Rejected — no drawer/history product |
+| Generic writing or thesis generation | Non-goal — bounded verdict + repair only |
+| Collaboration / cloud project sync | Requires sync model beyond local `.nassila` |
+| Automatic application of fuzzy registry or gray-literature matches | Near-term: user confirms before apply (1.5 / 1.8) |
 
 **For institutional access, first exhaust:**
 
@@ -842,43 +903,41 @@ An embedded authenticated browser should be the last option because it creates c
 
 ## 12. Top risks
 
-| Risk | Severity | Detail |
-|------|----------|--------|
-| Registry/OA rate limits under audit concurrency | High | No rate limiter in audit path; Crossref/PubMed polite-pool not enforced |
-| Non-cancellable LLM calls | High | Single Sanad call can block Cancel for minutes |
-| Concurrency + cancel interaction | Medium | In-flight workers must honor abort; store must stay consistent |
-| Packaged manuscript L1 soft-fail | High | Renderer fetch vs CSP |
-| False L3 pass on parse fail / LLM off | High | Lexical overlap treated as grounding |
-| Prompt contract drift (app vs train) | High | S12/S14 metrics may not match shipped prompt |
-| R1 / R2–R3 scope creep | Medium | Many engine touchpoints + new Bibliography UI |
-| OCR first-use network dependency | Medium | Traineddata from CDN; docs claim offline |
-| No project persistence | High (product) | Weeks-long thesis work lost on close |
-| No CI / packaged smoke | Medium | Fast release cadence without automated gates |
-| Stale docs misleading agents | Medium | Stub language, dead POST_V114 links, over-promised attach |
+| Risk | Severity | Status | Detail |
+|------|----------|--------|--------|
+| Registry/OA rate limits under audit concurrency | High | Open → **1.7** | Scheduler shipped; polite-pool / rate limits not fully enforced |
+| Non-cancellable mid-LLM calls | High | Open → **1.7** | Cancel exists; AbortSignal through `llmChat` still needed |
+| Concurrency + cancel interaction | Medium | Partial | Run IDs / pools shipped; keep store consistent under abort |
+| Packaged manuscript L1 soft-fail (CSP) | High | **Mitigated** | Main-process audit IPC; packaged smoke PASS |
+| False L3 pass on parse fail / LLM off | High | **Mitigated** | Phase 0-C invariant; do not regress |
+| Prompt contract drift (app vs train) | High | **Mitigated** | `sanad-grounding-v1` synced; optional multi-seed remains |
+| Raqim legislation / web scope creep | Medium | Open → **1.4–1.5** | Pattern families + confirm-before-apply; no fuzzy auto-apply |
+| OCR first-use network dependency | Medium | **Mitigated** | Bundled packs; warn if fallback path triggers |
+| Project persistence gaps | Medium | Partial | `.nassila` live; dirty-close / recovery → **1.7** |
+| Release automation thin | Medium | Partial | CI + local smoke exist; public tag / checksums / signing open |
+| Stale docs misleading agents | Medium | Open | §8 doc pass: stubs, `POST_V114` links, vision “stub” wording |
 
 ---
 
 ## Final recommendation
 
-Nassila should spend the next cycle becoming more **trustworthy** rather than merely broader.
+Nassila should spend the next cycles becoming more **trustworthy on gray literature and submission export** rather than merely broader.
 
 **The single best strategy:**
 
-> Build a durable, reproducible, closed evidence-and-repair loop around the existing deterministic engine and S12/S14 models.
+> Build a durable, reproducible, closed evidence-and-repair loop around the existing deterministic engine and S12/S14 models — then extend Raqim to legislation and web cites before Shahid or S15.
 
-That means:
+**Shipped in 1.3.0:** orchestration, quote chips, Resolve, attach, projects, OCR packs, Sharh-lite, EU ELI partial.
 
-1. Fix packaged network parity.
-2. Re-establish prompt parity.
-3. Eliminate false pass paths.
-4. Stop grounding unmapped references.
-5. Improve passage and source context.
-6. Add cancellable orchestration.
-7. Make quote validity and provenance visible.
-8. Repair references before adding more model facets.
-9. Save the user’s project.
-10. Validate real full-text and Arabic workflows.
-11. Train S15 only after those measurements identify a genuine model gap.
+**Next (§5 map):**
+
+1. **1.4.0 Raqim Statute** — legislation pattern families; no Crossref false fixes.
+2. **1.5.0 Raqim Web** — webpage / grey-web deterministic path.
+3. **1.6.0 Maktab Loop** — OCR fixtures; one-upload loop; chunking.
+4. **1.7.0 Integrity Bundle** — preflight+; submission export; remaining packaged parity.
+5. **Tier 3 eval gate** (NassilaT) — then **1.8.0 Shahid** and S15 only if measurements show a model gap.
+
+**Long-term (§5):** merged GGUF, full Shahid multimodal, institutional webview, cloud-default LLM, collaboration sync, thesis generation, notification center, fuzzy auto-apply — unversioned until promoted.
 
 If done in that order, Ouroboros becomes more than worker branding: it becomes a defensible academic integrity workflow that few reference managers or generic AI tools currently provide.
 
@@ -896,4 +955,4 @@ If done in that order, Ouroboros becomes more than worker branding: it becomes a
 | `NassilaT/training/PHASE3_TIER3_GROUNDWORK.md` | Tier 3 training plan |
 | `NassilaT/docs/DUAL_TIER_POLICY.md` | E4B vs 12B gates |
 | `NassilaT/training/EVAL_GONOGO.md` | Model GO/NO-GO history |
-| `nassila-web/lib/release-train.ts` | Public release train |
+| `nassila-web/lib/release-train.ts` | Public release train — repopulate when §5 future cut ships |

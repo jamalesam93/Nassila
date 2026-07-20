@@ -1,7 +1,17 @@
 import { extractManuscriptFromPdf } from '../manuscript/pdf-extract'
 import { MaktabExtractError, MaktabOcrUnavailableError } from './errors'
 import { getMaktabOcrBackend } from './ocr/backend'
-import { embeddedTextLooksSparse, normalizeExtractedText } from './ocr/post-process'
+import {
+  ARABIC_OCR_DEFERRED_WARNING,
+  chooseOcrLanguages,
+  embeddedArabicLooksReversed,
+  embeddedTextLooksSparse,
+  mergeOcrWithEmbeddedPages,
+  normalizeExtractedText,
+  shouldDeferArabicToDocx,
+  stripSpuriousDigitNoiseInArabic,
+  stripSpuriousLatinInArabic
+} from './ocr/post-process'
 import {
   MAKTAB_DEFAULT_LANGUAGES,
   type MaktabExtractionOptions,
@@ -22,12 +32,24 @@ function toResult(
   }
 }
 
+function withArabicOcrDeferred(embedded: MaktabExtractionResult): MaktabExtractionResult {
+  const warnings = embedded.warnings.includes(ARABIC_OCR_DEFERRED_WARNING)
+    ? embedded.warnings
+    : [...embedded.warnings, ARABIC_OCR_DEFERRED_WARNING]
+  return {
+    ...embedded,
+    warnings,
+    needsReview: true
+  }
+}
+
 async function extractEmbeddedTier(
   buffer: ArrayBuffer,
   languages: MaktabLanguage[]
 ): Promise<MaktabExtractionResult> {
   const embedded = await extractManuscriptFromPdf(buffer)
   const sparse = embeddedTextLooksSparse(embedded.warnings)
+  const reversedArabic = embeddedArabicLooksReversed(embedded.warnings)
   return toResult(
     {
       text: embedded.text,
@@ -35,7 +57,8 @@ async function extractEmbeddedTier(
       pageBoundaries: embedded.pageBoundaries,
       warnings: embedded.warnings,
       tier: 'embedded_text',
-      needsReview: sparse
+      // Sparse Latin may escalate to Tesseract; Arabic-heavy / reversed stays embedded (DOCX).
+      needsReview: sparse || reversedArabic
     },
     languages
   )
@@ -44,19 +67,65 @@ async function extractEmbeddedTier(
 async function extractOcrTier(
   buffer: ArrayBuffer,
   languages: MaktabLanguage[],
-  dpi: number
+  dpi: number,
+  textHint = '',
+  embedded: MaktabExtractionResult | null = null
 ): Promise<MaktabExtractionResult> {
   const backend = getMaktabOcrBackend()
   if (!backend.isAvailable()) {
     throw new MaktabOcrUnavailableError()
   }
-  const result = await backend.extractFromPdf(buffer, { languages, dpi })
-  return toResult(result, languages)
+  const ocrLanguages = chooseOcrLanguages(textHint, languages)
+  // Always copy — upstream pdf.js may have detached the caller's ArrayBuffer.
+  const pdfBytes = buffer.slice(0)
+  const result = await backend.extractFromPdf(pdfBytes, { languages: ocrLanguages, dpi })
+  let text = stripSpuriousDigitNoiseInArabic(stripSpuriousLatinInArabic(result.text ?? ''))
+  let pageBoundaries = result.pageBoundaries
+  let tier: MaktabExtractionResult['tier'] = 'ocr'
+  const warnings = [...(result.warnings ?? [])]
+  let needsReview = Boolean(result.needsReview)
+
+  if (embedded?.text && embedded.pageBoundaries?.length && result.pageConfidences?.length) {
+    const mergeMeta = mergeOcrWithEmbeddedPages({
+      ocrText: text,
+      ocrBoundaries: result.pageBoundaries,
+      ocrConfidences: result.pageConfidences,
+      embeddedText: embedded.text,
+      embeddedBoundaries: embedded.pageBoundaries
+    })
+    text = stripSpuriousDigitNoiseInArabic(stripSpuriousLatinInArabic(mergeMeta.text))
+    pageBoundaries = mergeMeta.pageBoundaries
+    if (mergeMeta.embeddedPagesUsed > 0) {
+      warnings.push(
+        `OCR confidence was low on ${mergeMeta.embeddedPagesUsed} page(s); kept embedded text there. For best Arabic fidelity, import the DOCX.`
+      )
+      needsReview = true
+    }
+    if (mergeMeta.ocrPagesUsed === 0 && mergeMeta.embeddedPagesUsed > 0) {
+      tier = 'embedded_text'
+    }
+  }
+
+  return toResult(
+    {
+      ...result,
+      text,
+      pageBoundaries,
+      warnings,
+      tier,
+      needsReview,
+      pageConfidences: result.pageConfidences
+    },
+    ocrLanguages
+  )
 }
 
 /**
  * Maktab PDF ingest — tier A (pdf.js) with optional tier B (OCR).
  * Canonical entry for manuscript and bibliography PDF extraction.
+ *
+ * Arabic Tesseract is deferred: character-reversed / Arabic-dominant PDFs keep
+ * embedded text and warn to prefer DOCX until LLM/vision OCR ships.
  */
 export async function extractFromPdf(
   buffer: ArrayBuffer,
@@ -67,7 +136,20 @@ export async function extractFromPdf(
   const dpi = options.ocrDpi ?? DEFAULT_OCR_DPI
 
   if (mode === 'ocr_preferred') {
-    return extractOcrTier(buffer, languages, dpi)
+    // Prefer OCR for Latin scans, but use embedded when it is already good.
+    let embedded: MaktabExtractionResult | null = null
+    try {
+      embedded = await extractEmbeddedTier(buffer, languages)
+    } catch {
+      embedded = null
+    }
+    if (embedded && !embedded.needsReview && embedded.text.length > 0) {
+      return embedded
+    }
+    if (embedded && shouldDeferArabicToDocx(embedded.text, embedded.warnings)) {
+      return withArabicOcrDeferred(embedded)
+    }
+    return extractOcrTier(buffer, languages, dpi, embedded?.text ?? '', embedded)
   }
 
   if (mode === 'embedded_only') {
@@ -79,15 +161,18 @@ export async function extractFromPdf(
     }
   }
 
-  // auto: tier A first; escalate to tier B when sparse or when tier A throws on scans
+  // auto: tier A first; escalate to tier B for sparse Latin / true scans — not Arabic Tesseract
   try {
     const embedded = await extractEmbeddedTier(buffer, languages)
     if (!embedded.needsReview && embedded.text.length > 0) {
       return embedded
     }
+    if (shouldDeferArabicToDocx(embedded.text, embedded.warnings)) {
+      return withArabicOcrDeferred(embedded)
+    }
     const backend = getMaktabOcrBackend()
     if (backend.isAvailable()) {
-      return extractOcrTier(buffer, languages, dpi)
+      return extractOcrTier(buffer, languages, dpi, embedded.text, embedded)
     }
     return embedded
   } catch (embeddedErr) {

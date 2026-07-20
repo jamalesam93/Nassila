@@ -53,6 +53,7 @@ export function applyNassilaProject(project: NassilaProjectV1): void {
     step: 'idle',
     error: null,
     auditProgress: null,
+    importProgress: null,
     activeRunId: null,
     activeBibKeyFilter: null,
     auditItemStages: {},

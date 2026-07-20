@@ -1,8 +1,11 @@
 # Bundled Tesseract language data
 
-Nassila bundles `eng.traineddata`, `fra.traineddata`, and `ara.traineddata` from
-the official [tessdata_fast](https://github.com/tesseract-ocr/tessdata_fast)
-repository, pinned to release `4.1.0`.
+Nassila bundles:
+
+| Language | Pack source | Why |
+|----------|-------------|-----|
+| `eng`, `fra` | [tessdata_fast](https://github.com/tesseract-ocr/tessdata_fast) 4.1.0 | Speed for Latin scripts |
+| `ara` | [tessdata_best](https://github.com/tesseract-ocr/tessdata_best) 4.1.0 | Accuracy for dense Arabic body pages |
 
 Download or refresh the files with:
 

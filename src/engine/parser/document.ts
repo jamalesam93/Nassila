@@ -29,13 +29,15 @@ export async function parseDocx(buffer: ArrayBuffer): Promise<ParseResult> {
     }
 
     // Find the references section
-    const refSection = extractReferenceSection(text)
+    let refSection = extractReferenceSection(text)
     if (!refSection) {
       return { items: [], errors: ['Could not locate a references/bibliography section'], format: 'docx' }
     }
+    refSection = trimReferencesPreamble(refSection)
 
     // Split into individual entries
     const entries = splitReferenceEntries(refSection)
+
     if (entries.length === 0) {
       return { items: [], errors: ['No individual reference entries found'], format: 'docx' }
     }
@@ -83,9 +85,11 @@ export async function parsePdf(buffer: ArrayBuffer): Promise<ParseResult> {
       return { items: [], errors: ['Empty PDF or could not extract text'], format: 'pdf' }
     }
 
-    const refSection = extractReferenceSection(fullText)
+    let refSection = extractReferenceSection(fullText)
     if (refSection) {
+      refSection = trimReferencesPreamble(refSection)
       const entries = splitReferenceEntries(refSection)
+
       if (entries.length > 0) {
         const combinedInput = entries.join('\n')
         const parseResult = await parsePlainText(combinedInput)
@@ -134,6 +138,78 @@ function looksLikeAuthorDateStart(line: string): boolean {
   return /^(?:(?:\p{Lu}\.)+\s*[\p{Lu}\p{L}]|\p{Lu}[\p{L}'’-]*[\s,])/u.test(line)
 }
 
+const RESUME_OR_CV_HEADING =
+  /(?:السيرة\s*الذاتية|السيرة\s*العلمية|ملخص\s*(?:ال)?(?:بحث|دراسة|منشورات|السيرة)|curriculum\s*vitae|\bcv\b|resume|professional\s+summary|research\s+summary|abstract\s+of\s+(?:the\s+)?(?:thesis|dissertation))/iu
+
+/** Subsection labels inside a references chapter — not standalone citations. */
+function isBibliographySubsectionHeading(text: string): boolean {
+  const t = text.trim()
+  if (t.length > 140) return false
+  if (/^(?:أولاً|ثانيا|ثالثا|رابعا|خامسا)[ًا]?\s*[:：.]?\s*(?:ال?\S{0,4}مراجع|references?|bibliography|sources?)/iu.test(t)) {
+    return true
+  }
+  if (/\((?:Arabic|English|French)\s+References?\)/i.test(t)) return true
+  if (/^(?:Arabic|English|French)\s+References?\s*[:.]?\s*$/i.test(t)) return true
+  return false
+}
+
+function isResumeOrCvHeading(text: string): boolean {
+  return RESUME_OR_CV_HEADING.test(text.trim())
+}
+
+function looksLikeReferenceEntry(text: string): boolean {
+  const t = text.trim()
+  if (t.length < 12) return false
+  if (isBibliographySubsectionHeading(t) || isResumeOrCvHeading(t)) return false
+  if (matchBibliographyNumber(t)) return true
+  if (/\b(19|20)\d{2}\b/.test(t)) return true
+  if (/doi\.org|10\.\d{4,}\//i.test(t)) return true
+  if (looksLikeAuthorDateStart(t)) return true
+  if (/[\u0600-\u06FF]/.test(t) && /\b(19|20)\d{2}\b/.test(t) && t.length >= 20) return true
+  return false
+}
+
+/** Drop resume / narrative preamble that sometimes follows the references heading in Arabic theses. */
+export function trimReferencesPreamble(text: string): string {
+  const blocks = text
+    .split(/\n\s*\n+/)
+    .map((p) => p.replace(/\n+/g, ' ').replace(/\s+/g, ' ').trim())
+    .filter(Boolean)
+  if (blocks.length === 0) return text
+
+  let i = 0
+  while (i < blocks.length) {
+    const block = blocks[i]!
+    if (isResumeOrCvHeading(block)) {
+      i++
+      while (
+        i < blocks.length &&
+        !isBibliographySubsectionHeading(blocks[i]!) &&
+        !looksLikeReferenceEntry(blocks[i]!)
+      ) {
+        i++
+      }
+      continue
+    }
+    if (looksLikeReferenceEntry(block) || isBibliographySubsectionHeading(block)) break
+    if (!looksLikeReferenceEntry(block) && block.length < 220 && !/\b(19|20)\d{2}\b/.test(block)) {
+      i++
+      continue
+    }
+    break
+  }
+  return blocks.slice(i).join('\n\n')
+}
+
+function filterReferenceEntries(entries: string[]): string[] {
+  return entries.filter((entry) => {
+    const t = entry.trim()
+    if (!t) return false
+    if (isBibliographySubsectionHeading(t) || isResumeOrCvHeading(t)) return false
+    return looksLikeReferenceEntry(t)
+  })
+}
+
 export function splitReferenceEntries(text: string): string[] {
   // DOCX/mammoth: one unnumbered reference per paragraph (blank-line separated).
   // Skip for numbered lists — a stray blank line in a PDF would under-split.
@@ -144,7 +220,7 @@ export function splitReferenceEntries(text: string): string[] {
   if (paragraphs.length >= 2) {
     const numberedParas = paragraphs.filter((p) => matchBibliographyNumber(p) !== null).length
     if (numberedParas === 0) {
-      return paragraphs
+      return filterReferenceEntries(paragraphs)
     }
   }
 
@@ -176,7 +252,7 @@ export function splitReferenceEntries(text: string): string[] {
   }
 
   if (current.trim()) entries.push(current.trim())
-  return entries
+  return filterReferenceEntries(entries)
 }
 
 async function extractCitationFromPdfText(text: string): Promise<CslItem | null> {

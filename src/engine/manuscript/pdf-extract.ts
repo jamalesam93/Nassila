@@ -48,7 +48,8 @@ export async function extractManuscriptFromPdf(
   const pdfjsLib = await loadPdfJs()
   await configurePdfJsWorker(pdfjsLib)
 
-  const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(buffer) })
+  // Copy bytes — pdf.js may transfer/detach the underlying ArrayBuffer into its worker.
+  const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(buffer.slice(0)) })
   const pdf = await loadingTask.promise
 
   const pageCount = pdf.numPages
@@ -92,6 +93,20 @@ export async function extractManuscriptFromPdf(
     warnings.push(
       'Very little text was extracted. The PDF may be partially scanned or use embedded fonts without a Unicode map.'
     )
+  }
+
+  // Broken Arabic ToUnicode maps often reverse letter order (في → يف). DOCX or OCR is more reliable.
+  {
+    const arabic = (fullText.match(/[\u0600-\u06FF]/g) ?? []).length
+    if (arabic > 500) {
+      const fiAsYf = (fullText.match(/يف/g) ?? []).length
+      const fiCorrect = (fullText.match(/في/g) ?? []).length
+      if (fiAsYf > fiCorrect * 2 && fiAsYf > 20) {
+        warnings.push(
+          'Arabic text from this PDF looks character-reversed (broken font encoding). Prefer the DOCX.'
+        )
+      }
+    }
   }
 
   let offset = 0

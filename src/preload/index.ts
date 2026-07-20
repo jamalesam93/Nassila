@@ -14,6 +14,10 @@ import {
   SOURCE_ARTIFACT_ATTACH_CHANNEL,
   type SourceArtifact
 } from '../shared/source-artifact'
+import {
+  MAKTAB_OCR_PROGRESS_CHANNEL,
+  type MaktabOcrProgressEvent
+} from '../shared/maktab-ocr-progress'
 import type { RaqimLookupRequest, RaqimResolveCandidate } from '../shared/raqim-resolve'
 
 export type ThemeMode = 'light' | 'dark' | 'system'
@@ -170,6 +174,14 @@ const api = {
     options?: { languages?: ('eng' | 'fra' | 'ara')[]; dpi?: number }
   ): Promise<import('../engine/maktab/types').MaktabExtractionResult> =>
     ipcRenderer.invoke('maktab:ocrExtract', pdfBytes, options ?? {}),
+
+  onMaktabOcrProgress: (callback: (progress: MaktabOcrProgressEvent) => void): (() => void) => {
+    const listener = (_event: Electron.IpcRendererEvent, progress: MaktabOcrProgressEvent) => {
+      callback(progress)
+    }
+    ipcRenderer.on(MAKTAB_OCR_PROGRESS_CHANNEL, listener)
+    return () => ipcRenderer.removeListener(MAKTAB_OCR_PROGRESS_CHANNEL, listener)
+  },
 
   attachSourcePdf: (filePath: string): Promise<SourceArtifact> =>
     ipcRenderer.invoke(SOURCE_ARTIFACT_ATTACH_CHANNEL, filePath),

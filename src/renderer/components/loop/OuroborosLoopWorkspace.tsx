@@ -39,6 +39,7 @@ export default function OuroborosLoopWorkspace() {
   const report = useManuscriptAuditStore((s) => s.report)
   const step = useManuscriptAuditStore((s) => s.step)
   const auditProgress = useManuscriptAuditStore((s) => s.auditProgress)
+  const importProgress = useManuscriptAuditStore((s) => s.importProgress)
   const error = useManuscriptAuditStore((s) => s.error)
   const networkStatus = useCitationStore((s) => s.networkStatus)
   const unpaywallEmail = useManuscriptAuditStore((s) => s.unpaywallEmail)
@@ -159,6 +160,56 @@ export default function OuroborosLoopWorkspace() {
           </p>
         ) : null}
 
+        {importProgress ? (
+          <p className="shrink-0 border-b border-border bg-muted/30 px-3 py-2 text-sm" role="status" aria-live="polite">
+            {importProgress.phase === 'reading'
+              ? t('manuscriptAudit.importingReading')
+              : importProgress.phase === 'checking'
+                ? t('manuscriptAudit.importingChecking')
+                : (() => {
+                    const percent =
+                      importProgress.total > 0
+                        ? Math.min(
+                            100,
+                            Math.round((importProgress.processed / importProgress.total) * 100)
+                          )
+                        : 0
+                    let eta = ''
+                    if (
+                      importProgress.processed > 0 &&
+                      importProgress.total > importProgress.processed &&
+                      importProgress.elapsedMs > 0
+                    ) {
+                      const msPerPage = importProgress.elapsedMs / importProgress.processed
+                      const remainingMs = msPerPage * (importProgress.total - importProgress.processed)
+                      const minutes = Math.max(1, Math.ceil(remainingMs / 60_000))
+                      eta = t('manuscriptAudit.importingOcrEta', { minutes })
+                    }
+                    return (
+                      <>
+                        {t('manuscriptAudit.importingOcr', {
+                          processed: importProgress.processed,
+                          total: importProgress.total,
+                          percent
+                        })}
+                        {eta}
+                        {importProgress.total > 0 ? (
+                          <span
+                            className="mt-2 block h-1.5 overflow-hidden rounded-full bg-border"
+                            aria-hidden
+                          >
+                            <span
+                              className="block h-full rounded-full bg-primary transition-[width] duration-300"
+                              style={{ width: `${percent}%` }}
+                            />
+                          </span>
+                        ) : null}
+                      </>
+                    )
+                  })()}
+          </p>
+        ) : null}
+
         {error ? (
           <p className="shrink-0 border-b border-border bg-red-50 px-3 py-2 text-sm text-red-800 dark:bg-red-950/40 dark:text-red-200">
             {error}
@@ -237,6 +288,7 @@ export default function OuroborosLoopWorkspace() {
         >
           <textarea
             className="font-prose h-full min-h-[160px] w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm leading-relaxed"
+            dir="auto"
             value={raw}
             onChange={(e) => setRaw(e.target.value)}
             onKeyDown={(e) => {

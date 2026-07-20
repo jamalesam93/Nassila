@@ -18,6 +18,13 @@ interface ManuscriptAuditState {
   error: string | null
   /** Incremental audit progress while runAudit is in flight. */
   auditProgress: { processed: number; total: number } | null
+  /** Manuscript file import (PDF OCR can take minutes). */
+  importProgress: {
+    phase: 'reading' | 'checking' | 'ocr'
+    processed: number
+    total: number
+    elapsedMs: number
+  } | null
   activeRunId: string | null
   activeBibKeyFilter: string | null
   auditItemStages: Record<string, ManuscriptAuditItemStage>
@@ -46,6 +53,9 @@ interface ManuscriptAuditState {
   consumeAuditProgress: (progress: ManuscriptAuditProgressEvent) => void
   setStep: (step: AuditStep) => void
   setError: (error: string | null) => void
+  setImportProgress: (
+    progress: ManuscriptAuditState['importProgress']
+  ) => void
   setUserAction: (bibKey: string, action: UserAction) => void
   setLlmEnabled: (enabled: boolean) => void
   setLlmPresetId: (id: string) => void
@@ -68,6 +78,7 @@ export const useManuscriptAuditStore = create<ManuscriptAuditState>((set, get) =
   step: 'idle',
   error: null,
   auditProgress: null,
+  importProgress: null,
   activeRunId: null,
   activeBibKeyFilter: null,
   auditItemStages: {},
@@ -196,6 +207,7 @@ export const useManuscriptAuditStore = create<ManuscriptAuditState>((set, get) =
   },
   setStep: (step) => set({ step }),
   setError: (error) => set({ error }),
+  setImportProgress: (importProgress) => set({ importProgress }),
 
   setUserAction: (bibKey, action) => {
     set({ userActionsByBibKey: { ...get().userActionsByBibKey, [bibKey]: action } })
@@ -221,6 +233,7 @@ export const useManuscriptAuditStore = create<ManuscriptAuditState>((set, get) =
       step: 'idle',
       error: null,
       auditProgress: null,
+      importProgress: null,
       activeRunId: null,
       activeBibKeyFilter: null,
       auditItemStages: {},

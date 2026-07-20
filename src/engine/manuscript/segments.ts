@@ -24,8 +24,33 @@ const REFERENCE_HEADER_LINE =
 const NUMBERED_REFERENCE_HEADER_LINE =
   /^\d{1,2}\.\s*(?:references?|bibliography|works?\s+cited|literature\s+cited|cited\s+references?|reference\s+list)\s*[:.]?\s*$/i
 
+/** TOC lines often append a page number after a tab or wide gap. */
+function isLikelyTocLine(line: string, trimmed: string): boolean {
+  if (/\t\d{1,4}\s*$/.test(line)) return true
+  if (/\s{2,}\d{1,4}\s*$/.test(trimmed)) return true
+  return false
+}
+
+/**
+ * Bibliography / references section heading — EN exact lines plus common AR / bilingual forms.
+ * Avoid glossary headings (قائمة المصطلحات).
+ */
 function isReferenceHeaderLine(trimmed: string): boolean {
-  return REFERENCE_HEADER_LINE.test(trimmed) || NUMBERED_REFERENCE_HEADER_LINE.test(trimmed)
+  const t = trimmed.replace(/\uFEFF/g, '').trim()
+  if (!t || t.length > 120) return false
+  if (REFERENCE_HEADER_LINE.test(t) || NUMBERED_REFERENCE_HEADER_LINE.test(t)) return true
+
+  // Glossary / abbreviations — not the bibliography
+  if (/المصطلحات|الاختصارات|اختصارات/.test(t)) return false
+
+  if (/academic\s*bibliography/i.test(t)) return true
+  // قائمة المراجع / قائمة المراجع والمصادر / قائمة املراجع (garbled PDF lam)
+  if (/قائمة\s+ال?\S{0,4}مراجع/.test(t)) return true
+  if (/ال?\S{0,4}مراجع\s+وال?\S{0,4}مصادر/.test(t)) return true
+  if (/^(?:أولا|ثانيا|ثالثا)[ًا]?\s*[:：.]?\s*ال?\S{0,4}مراجع\b/u.test(t)) return true
+  if (/^ال?\S{0,4}مراجع\s*[:.،]?\s*$/u.test(t)) return true
+  if (/^ال?\S{0,4}مصادر\s*[:.،]?\s*$/u.test(t)) return true
+  return false
 }
 
 const BRACKET_BIB_LINE = /^\s*\[\d{1,4}\]\s*\S/
@@ -87,16 +112,17 @@ export function segmentManuscriptText(fullText: string): ManuscriptSegments {
 function findReferenceHeader(text: string): { start: number; afterHeader: number } | null {
   const lines = text.split('\n')
   let offset = 0
+  let best: { start: number; afterHeader: number } | null = null
+
   for (const line of lines) {
     const trimmed = line.trim().replace(/\uFEFF/g, '')
-    if (isReferenceHeaderLine(trimmed)) {
-      const start = offset
-      const afterHeader = offset + line.length + 1
-      return { start, afterHeader }
+    // Prefer the last body heading; skip TOC entries ("…\t118").
+    if (isReferenceHeaderLine(trimmed) && !isLikelyTocLine(line, trimmed)) {
+      best = { start: offset, afterHeader: offset + line.length + 1 }
     }
     offset += line.length + 1
   }
-  return null
+  return best
 }
 
 function looksLikeBibliographyLine(line: string): boolean {

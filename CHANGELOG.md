@@ -4,6 +4,29 @@ All notable changes to **Nassila** are documented here.
 
 ## [Unreleased]
 
+## [1.3.1] — 2026-07-20 · Maktab OCR hardening
+
+Windows installer `Nassila Setup 1.3.1.exe`. **GitHub Release:** [v1.3.1](https://github.com/jamalesam93/Nassila/releases/tag/v1.3.1).
+
+### Fixed
+
+- **OCR packaging** — externalize and unpack `canvas` / `@napi-rs/canvas` / `tesseract.js` (+ core); resolve explicit Tesseract worker/core paths; rasterize PDF pages via pdf.js `canvasFactory` (fixes “Image or Canvas expected” and missing natives in packaged builds).
+- **IPC clone errors** — copy PDF buffers before pdf.js / OCR so detached `ArrayBuffer`s no longer throw “An object could not be cloned”; return plain JSON from OCR IPC.
+- **Bibliography import** — skip resume/CV preamble before the references block; every OutputPanel row has a delete control.
+- **Manuscript PDF** — detect character-reversed Arabic ToUnicode; raise soft OCR page budget **50 → 200**; clearer DOCX guidance when encoding is broken.
+
+### Changed
+
+- **Arabic Tesseract deferred** — Arabic-heavy or character-reversed PDFs keep embedded text and warn to prefer **DOCX**; Enhanced OCR runs **eng/fra** only for Latin scans until vision/LLM OCR ships. Settings hint and import warnings updated (EN/AR).
+- **OCR progress** — per-page progress IPC (`maktab:ocrProgress`) with loop banner + status bar during long imports.
+- **Language packs** — download script keeps `eng`/`fra` from `tessdata_fast`; bundles `ara` from `tessdata_best` for future use (not selected at runtime).
+- **Raqim Resolve** — EU legislation / EUR-Lex ELI lookup path for statute-style references.
+
+### Added (tests / tooling)
+
+- Unit coverage for OCR language gating, Latin/digit noise cleanup, canvas packaging boundaries, Tesseract worker paths, EU legislation resolve, and document/segment parser cases.
+- Optional `scripts/probe-ocr-bundled.mjs` for packaged OCR smoke.
+
 ## [1.3.0] — 2026-07-20 · Ouroboros train (Projects → Sharh-lite)
 
 Windows installer `Nassila Setup 1.3.0.exe`.

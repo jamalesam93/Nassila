@@ -17,6 +17,81 @@ export const RAQIM_CANDIDATE_THRESHOLD = 0.42
 const MAX_QUERY_LENGTH = 500
 const MAX_CANDIDATES = 12
 
+type EliLegislationIdentity = {
+  actType: 'reg' | 'dir' | 'dec'
+  year: string
+  number: string
+  canonicalUrl: string
+}
+
+function euActLabel(actType: EliLegislationIdentity['actType']): string {
+  if (actType === 'reg') return 'Regulation'
+  if (actType === 'dir') return 'Directive'
+  return 'Decision'
+}
+
+function buildEuLegislationItem(
+  identity: EliLegislationIdentity,
+  titleOverride?: string
+): CslItem {
+  const statuteNumber = `${identity.year}/${identity.number}`
+  const label = euActLabel(identity.actType)
+  return {
+    id: `eli-${identity.actType}-${identity.year}-${identity.number}`,
+    type: 'legislation',
+    title: titleOverride?.trim() || `${label} (EU) ${statuteNumber}`,
+    number: statuteNumber,
+    authority: 'European Union',
+    publisher: 'Official Journal of the European Union',
+    author: [{ literal: 'European Parliament and Council' }],
+    URL: identity.canonicalUrl,
+    issued: { 'date-parts': [[parseInt(identity.year, 10)]] }
+  }
+}
+
+export function parseEliLegislationUrl(rawUrl: string): EliLegislationIdentity | null {
+  let url: URL
+  try {
+    url = new URL(rawUrl)
+  } catch {
+    return null
+  }
+  if (!/(?:^|\.)europa\.eu$/i.test(url.hostname)) return null
+  const match = url.pathname.match(/\/eli\/(reg|dir|dec)\/(\d{4})\/(\d+)/i)
+  if (!match) return null
+  const actType = match[1].toLowerCase() as EliLegislationIdentity['actType']
+  const year = match[2]
+  const number = match[3]
+  return {
+    actType,
+    year,
+    number,
+    canonicalUrl: `https://eur-lex.europa.eu/eli/${actType}/${year}/${number}/oj`
+  }
+}
+
+function parseEuRegulationTitle(query: string): EliLegislationIdentity | null {
+  const match = query.match(/\bregulation\s*\(eu\)\s*(\d{4})\s*\/\s*(\d+)\b/i)
+  if (!match) return null
+  const year = match[1]
+  const number = match[2]
+  return {
+    actType: 'reg',
+    year,
+    number,
+    canonicalUrl: `https://eur-lex.europa.eu/eli/reg/${year}/${number}/oj`
+  }
+}
+
+function isLegalCatalogueUrl(value: string): boolean {
+  try {
+    const host = new URL(value).hostname.toLowerCase()
+    return host.endsWith('europa.eu')
+  } catch {
+    return false
+  }
+}
+
 type RawCandidate = {
   provider: RaqimCandidateProvider
   kind?: RaqimCandidateKind
@@ -119,6 +194,12 @@ export function rankRaqimCandidate(
     matchedFields.push('type')
   } else if (queryItem.type && candidate.type) {
     mismatchReasons.push('type')
+    if (
+      queryItem.type === 'legislation' &&
+      (candidate.type === 'article' || candidate.type === 'article-journal')
+    ) {
+      confidence = Math.min(confidence, 0.35)
+    }
   }
 
   return {
@@ -136,6 +217,7 @@ function classifyCandidate(item: CslItem, provider: RaqimCandidateProvider): Raq
   if (provider === 'huggingface') {
     return item.type === 'dataset' ? 'dataset' : 'model_card'
   }
+  if (provider === 'eli' || item.type === 'legislation') return 'artifact_citation'
   if (item.type === 'dataset') return 'dataset'
   if (item.type === 'software') return 'software_release'
   if (item.type === 'report' || item.type === 'article') return 'scholarly_report'
@@ -154,7 +236,7 @@ function detectLookup(key: string, explicit?: RaqimLookupKind): { kind: RaqimLoo
   if (/^(?:PMID:\s*)?\d{6,9}$/i.test(value)) {
     return { kind: 'pmid', value: value.replace(/\D/g, '') }
   }
-  if (/^https:\/\//i.test(value)) return { kind: 'url', value }
+  if (/^https?:\/\//i.test(value)) return { kind: 'url', value }
   return { kind: 'title', value }
 }
 
@@ -322,6 +404,16 @@ async function resolveHostUrl(rawUrl: string): Promise<RawCandidate[]> {
     }]
   }
 
+  const eli = parseEliLegislationUrl(rawUrl)
+  if (eli) {
+    return [{
+      provider: 'eli',
+      kind: 'artifact_citation',
+      exact: true,
+      item: buildEuLegislationItem(eli)
+    }]
+  }
+
   const github = url.hostname === 'github.com' && url.pathname.match(/^\/([^/]+)\/([^/]+)\/releases(?:\/tag\/([^/]+))?/)
   if (github) {
     const [, owner, repo, tag] = github
@@ -377,15 +469,25 @@ export async function lookupRaqimCandidates(request: RaqimLookupRequest): Promis
     } catch {
       raw = []
     }
-    if (raw.length === 0) {
+    if (raw.length === 0 && !isLegalCatalogueUrl(lookup.value)) {
       raw = await titleRegistryCandidates(request.item, request.item.title ?? lookup.value)
     }
   } else if (lookup.kind === 'title') {
+    raw = []
+    const euReg = parseEuRegulationTitle(lookup.value)
+    if (euReg) {
+      raw.push({
+        provider: 'eli',
+        kind: 'artifact_citation',
+        exact: true,
+        item: buildEuLegislationItem(euReg, request.item.title)
+      })
+    }
     const [registry, huggingFace] = await Promise.all([
       titleRegistryCandidates(request.item, lookup.value),
       searchHuggingFace(lookup.value)
     ])
-    raw = [...registry, ...huggingFace]
+    raw.push(...registry, ...huggingFace)
   } else {
     raw = await exactRegistryCandidates(lookup.kind, lookup.value)
   }

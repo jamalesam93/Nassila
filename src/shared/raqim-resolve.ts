@@ -10,6 +10,7 @@ export type RaqimCandidateProvider =
   | 'huggingface'
   | 'kaggle'
   | 'github'
+  | 'eli'
 
 export type RaqimCandidateKind =
   | 'artifact_citation'

@@ -110,4 +110,40 @@ We surveyed programs [8].
     expect(preview.ok).toBe(true)
     if (preview.ok) expect(preview.inTextCitationCount).toBeGreaterThan(0)
   })
+
+  it('splits on Arabic / bilingual bibliography heading (not TOC)', () => {
+    const toc = `قائمة المصطلحات والاختصارات\t3
+قائمة المراجع والمصادر (Academic Bibliography)\t118
+أولاً: المراجع باللغة العربية (Arabic References)\t118`
+
+    const body = 'متن البحث مع استشهاد (Sen, 1999). '.repeat(40)
+    const refs = `أولاً: المراجع باللغة العربية (Arabic References)
+الكتاب، المؤلف. عنوان. 2020.
+
+ثانياً: المراجع باللغة الإنجليزية (English References)
+Smith J. Example paper. Journal. 2020.`
+
+    const text = `${toc}\n\n${body}\n\nقائمة المراجع والمصادر (Academic Bibliography)\n${refs}`
+    const boundary = findReferencesBoundary(text)
+    expect(boundary?.kind).toBe('header')
+    const seg = segmentManuscriptText(text)
+    expect(seg.referencesText).toContain('Smith J.')
+    expect(seg.referencesText).toContain('الكتاب')
+    expect(seg.bodyText).toContain('متن البحث')
+    expect(seg.bodyText).not.toContain('Smith J.')
+    expect(previewManuscript(text).ok).toBe(true)
+  })
+
+  it('does not treat glossary heading as bibliography', () => {
+    const text = `مقدمة.
+
+قائمة المصطلحات والاختصارات
+التنمية: تعريف.
+
+قائمة المراجع والمصادر
+Author A. Paper. 2020.`
+    const seg = segmentManuscriptText(text)
+    expect(seg.referencesText).toContain('Author A')
+    expect(seg.bodyText).toContain('المصطلحات')
+  })
 })

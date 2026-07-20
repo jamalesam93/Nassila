@@ -11,25 +11,24 @@ Import or paste your bibliography, fix common errors, verify rows against Crossr
 
 | | |
 |---|---|
-| **Download (Windows)** | [**v1.3.0**](https://github.com/jamalesam93/Nassila/releases/tag/v1.3.0) · [Latest release](https://github.com/jamalesam93/Nassila/releases/latest) |
+| **Download (Windows)** | [**v1.3.1**](https://github.com/jamalesam93/Nassila/releases/tag/v1.3.1) · [Latest release](https://github.com/jamalesam93/Nassila/releases/latest) |
 | **Sanad models (HF)** | [`nassila-sanad-e4b`](https://huggingface.co/QinEmPeRoR93/nassila-sanad-e4b) · [`nassila-sanad-12b`](https://huggingface.co/QinEmPeRoR93/nassila-sanad-12b) — setup on the [website](https://nassila-web.vercel.app/en/docs/manuscript) |
 | **Website & docs** | [nassila-web.vercel.app](https://nassila-web.vercel.app) — [How-to](https://nassila-web.vercel.app/en/docs/how-to) · [User guide](https://nassila-web.vercel.app/en/docs/user-guide) · [Changelog](https://nassila-web.vercel.app/en/changelog) |
 | **Documentation (repo)** | [How-to guide](docs/HOW_TO_GUIDE.md) · [User guide](docs/USER_GUIDE.md) · [Brand](docs/BRAND.md) · [Changelog](CHANGELOG.md) |
 | **License** | [MIT](LICENSE) |
 
-> End users: install from **Releases** ([**v1.3.0**](https://github.com/jamalesam93/Nassila/releases/tag/v1.3.0)) or visit the [**website**](https://nassila-web.vercel.app). Developers: clone this repo and see [Getting started](#getting-started).
+> End users: install from **Releases** ([**v1.3.1**](https://github.com/jamalesam93/Nassila/releases/tag/v1.3.1)) or visit the [**website**](https://nassila-web.vercel.app). Developers: clone this repo and see [Getting started](#getting-started).
 
 The name **Nassila** is coined, inspired by the idea of a **sanad** (سند): a clear chain from what you write to where it came from.
 
-## What's new in v1.3.0
+## What's new in v1.3.1
 
-- **Faster, safer audits** — main-process scheduler, live progress, cancel-safe runs, and clearer claim/quote evidence.
-- **Raqim Repair + Resolve** — stronger verify for PMCID/arXiv/publisher URLs; repair panel with registry and Hugging Face / Kaggle / GitHub suggestions (you apply matches).
-- **Masdar attach** — attach your own source PDF per cited reference and re-ground offline.
-- **Projects, OCR, Sharh-lite** — `.nassila` save/open, bundled eng/fra/ara OCR packs, deterministic evidence summary, Help → docs.
-- **Import polish** — DOCX/PDF bibliography splitting matches paste counts more reliably; Windows installer icons fixed.
+- **OCR packaging fixed** — canvas/Tesseract natives ship correctly; no more clone errors on PDF import.
+- **Arabic theses** — Tesseract Arabic deferred; prefer **DOCX** for broken-encoding PDFs (Latin Enhanced OCR still available).
+- **Import UX** — OCR page progress, resume preamble skipped in bibliography import, delete control on every reference row.
+- **Raqim** — EU legislation / EUR-Lex resolve path.
 
-Full notes: [CHANGELOG.md](CHANGELOG.md) · [v1.3.0 release](https://github.com/jamalesam93/Nassila/releases/tag/v1.3.0).
+Full notes: [CHANGELOG.md](CHANGELOG.md) · [v1.3.1 release](https://github.com/jamalesam93/Nassila/releases/tag/v1.3.1).
 
 ## Who is this for?
 

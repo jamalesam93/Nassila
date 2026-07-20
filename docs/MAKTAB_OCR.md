@@ -2,7 +2,7 @@
 
 **Worker:** Maktab (مكتب) · **Task:** `doc_extract` (LLM facet planned)  
 **Policy:** on-device only for v1; cloud optional later.  
-**Languages:** English, Arabic, French (`eng`, `ara`, `fra`).
+**Languages:** English and French via Tesseract (`eng`, `fra`). Arabic PDF OCR is **deferred** (prefer DOCX; vision/LLM OCR planned).
 
 ---
 
@@ -37,9 +37,11 @@ Operator map: NassilaT [`training/OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/tra
 
 **Mode** (`MaktabExtractionOptions.mode`):
 
-- `auto` (default) — try tier A; escalate to B when A fails or warns “very little text”
+- `auto` (default) — try tier A; escalate to B when A fails or warns “very little text” **and** the document is not Arabic-deferred
 - `embedded_only` — tier A only (fast path)
-- `ocr_preferred` — skip to tier B when backend available
+- `ocr_preferred` — try tier A first; use OCR when A is sparse/empty **for Latin**; Arabic-heavy or character-reversed PDFs keep embedded text and warn to prefer DOCX
+
+OCR language packs for Tesseract are **`eng`/`fra` only**. Soft page budget for OCR is **200** pages (matches manuscript PDF extract).
 
 ---
 
@@ -60,10 +62,12 @@ DOCX ingest remains separate (parser/document path); OCR applies to PDF and imag
 
 1. **Rasterize** PDF pages (~300 DPI quality / 200 DPI fast).
 2. **Preprocess** — grayscale, deskew, denoise (Nassila-owned heuristics).
-3. **Language packs** — `eng`, `fra`, and `ara` from official `tessdata_fast` are bundled under `resources/tesseract/`; default OCR does not require a first-use CDN download.
+3. **Language packs** — `eng` / `fra` from official `tessdata_fast` (and optional bundled `ara` for future vision/LLM work) under `resources/tesseract/`. **Runtime Tesseract does not select `ara`** until Maktab LLM/vision OCR ships.
 4. **Recognize** — Tesseract.js runs in the **main process** through validated IPC.
 5. **Post-process** — de-hyphenation, Unicode normalize, Arabic policy (conservative).
 6. **Cache** — key = `sha256(file) + page + dpi + lang pack version`.
+
+**Native packaging:** Main is mostly bundled (`externalizeDeps: false`) so portable builds ship `out/**` without the full `node_modules` tree. **`canvas` is external** — Node addons cannot be Rollup-bundled (broken CJS/.node interop; missing Windows Cairo DLLs). `electron-builder.yml` includes `node_modules/canvas/**/*` and `asarUnpack`s it so the `.node` and companion DLLs load from a real filesystem path.
 
 **Licensing:** Tesseract.js and the official Tesseract `tessdata_fast` files are Apache-2.0; Leptonica is BSD-2-Clause. Pack source and license details are recorded in [`resources/tesseract/README.md`](../resources/tesseract/README.md).
 
@@ -73,7 +77,7 @@ Install or refresh the pinned language packs before packaging:
 npm run ocr:langpacks
 ```
 
-The script downloads the official `tessdata_fast` 4.1.0 files and writes `resources/tesseract/checksums.sha256`. Electron Builder copies that directory to the installed app's resources. In development, OCR reads the same files directly from the repository.
+The script downloads the official language packs (`tessdata_fast` for eng/fra, `tessdata_best` for ara) pinned to 4.1.0 and writes `resources/tesseract/checksums.sha256`. Electron Builder copies that directory to the installed app's resources. In development, OCR reads the same files directly from the repository.
 
 **Not in scope v1:** custom OCR model training; MinerU or other layout-VLM backends (optional plugin track only).
 

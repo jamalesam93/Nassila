@@ -73,8 +73,13 @@ export function useAppCommands() {
       const ext = first.split('.').pop()?.toLowerCase()
       let text = ''
       let sourceFormat: 'docx' | 'pdf' | 'text' = 'text'
+      const setImportProgress = useManuscriptAuditStore.getState().setImportProgress
+      let unsubscribeOcr: (() => void) | undefined
 
       try {
+        setImportProgress({ phase: 'reading', processed: 0, total: 0, elapsedMs: 0 })
+        setAuditError(null)
+
         if (ext === 'docx') {
           const buf = await window.api?.readFileBinary(first)
           if (buf) {
@@ -85,6 +90,17 @@ export function useAppCommands() {
         } else if (ext === 'pdf') {
           const buf = await window.api?.readFileBinary(first)
           if (buf) {
+            setImportProgress({ phase: 'checking', processed: 0, total: 0, elapsedMs: 0 })
+            if (typeof window.api?.onMaktabOcrProgress === 'function') {
+              unsubscribeOcr = window.api.onMaktabOcrProgress((progress) => {
+                setImportProgress({
+                  phase: 'ocr',
+                  processed: progress.processed,
+                  total: progress.total,
+                  elapsedMs: progress.elapsedMs ?? 0
+                })
+              })
+            }
             const { extractFromPdf } = await import('../../engine/maktab/extract')
             const enhancedOcr = useManuscriptAuditStore.getState().enhancedOcr
             const extraction = await extractFromPdf(buf, {
@@ -113,6 +129,9 @@ export function useAppCommands() {
         if (sourceFormat !== 'pdf') setAuditError(null)
       } catch (e) {
         setAuditError(t('manuscriptAudit.importFailed', { message: (e as Error).message }))
+      } finally {
+        unsubscribeOcr?.()
+        setImportProgress(null)
       }
     },
     [setAppSurface, setAuditError, setManuscriptSourceFormat, setRawManuscriptText, t]
