@@ -24,7 +24,5 @@ Nassila-Ouroboros.code-workspace
 
 # Local OCR downloads & file dumps
 *.traineddata
-nassila-tree.txt
-docs/*.docx
 
 

@@ -18,6 +18,10 @@ Windows installer `Nassila Setup 1.4.0.exe`. **GitHub Release:** [v1.4.0](https:
 - **Preflight+** — citation-mapping coverage block/warn thresholds; abstract-only and no-source warnings.
 - **Submission integrity bundle** — export JSON from Sharh-lite (preflight + summary + provenance index, no manuscript body).
 
+### Fixed
+
+- **Documentation site (nassila-web)** — resolved 404 routing errors on related doc pages (`/docs/sanad-setup`, `/docs/verification`, `/docs/roadmap`).
+
 ### Tests / tooling
 
 - Operator regression fixtures — EU AI Act, US PL 117-58, UK Act 2024/12, statute line-merge; US/UK catalogue and grey-web Resolve unit coverage.
