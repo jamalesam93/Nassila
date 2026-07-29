@@ -1,12 +1,15 @@
 import type { CslItem, CslItemType, CslName, InputFormat } from '../types'
 import type { ParseResult } from './index'
 import { normalizeDoiFromMeta } from '../resolver/url'
+import { mergeSplitStatuteNumberLines } from '../resolver/legislation-catalogue'
 
 export async function parsePlainText(raw: string): Promise<ParseResult> {
-  const lines = raw
-    .split('\n')
-    .map((l) => l.trim())
-    .filter((l) => l.length > 0)
+  const lines = mergeSplitStatuteNumberLines(
+    raw
+      .split('\n')
+      .map((l) => l.trim())
+      .filter((l) => l.length > 0)
+  )
 
   const items: CslItem[] = []
   const errors: string[] = []

@@ -4,6 +4,24 @@ All notable changes to **Nassila** are documented here.
 
 ## [Unreleased]
 
+## [1.4.0] — 2026-07-21 · Raqim Statute
+
+Windows installer `Nassila Setup 1.4.0.exe`. **GitHub Release:** [v1.4.0](https://github.com/jamalesam93/Nassila/releases/tag/v1.4.0).
+
+### Added
+
+- **Legislation catalogue** — US federal (`congress.gov`, `govinfo.gov`, `uscode.house.gov`), UK `legislation.gov.uk`, generic `.gov` official URLs; EU ELI retained from 1.3.x.
+- **Raqim Resolve** — legislation-specific panel hint; provider labels for `us_federal`, `uk_legislation`, `official_catalogue`, `grey_web`.
+- **Grey-web stubs** (1.5 prep) — deterministic webpage classification and URL catalogue items without page fetch.
+- **Statute import** — merge statute numbers split across PDF/DOCX lines in plain-text bibliography import.
+- **Masdar chunking** — paragraph/page-aware excerpt selection with page hints on cite sites.
+- **Preflight+** — citation-mapping coverage block/warn thresholds; abstract-only and no-source warnings.
+- **Submission integrity bundle** — export JSON from Sharh-lite (preflight + summary + provenance index, no manuscript body).
+
+### Tests / tooling
+
+- Operator regression fixtures — EU AI Act, US PL 117-58, UK Act 2024/12, statute line-merge; US/UK catalogue and grey-web Resolve unit coverage.
+
 ## [1.3.1] — 2026-07-20 · Maktab OCR hardening
 
 Windows installer `Nassila Setup 1.3.1.exe`. **GitHub Release:** [v1.3.1](https://github.com/jamalesam93/Nassila/releases/tag/v1.3.1).

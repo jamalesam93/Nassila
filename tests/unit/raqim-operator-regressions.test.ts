@@ -5,6 +5,11 @@ import {
   parsePlainText
 } from '../../src/engine/parser/plain-text'
 import { extractDoiFromOxfordAcademicUrl } from '../../src/engine/resolver/url'
+import { lookupRaqimCandidates } from '../../src/engine/resolver/raqim-resolve'
+import {
+  mergeSplitStatuteNumberLines,
+  parseLegislationCatalogueUrl
+} from '../../src/engine/resolver/legislation-catalogue'
 import { validateCitations } from '../../src/engine/validator'
 import type { CslItem } from '../../src/engine/types'
 
@@ -27,7 +32,11 @@ describe('Raqim operator regression fixtures', () => {
       'gemma-report-no-registry-hit',
       'dwork-lncs-chapter',
       'kaggle-dataset-manual',
-      'nature-npj-wrong-title'
+      'nature-npj-wrong-title',
+      'eu-ai-act-eli-url',
+      'us-public-law-117-58',
+      'uk-act-2024-12',
+      'statute-split-lines'
     ]))
   })
 
@@ -104,4 +113,37 @@ describe('Raqim operator regression fixtures', () => {
     const issues = validateCitations(rows, 'apa-7th')
     expect(issues.filter((issue) => issue.message.includes('missing volume'))).toEqual([])
   })
+
+  it('parses EU ELI legislation URLs offline', () => {
+    const entry = fixture('eu-ai-act-eli-url')
+    const parsed = parseLegislationCatalogueUrl(entry.input.URL!)
+    expect(parsed?.provider).toBe(entry.expected.provider)
+    expect(parsed?.number).toBe(entry.expected.number)
+  })
+
+  it('parses US federal and UK legislation catalogue URLs offline', () => {
+    const us = fixture('us-public-law-117-58')
+    const uk = fixture('uk-act-2024-12')
+    expect(parseLegislationCatalogueUrl(us.input.URL!)?.number).toBe(us.expected.number)
+    expect(parseLegislationCatalogueUrl(uk.input.URL!)?.provider).toBe(uk.expected.provider)
+    expect(parseLegislationCatalogueUrl(uk.input.URL!)?.issuedYear).toBe(uk.expected.issuedYear)
+  })
+
+  it('merges statute numbers split across PDF/DOCX lines', () => {
+    const entry = fixture('statute-split-lines')
+    const merged = mergeSplitStatuteNumberLines(entry.input.raw!.split('\n'))
+    expect(merged[0]).toBe(entry.expected.mergedLine)
+  })
+
+  it('resolves legislation URLs without scholarly registry fallback', async () => {
+    const entry = fixture('eu-ai-act-eli-url')
+    const results = await lookupRaqimCandidates({
+      item: { id: 'leg-1', type: 'legislation', title: entry.input.title! },
+      key: entry.input.URL!,
+      kind: 'url'
+    })
+    expect(results[0]?.provider).toBe('eli')
+    expect(results[0]?.item.type).toBe('legislation')
+    expect(results.some((r) => r.provider === 'crossref')).toBe(false)
+  }, 30_000)
 })

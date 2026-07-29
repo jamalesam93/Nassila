@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import {
   buildQualityLedgerEntry,
   buildSharhLiteSummary,
+  buildSubmissionIntegrityBundle,
   evaluateSubmissionPreflight
 } from '../../../engine/manuscript/sharh-lite'
 import type { AuditReport } from '../../../engine/manuscript/types'
@@ -34,6 +35,19 @@ export default function SharhLitePanel({ report }: Props) {
     if (!path) return
     await window.api.writeFile(path, `${JSON.stringify(entry, null, 2)}\n`)
     pushToast(t('sharhLite.diagnosticExported'))
+  }
+
+  const exportSubmissionBundle = async () => {
+    if (!window.api) return
+    const about = await window.api.getAppAbout().catch(() => ({ version: report.appVersion }))
+    const bundle = buildSubmissionIntegrityBundle(report, about.version || report.appVersion)
+    const path = await window.api.saveFileDialog({
+      defaultPath: 'nassila-submission-integrity.json',
+      filters: [{ name: 'JSON', extensions: ['json'] }]
+    })
+    if (!path) return
+    await window.api.writeFile(path, `${JSON.stringify(bundle, null, 2)}\n`)
+    pushToast(t('sharhLite.submissionBundleExported'))
   }
 
   return (
@@ -85,6 +99,13 @@ export default function SharhLitePanel({ report }: Props) {
             ))}
           </ul>
         ) : null}
+        {preflight.mappingCoverage !== undefined ? (
+          <p className="text-xs text-muted-foreground">
+            {t('sharhLite.mappingCoverage', {
+              percent: Math.round(preflight.mappingCoverage * 100)
+            })}
+          </p>
+        ) : null}
       </div>
 
       <div className="mt-3 space-y-1">
@@ -96,13 +117,22 @@ export default function SharhLitePanel({ report }: Props) {
         </ul>
       </div>
 
-      <button
-        type="button"
-        className="mt-3 rounded border border-border px-2 py-1 text-xs hover:bg-accent"
-        onClick={() => void exportDiagnostic()}
-      >
-        {t('sharhLite.exportDiagnostic')}
-      </button>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <button
+          type="button"
+          className="rounded border border-border px-2 py-1 text-xs hover:bg-accent"
+          onClick={() => void exportSubmissionBundle()}
+        >
+          {t('sharhLite.exportSubmissionBundle')}
+        </button>
+        <button
+          type="button"
+          className="rounded border border-border px-2 py-1 text-xs hover:bg-accent"
+          onClick={() => void exportDiagnostic()}
+        >
+          {t('sharhLite.exportDiagnostic')}
+        </button>
+      </div>
     </section>
   )
 }

@@ -12,6 +12,7 @@ import {
   passageVerdictFromGroundingClaims,
   passageVerdictWithoutParsedGrounding,
   rollupPassageFromSites,
+  selectSourceChunksForGroundingWithBoundaries,
   withQuoteValidationState
 } from '../../src/engine/manuscript/grounding-llm'
 
@@ -240,5 +241,23 @@ describe('buildGroundingLlmMessages', () => {
   it('does not forbid supported on compound passages globally', () => {
     const system = buildGroundingSystemPrompt()
     expect(system).not.toContain('never supported when the passage bundles multiple claims')
+  })
+})
+
+describe('selectSourceChunksForGroundingWithBoundaries', () => {
+  it('returns page hint when boundaries overlap excerpt', () => {
+    const source = 'Page one text about nausea.\n\nPage two discusses mortality outcomes in detail.'
+    const boundaries = [
+      { page: 1, start: 0, end: 24 },
+      { page: 2, start: 26, end: source.length }
+    ]
+    const selection = selectSourceChunksForGroundingWithBoundaries(
+      'mortality outcomes',
+      source,
+      200,
+      boundaries
+    )
+    expect(selection.excerpt.toLowerCase()).toContain('mortality')
+    expect(selection.pageHint).toContain('2')
   })
 })

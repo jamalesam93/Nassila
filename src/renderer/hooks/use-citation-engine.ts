@@ -423,14 +423,23 @@ export function useCitationEngine() {
     const store = useCitationStore.getState()
     const items = store.citations
     switch (format) {
+      case 'ris': {
+        const { formatRis } = await import('../../engine/formatter/ris-export')
+        return formatRis(items)
+      }
+      case 'bibtex': {
+        const { formatBibtex } = await import('../../engine/formatter/bibtex-export')
+        return formatBibtex(items)
+      }
       case 'csl-json':
         return JSON.stringify(items, null, 2)
       case 'plain-text':
-        return store.formattedBibliography.replace(/<[^>]+>/g, '')
       case 'clipboard':
         return store.formattedBibliography.replace(/<[^>]+>/g, '')
-      default:
-        return JSON.stringify(items, null, 2)
+      default: {
+        const { formatRis } = await import('../../engine/formatter/ris-export')
+        return formatRis(items)
+      }
     }
   }, [])
 
@@ -438,11 +447,24 @@ export function useCitationEngine() {
     const store = useCitationStore.getState()
     if (store.citations.length === 0) return
 
-    const path = await window.api?.saveFileDialog()
+    const path = await window.api?.saveFileDialog({
+      defaultPath: 'references.ris',
+      filters: [
+        { name: 'RIS Bibliography', extensions: ['ris'] },
+        { name: 'BibTeX Bibliography', extensions: ['bib'] },
+        { name: 'CSL-JSON', extensions: ['json'] },
+        { name: 'Formatted Plain Text', extensions: ['txt'] }
+      ]
+    })
     if (!path) return
 
     const ext = path.split('.').pop()?.toLowerCase()
-    const format: ExportFormat = ext === 'txt' ? 'plain-text' : 'csl-json'
+    let format: ExportFormat = 'ris'
+    if (ext === 'bib') format = 'bibtex'
+    else if (ext === 'json') format = 'csl-json'
+    else if (ext === 'txt') format = 'plain-text'
+    else if (ext === 'ris') format = 'ris'
+
     const content = await exportCitations(format)
     await window.api?.writeFile(path, content)
   }, [exportCitations])

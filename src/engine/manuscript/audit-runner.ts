@@ -21,7 +21,7 @@ import {
   passageVerdictFromGroundingClaims,
   passageVerdictWithoutParsedGrounding,
   rollupPassageFromSites,
-  selectSourceChunksForGrounding,
+  selectSourceChunksForGroundingWithBoundaries,
   truncateForGrounding,
   withQuoteValidationState,
   worstDeterministicBucket
@@ -114,6 +114,7 @@ type ResolvedL3Source =
       retrievedAt: string
       extractionTier: NonNullable<CiteGroundingSite['sourceExtractionTier']>
       sourceHash?: string
+      pageBoundaries?: SourceArtifact['pageBoundaries']
     }
   | {
       kind: 'abstract_only'
@@ -428,7 +429,8 @@ async function resolveAttachedSource(
     url: loaded.artifact.path,
     retrievedAt,
     extractionTier: loaded.artifact.tier === 'ocr' ? 'pdf_ocr' : 'pdf_embedded_text',
-    sourceHash: loaded.artifact.sourceHash
+    sourceHash: loaded.artifact.sourceHash,
+    pageBoundaries: loaded.artifact.pageBoundaries
   }
 }
 
@@ -553,18 +555,26 @@ async function evaluateCiteSite(
     resolved.kind === 'full_text' ? resolved.snippetSource : 'abstract'
   const url = resolved.url
   const label = resolved.kind === 'full_text' ? resolved.coverage.replace(/_/g, ' ') : 'abstract'
-  const excerpt = selectSourceChunksForGrounding(passage, sourceText, GROUNDING_EXCERPT_MAX_CHARS)
-  const excerptFields = sourceExcerptFields(
-    excerpt,
-    snippetSource,
-    label,
-    url,
-    resolved.retrievedAt,
-    resolved.extractionTier,
-    resolved.sourceHash ?? hashSourceText(sourceText)
+  const chunkSelection = selectSourceChunksForGroundingWithBoundaries(
+    passage,
+    sourceText,
+    GROUNDING_EXCERPT_MAX_CHARS,
+    resolved.kind === 'full_text' ? resolved.pageBoundaries : undefined
   )
+  const excerptFields = {
+    ...sourceExcerptFields(
+      chunkSelection.excerpt,
+      snippetSource,
+      label,
+      url,
+      resolved.retrievedAt,
+      resolved.extractionTier,
+      resolved.sourceHash ?? hashSourceText(sourceText)
+    ),
+    sourcePageHint: chunkSelection.pageHint
+  }
   const llmOutcome = await llmPool.run(
-    () => runGroundingLlm(passage, excerpt, { url, label }, request, services, signal),
+    () => runGroundingLlm(passage, chunkSelection.excerpt, { url, label }, request, services, signal),
     signal
   )
 

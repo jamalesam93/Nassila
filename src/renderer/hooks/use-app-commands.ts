@@ -260,15 +260,39 @@ export function useAppCommands() {
     return log
   }, [runAutocorrect, t])
 
-  const exportBibliographyWithNotify = useCallback(async (): Promise<void> => {
+  const exportBibliographyWithNotify = useCallback(async (overrideFormat?: ExportFormat): Promise<void> => {
     const store = useCitationStore.getState()
     if (store.citations.length === 0) return
 
-    const path = await window.api?.saveFileDialog()
+    const defaultPath =
+      overrideFormat === 'bibtex'
+        ? 'references.bib'
+        : overrideFormat === 'csl-json'
+          ? 'references.json'
+          : overrideFormat === 'plain-text'
+            ? 'references.txt'
+            : 'references.ris'
+
+    const path = await window.api?.saveFileDialog({
+      defaultPath,
+      filters: [
+        { name: 'RIS Bibliography', extensions: ['ris'] },
+        { name: 'BibTeX Bibliography', extensions: ['bib'] },
+        { name: 'CSL-JSON', extensions: ['json'] },
+        { name: 'Formatted Plain Text', extensions: ['txt'] }
+      ]
+    })
     if (!path) return
 
     const ext = path.split('.').pop()?.toLowerCase()
-    const format = ext === 'txt' ? 'plain-text' : 'csl-json'
+    let format: ExportFormat = overrideFormat ?? 'ris'
+    if (!overrideFormat) {
+      if (ext === 'bib') format = 'bibtex'
+      else if (ext === 'json') format = 'csl-json'
+      else if (ext === 'txt') format = 'plain-text'
+      else if (ext === 'ris') format = 'ris'
+    }
+
     try {
       const content = await exportCitations(format)
       await window.api?.writeFile(path, content)
@@ -278,6 +302,14 @@ export function useAppCommands() {
       pushToast('error', t('notifications.exportFailed', { message: (e as Error).message }))
     }
   }, [exportCitations, t])
+
+  const exportRis = useCallback(async () => {
+    await exportBibliographyWithNotify('ris')
+  }, [exportBibliographyWithNotify])
+
+  const exportBibtex = useCallback(async () => {
+    await exportBibliographyWithNotify('bibtex')
+  }, [exportBibliographyWithNotify])
 
   const cycleTheme = useCallback(() => {
     const next: Record<ThemeMode, ThemeMode> = {
@@ -417,6 +449,8 @@ export function useAppCommands() {
     detectDuplicates,
     executeCommand,
     exportCslJson,
+    exportRis,
+    exportBibtex,
     exportBibliography: exportBibliographyWithNotify,
     exportManuscriptAuditJson,
     exportManuscriptAuditMarkdown,

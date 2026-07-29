@@ -11,82 +11,64 @@ import { searchCrossRef, resolveDoi } from './crossref'
 import { pmcidToPmid, resolvePmid, searchPubMed } from './pubmed'
 import { resolveOpenAlexDoi, resolveOpenAlexPmid, searchOpenAlex } from './openalex'
 import { resolveDataCiteDoi, searchDataCite } from './datacite'
+import {
+  isLegislationCatalogueHost,
+  legislationItemFromIdentity,
+  parseLegislationCatalogueUrl,
+  parseUkStatuteTitle,
+  parseUsPublicLawTitle,
+  type LegislationCatalogueIdentity
+} from './legislation-catalogue'
+import { buildGreyWebPageItem } from './webpage-hosts'
 
 /** Candidates below this score are too weak to present as suggested matches. */
 export const RAQIM_CANDIDATE_THRESHOLD = 0.42
 const MAX_QUERY_LENGTH = 500
 const MAX_CANDIDATES = 12
 
-type EliLegislationIdentity = {
+export function parseEliLegislationUrl(rawUrl: string): {
   actType: 'reg' | 'dir' | 'dec'
   year: string
   number: string
   canonicalUrl: string
+} | null {
+  const parsed = parseLegislationCatalogueUrl(rawUrl)
+  if (!parsed || parsed.provider !== 'eli' || !parsed.number) return null
+  const [year, number] = parsed.number.split('/')
+  const actTypeMatch = parsed.canonicalUrl.match(/\/eli\/(reg|dir|dec)\//i)
+  const actType = (actTypeMatch?.[1]?.toLowerCase() ?? 'reg') as 'reg' | 'dir' | 'dec'
+  return { actType, year, number, canonicalUrl: parsed.canonicalUrl }
 }
 
-function euActLabel(actType: EliLegislationIdentity['actType']): string {
-  if (actType === 'reg') return 'Regulation'
-  if (actType === 'dir') return 'Directive'
-  return 'Decision'
-}
-
-function buildEuLegislationItem(
-  identity: EliLegislationIdentity,
-  titleOverride?: string
-): CslItem {
-  const statuteNumber = `${identity.year}/${identity.number}`
-  const label = euActLabel(identity.actType)
-  return {
-    id: `eli-${identity.actType}-${identity.year}-${identity.number}`,
-    type: 'legislation',
-    title: titleOverride?.trim() || `${label} (EU) ${statuteNumber}`,
-    number: statuteNumber,
-    authority: 'European Union',
-    publisher: 'Official Journal of the European Union',
-    author: [{ literal: 'European Parliament and Council' }],
-    URL: identity.canonicalUrl,
-    issued: { 'date-parts': [[parseInt(identity.year, 10)]] }
-  }
-}
-
-export function parseEliLegislationUrl(rawUrl: string): EliLegislationIdentity | null {
-  let url: URL
-  try {
-    url = new URL(rawUrl)
-  } catch {
-    return null
-  }
-  if (!/(?:^|\.)europa\.eu$/i.test(url.hostname)) return null
-  const match = url.pathname.match(/\/eli\/(reg|dir|dec)\/(\d{4})\/(\d+)/i)
-  if (!match) return null
-  const actType = match[1].toLowerCase() as EliLegislationIdentity['actType']
-  const year = match[2]
-  const number = match[3]
-  return {
-    actType,
-    year,
-    number,
-    canonicalUrl: `https://eur-lex.europa.eu/eli/${actType}/${year}/${number}/oj`
-  }
-}
-
-function parseEuRegulationTitle(query: string): EliLegislationIdentity | null {
+function parseEuRegulationTitle(query: string): LegislationCatalogueIdentity | null {
   const match = query.match(/\bregulation\s*\(eu\)\s*(\d{4})\s*\/\s*(\d+)\b/i)
   if (!match) return null
   const year = match[1]
   const number = match[2]
   return {
-    actType: 'reg',
-    year,
-    number,
-    canonicalUrl: `https://eur-lex.europa.eu/eli/reg/${year}/${number}/oj`
+    provider: 'eli',
+    title: `Regulation (EU) ${year}/${number}`,
+    number: `${year}/${number}`,
+    authority: 'European Union',
+    canonicalUrl: `https://eur-lex.europa.eu/eli/reg/${year}/${number}/oj`,
+    issuedYear: parseInt(year, 10)
+  }
+}
+
+function legislationCandidate(identity: LegislationCatalogueIdentity, exact = true, titleOverride?: string): RawCandidate {
+  const item = legislationItemFromIdentity(identity)
+  if (titleOverride?.trim()) item.title = titleOverride.trim()
+  return {
+    provider: identity.provider,
+    kind: 'artifact_citation',
+    exact,
+    item
   }
 }
 
 function isLegalCatalogueUrl(value: string): boolean {
   try {
-    const host = new URL(value).hostname.toLowerCase()
-    return host.endsWith('europa.eu')
+    return isLegislationCatalogueHost(new URL(value).hostname)
   } catch {
     return false
   }
@@ -217,7 +199,9 @@ function classifyCandidate(item: CslItem, provider: RaqimCandidateProvider): Raq
   if (provider === 'huggingface') {
     return item.type === 'dataset' ? 'dataset' : 'model_card'
   }
-  if (provider === 'eli' || item.type === 'legislation') return 'artifact_citation'
+  if (provider === 'eli' || provider === 'us_federal' || provider === 'uk_legislation' || provider === 'official_catalogue' || item.type === 'legislation') {
+    return 'artifact_citation'
+  }
   if (item.type === 'dataset') return 'dataset'
   if (item.type === 'software') return 'software_release'
   if (item.type === 'report' || item.type === 'article') return 'scholarly_report'
@@ -404,14 +388,9 @@ async function resolveHostUrl(rawUrl: string): Promise<RawCandidate[]> {
     }]
   }
 
-  const eli = parseEliLegislationUrl(rawUrl)
-  if (eli) {
-    return [{
-      provider: 'eli',
-      kind: 'artifact_citation',
-      exact: true,
-      item: buildEuLegislationItem(eli)
-    }]
+  const catalogue = parseLegislationCatalogueUrl(rawUrl)
+  if (catalogue) {
+    return [legislationCandidate(catalogue)]
   }
 
   const github = url.hostname === 'github.com' && url.pathname.match(/^\/([^/]+)\/([^/]+)\/releases(?:\/tag\/([^/]+))?/)
@@ -437,6 +416,16 @@ async function resolveHostUrl(rawUrl: string): Promise<RawCandidate[]> {
         URL: data.html_url,
         issued: data.published_at ? { raw: data.published_at } : undefined
       }
+    }]
+  }
+
+  const greyWeb = buildGreyWebPageItem(rawUrl)
+  if (greyWeb) {
+    return [{
+      provider: 'grey_web',
+      kind: 'scholarly_report',
+      exact: true,
+      item: greyWeb
     }]
   }
 
@@ -476,12 +465,15 @@ export async function lookupRaqimCandidates(request: RaqimLookupRequest): Promis
     raw = []
     const euReg = parseEuRegulationTitle(lookup.value)
     if (euReg) {
-      raw.push({
-        provider: 'eli',
-        kind: 'artifact_citation',
-        exact: true,
-        item: buildEuLegislationItem(euReg, request.item.title)
-      })
+      raw.push(legislationCandidate(euReg, true, request.item.title))
+    }
+    const usLaw = parseUsPublicLawTitle(lookup.value)
+    if (usLaw) {
+      raw.push(legislationCandidate(usLaw, true))
+    }
+    const ukAct = parseUkStatuteTitle(lookup.value)
+    if (ukAct) {
+      raw.push(legislationCandidate(ukAct, true))
     }
     const [registry, huggingFace] = await Promise.all([
       titleRegistryCandidates(request.item, lookup.value),

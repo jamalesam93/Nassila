@@ -48,6 +48,10 @@
     "importManuscriptHint": "Load a DOCX, PDF, or text/Markdown manuscript (Ctrl+I).",
     "importHint": "Load .bib, .ris, or CSL-JSON (Ctrl+I). DOCX/PDF extract reference lists when you import those files.",
     "export": "Export",
+    "exportRis": "Export RIS (.ris)",
+    "exportBibtex": "Export BibTeX (.bib)",
+    "exportCslJson": "Export CSL-JSON (.json)",
+    "exportOther": "Export plain text (.txt)",
     "exportHint": "Save formatted bibliography from the selected CSL style, or citation list in another mode. Shortcut: Ctrl+E.",
     "autocorrect": "Autocorrect",
     "autocorrectBusy": "Correcting…",
@@ -427,6 +431,7 @@
     "verifyRow": "Verify row",
     "autocorrectRow": "Autocorrect row",
     "hint": "Search scholarly registries and artifact hosts. A candidate is never applied until you select it.",
+    "legislationHint": "Legislation rows are matched against official catalogues (EU ELI, US federal, UK legislation.gov.uk, and allowlisted .gov URLs)—not Crossref or PubMed.",
     "keyType": "Lookup key type",
     "keyPlaceholder": "Title, DOI, PMID, PMCID, or URL",
     "search": "Find matches",
@@ -454,7 +459,11 @@
       "huggingface": "Hugging Face",
       "kaggle": "Kaggle",
       "github": "GitHub",
-      "eli": "EU ELI / EUR-Lex"
+      "eli": "EU ELI / EUR-Lex",
+      "us_federal": "US federal (Congress / GovInfo)",
+      "uk_legislation": "UK legislation.gov.uk",
+      "official_catalogue": "Official government catalogue",
+      "grey_web": "Grey-web page"
     },
     "candidateKind": {
       "artifact_citation": "Artifact citation",
@@ -824,6 +833,9 @@
     "preflightOk": "No blocking identity or mapping issues.",
     "nextActions": "Next actions",
     "exportDiagnostic": "Export diagnostic bundle…",
-    "diagnosticExported": "Diagnostic bundle saved"
+    "diagnosticExported": "Diagnostic bundle saved",
+    "mappingCoverage": "Citation mapping coverage: {{percent}}%",
+    "exportSubmissionBundle": "Export submission integrity bundle…",
+    "submissionBundleExported": "Submission integrity bundle saved"
   }
 }

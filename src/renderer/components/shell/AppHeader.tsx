@@ -71,25 +71,18 @@ export default function AppHeader() {
 
 
   const {
-
     detectDuplicates,
-
     exportBibliography,
-
+    exportRis,
+    exportBibtex,
+    exportCslJson,
     exportManuscriptAuditJson,
-
     exportManuscriptAuditMarkdown,
-
     findMissingDois,
-
     importManuscript,
-
     importReferences,
-
     runAutocorrect,
-
     verifyReferences
-
   } = useAppCommands()
 
 
@@ -293,27 +286,29 @@ export default function AppHeader() {
 
             </Tooltip>
 
-            <Tooltip label={t('toolbar.exportHint')} side="bottom">
-
-              <Button
-
-                onClick={exportBibliography}
-
-                size="sm"
-
-                variant="secondary"
-
-                disabled={citationCount === 0}
-
-              >
-
-                <Icon icon={LuDownload} size={14} className="me-1.5" />
-
-                {t('toolbar.export')}
-
-              </Button>
-
-            </Tooltip>
+            <DropdownMenu
+              label={
+                <span className="flex items-center gap-1.5">
+                  <Icon icon={LuDownload} size={14} />
+                  {t('toolbar.export')}
+                </span>
+              }
+              align="center"
+              disabled={citationCount === 0}
+            >
+              <DropdownMenuItem onSelect={() => void exportRis()}>
+                {t('toolbar.exportRis', { defaultValue: 'Export RIS (.ris)' })}
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => void exportBibtex()}>
+                {t('toolbar.exportBibtex', { defaultValue: 'Export BibTeX (.bib)' })}
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => void exportCslJson()}>
+                {t('toolbar.exportCslJson', { defaultValue: 'Export CSL-JSON (.json)' })}
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => void exportBibliography()}>
+                {t('toolbar.exportOther', { defaultValue: 'Export plain text (.txt)' })}
+              </DropdownMenuItem>
+            </DropdownMenu>
 
           </>
 

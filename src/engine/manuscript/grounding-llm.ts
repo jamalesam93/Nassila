@@ -1,4 +1,5 @@
 import type { ClaimGroundingRow, ClaimSupportVerdict, EvidenceSnippet, LayerVerdict } from './types'
+import type { SourcePageBoundary } from '../../shared/source-artifact'
 import { parseGroundingJsonWithRepair } from './grounding-json-repair'
 
 /** Version of the production system/user prompt contract mirrored by NassilaT. */
@@ -18,19 +19,38 @@ export interface GroundingLlmOpts {
 
 /** Sentence-ish chunks from long source text, ranked by token overlap with passage. */
 export function selectSourceChunksForGrounding(passage: string, sourceText: string, maxChars: number): string {
-  const cleaned = sourceText.replace(/\s+/g, ' ').trim()
-  if (cleaned.length <= maxChars) return cleaned
+  return selectSourceChunksForGroundingWithBoundaries(passage, sourceText, maxChars).excerpt
+}
 
-  const parts = cleaned.split(/(?<=[.!?])\s+|[\n\r]+/).map((s) => s.trim()).filter((s) => s.length > 20)
-  const chunks = parts.length > 0 ? parts : [cleaned.slice(0, 2000)]
+export interface GroundingChunkSelection {
+  excerpt: string
+  pageHint?: string
+}
+
+/** Paragraph/page-aware chunk selection when page boundaries are available (1.6.0 baseline). */
+export function selectSourceChunksForGroundingWithBoundaries(
+  passage: string,
+  sourceText: string,
+  maxChars: number,
+  pageBoundaries?: SourcePageBoundary[]
+): GroundingChunkSelection {
+  const cleaned = sourceText.replace(/\s+/g, ' ').trim()
+  if (cleaned.length <= maxChars) {
+    return { excerpt: cleaned, pageHint: pageHintForRange(0, cleaned.length, pageBoundaries) }
+  }
+
+  const paragraphParts = cleaned.split(/\n{2,}|\r\n{2,}/).map((s) => s.trim()).filter((s) => s.length > 20)
+  const sentenceParts = cleaned.split(/(?<=[.!?])\s+|[\n\r]+/).map((s) => s.trim()).filter((s) => s.length > 20)
+  const parts = paragraphParts.length > 1 ? paragraphParts : sentenceParts.length > 0 ? sentenceParts : [cleaned.slice(0, 2000)]
 
   const pTokens = normalizeTokens(passage)
-  const ranked = chunks
-    .map((chunk) => ({
+  const ranked = parts
+    .map((chunk, index) => ({
       chunk,
-      score: overlapScore(pTokens, normalizeTokens(chunk))
+      score: overlapScore(pTokens, normalizeTokens(chunk)),
+      index
     }))
-    .sort((a, b) => b.score - a.score)
+    .sort((a, b) => b.score - a.score || a.index - b.index)
 
   let out = ''
   for (const { chunk } of ranked) {
@@ -38,7 +58,36 @@ export function selectSourceChunksForGrounding(passage: string, sourceText: stri
     out = out ? `${out}\n\n${chunk}` : chunk
   }
   if (!out) out = cleaned.slice(0, maxChars)
-  return out.slice(0, maxChars)
+
+  const excerpt = out.slice(0, maxChars)
+  const start = findExcerptStart(cleaned, excerpt)
+  return {
+    excerpt,
+    pageHint: pageHintForRange(start, start + excerpt.length, pageBoundaries)
+  }
+}
+
+function findExcerptStart(sourceText: string, excerpt: string): number {
+  const probe = excerpt.slice(0, Math.min(120, excerpt.length)).trim()
+  if (!probe) return 0
+  const idx = sourceText.indexOf(probe)
+  return idx >= 0 ? idx : 0
+}
+
+function pageHintForRange(
+  start: number,
+  end: number,
+  pageBoundaries?: SourcePageBoundary[]
+): string | undefined {
+  if (!pageBoundaries?.length || end <= start) return undefined
+  const pages = [...new Set(
+    pageBoundaries
+      .filter((boundary) => boundary.end > start && boundary.start < end)
+      .map((boundary) => boundary.page)
+  )].sort((a, b) => a - b)
+  if (pages.length === 0) return undefined
+  if (pages.length === 1) return `p. ${pages[0]}`
+  return `pp. ${pages[0]}-${pages[pages.length - 1]}`
 }
 
 function normalizeTokens(text: string): Set<string> {

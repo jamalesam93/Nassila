@@ -78,10 +78,15 @@ export function buildSharhLiteSummary(report: AuditReport): SharhLiteSummary {
   }
 }
 
+/** Minimum matched/total citation mapping ratio before a full audit is trustworthy (1.7.0 Preflight+). */
+export const PREFLIGHT_MAPPING_COVERAGE_WARN = 0.85
+export const PREFLIGHT_MAPPING_COVERAGE_BLOCK = 0.5
+
 export interface PreflightGateResult {
   ok: boolean
   blockers: string[]
   warnings: string[]
+  mappingCoverage?: number
 }
 
 /** Submission preflight — unresolved identity + mapping coverage. */
@@ -99,12 +104,37 @@ export function evaluateSubmissionPreflight(report: AuditReport | null): Preflig
   }
   const unmatched = report.citationMapping?.unmatched ?? 0
   const matched = report.citationMapping?.matched ?? 0
+  const ambiguous = report.citationMapping?.ambiguous ?? 0
+  const mappingTotal = matched + unmatched + ambiguous
+  const mappingCoverage = mappingTotal > 0 ? matched / mappingTotal : undefined
   if (matched === 0 && report.findings.length > 0) {
     blockers.push('No in-text citations were mapped to bibliography entries')
-  } else if (unmatched > 0) {
-    warnings.push(`${unmatched} unmatched citation(s) were not grounded`)
+  } else if (mappingCoverage !== undefined) {
+    if (mappingCoverage < PREFLIGHT_MAPPING_COVERAGE_BLOCK) {
+      blockers.push(
+        `Citation mapping coverage is ${Math.round(mappingCoverage * 100)}% — resolve unmatched citations before submission`
+      )
+    } else if (unmatched > 0) {
+      warnings.push(`${unmatched} unmatched citation(s) were not grounded`)
+    }
+    if (
+      mappingCoverage >= PREFLIGHT_MAPPING_COVERAGE_BLOCK &&
+      mappingCoverage < PREFLIGHT_MAPPING_COVERAGE_WARN
+    ) {
+      warnings.push(
+        `Citation mapping coverage is ${Math.round(mappingCoverage * 100)}% — review ambiguous or unmatched cites`
+      )
+    }
   }
-  return { ok: blockers.length === 0, blockers, warnings }
+  const abstractOnly = report.findings.filter((f) => f.l3Coverage === 'abstract_only_closed').length
+  const unavailable = report.findings.filter((f) => f.l3Coverage === 'unavailable').length
+  if (abstractOnly > 0) {
+    warnings.push(`${abstractOnly} reference(s) were audited on abstract-only source coverage`)
+  }
+  if (unavailable > 0) {
+    warnings.push(`${unavailable} reference(s) had no source text for grounding`)
+  }
+  return { ok: blockers.length === 0, blockers, warnings, mappingCoverage }
 }
 
 /** Opt-in local quality ledger aggregates — no manuscript text. */
@@ -118,6 +148,9 @@ export interface QualityLedgerEntry {
   invalidQuotes: number
   auditDurationMs?: number
   failureCategories: string[]
+  preflightOk?: boolean
+  mappingCoverage?: number
+  sourceCoverageLimitations?: string[]
 }
 
 export function buildQualityLedgerEntry(
@@ -131,6 +164,7 @@ export function buildQualityLedgerEntry(
   if (summary.invalidQuotes > 0) failureCategories.push('invalid_quotes')
   if (summary.unresolvedIdentities > 0) failureCategories.push('unresolved_identity')
   if (summary.unmappedCitations > 0) failureCategories.push('unmapped_citations')
+  const preflight = evaluateSubmissionPreflight(report)
   return {
     at: new Date().toISOString(),
     appVersion,
@@ -140,6 +174,67 @@ export function buildQualityLedgerEntry(
     contradictedClaims: summary.contradicted,
     invalidQuotes: summary.invalidQuotes,
     auditDurationMs,
-    failureCategories
+    failureCategories,
+    preflightOk: preflight.ok,
+    mappingCoverage: preflight.mappingCoverage,
+    sourceCoverageLimitations: summary.sourceCoverageLimitations
+  }
+}
+
+export interface SubmissionIntegrityBundle {
+  exportedAt: string
+  appVersion: string
+  promptContractVersion?: string
+  preflight: PreflightGateResult
+  summary: SharhLiteSummary
+  diagnostic: QualityLedgerEntry
+  provenance: {
+    groundingModelId: string
+    groundingCheckpoint: string
+    groundingRunner: string
+    networkStatus: string
+    templateId: string
+    citationMapping?: AuditReport['citationMapping']
+    findingIndex: Array<{
+      bibKey: string
+      l3Coverage: string
+      registryStatus: string
+      metadataStatus: string
+      passageStatus: string
+    }>
+  }
+}
+
+/** 1.7.0 submission integrity bundle — audit summary + provenance, no manuscript body text. */
+export function buildSubmissionIntegrityBundle(
+  report: AuditReport,
+  appVersion: string,
+  auditDurationMs?: number
+): SubmissionIntegrityBundle {
+  const preflight = evaluateSubmissionPreflight(report)
+  const summary = buildSharhLiteSummary(report)
+  const diagnostic = buildQualityLedgerEntry(report, appVersion, auditDurationMs)
+  return {
+    exportedAt: new Date().toISOString(),
+    appVersion,
+    promptContractVersion: report.promptContractVersion,
+    preflight,
+    summary,
+    diagnostic,
+    provenance: {
+      groundingModelId: report.grounding.modelId,
+      groundingCheckpoint: report.grounding.checkpoint,
+      groundingRunner: report.grounding.runner,
+      networkStatus: report.networkStatus,
+      templateId: report.template.id,
+      citationMapping: report.citationMapping,
+      findingIndex: report.findings.map((f) => ({
+        bibKey: f.bibKey,
+        l3Coverage: f.l3Coverage,
+        registryStatus: f.layers.registry.status,
+        metadataStatus: f.layers.metadata.status,
+        passageStatus: f.layers.passage.status
+      }))
+    }
   }
 }

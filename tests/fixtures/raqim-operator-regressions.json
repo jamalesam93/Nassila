@@ -1,5 +1,5 @@
 {
-  "version": "1.2.4",
+  "version": "1.4.0",
   "cases": [
     {
       "id": "oup-jamia-article-abstract",
@@ -151,6 +151,57 @@
       "expected": {
         "automaticIdentityChange": false,
         "manualResolutionRequired": true
+      }
+    },
+    {
+      "id": "eu-ai-act-eli-url",
+      "track": "R-statute",
+      "input": {
+        "type": "legislation",
+        "title": "Regulation (EU) 2024/1689 laying down harmonised rules on artificial intelligence",
+        "URL": "http://data.europa.eu/eli/reg/2024/1689/oj"
+      },
+      "expected": {
+        "provider": "eli",
+        "number": "2024/1689",
+        "type": "legislation"
+      }
+    },
+    {
+      "id": "us-public-law-117-58",
+      "track": "R-statute",
+      "input": {
+        "type": "legislation",
+        "title": "Public Law 117-58",
+        "URL": "https://www.congress.gov/public-law/117th-congress/58"
+      },
+      "expected": {
+        "provider": "us_federal",
+        "number": "117-58"
+      }
+    },
+    {
+      "id": "uk-act-2024-12",
+      "track": "R-statute",
+      "input": {
+        "type": "legislation",
+        "title": "Example Act 2024",
+        "URL": "https://www.legislation.gov.uk/ukpga/2024/12"
+      },
+      "expected": {
+        "provider": "uk_legislation",
+        "number": "2024 No. 12",
+        "issuedYear": 2024
+      }
+    },
+    {
+      "id": "statute-split-lines",
+      "track": "R-statute",
+      "input": {
+        "raw": "Regulation (EU) 2024\n/1689 on artificial intelligence"
+      },
+      "expected": {
+        "mergedLine": "Regulation (EU) 2024/1689 on artificial intelligence"
       }
     }
   ]

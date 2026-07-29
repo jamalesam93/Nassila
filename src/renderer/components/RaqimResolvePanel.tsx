@@ -103,7 +103,9 @@ export default function RaqimResolvePanel({ item }: RaqimResolvePanelProps) {
 
       {open && (
         <div className="mt-2 space-y-2 border-s-2 border-border ps-3">
-          <p className="text-xs text-muted-foreground">{t('raqimResolve.hint')}</p>
+          <p className="text-xs text-muted-foreground">
+            {t(item.type === 'legislation' ? 'raqimResolve.legislationHint' : 'raqimResolve.hint')}
+          </p>
           <div className="flex gap-1.5">
             <select
               className="rounded border border-input bg-background px-2 py-1 text-xs text-foreground"

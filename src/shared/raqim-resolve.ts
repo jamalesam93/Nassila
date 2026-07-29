@@ -11,6 +11,10 @@ export type RaqimCandidateProvider =
   | 'kaggle'
   | 'github'
   | 'eli'
+  | 'us_federal'
+  | 'uk_legislation'
+  | 'official_catalogue'
+  | 'grey_web'
 
 export type RaqimCandidateKind =
   | 'artifact_citation'

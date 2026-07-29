@@ -4,7 +4,7 @@
 **Scope:** Nassila (app) · NassilaT (training) · nassila-web (docs)  
 **Sources reviewed:** `NassilaT/training/OUROBOROS_OPERATOR_MAP.md`, `Nassila/docs/FEATURES-AND-TWEAKS.md`, `STATE.md`, `PRODUCT.md`, `OUROBOROS_CONTEXT.md`, `CHANGELOG.md`, engine/renderer code, field notes, website release train
 
-**App baseline:** **1.3.1 · Maktab OCR hardening** (2026-07-20; consolidates **1.3.0 · Sharh-lite**). **Sanad checkpoints:** S12 (E4B) · S14 (12B). **S15:** parked (NassilaT).
+**App baseline:** **1.4.0** (Raqim Statute) on **1.3.0 · Sharh-lite** train (2026-07-21). **Sanad checkpoints:** S12 (E4B) · S14 (12B). **S15:** parked (NassilaT).
 
 ---
 
@@ -167,7 +167,7 @@ UI AR support is live; Sanad training JSONL has **zero** Arabic-script grounding
 
 ### 3.7 OCR offline first use
 
-**Status:** **Shipped (1.3.1)** — bundled `eng` / `fra` tessdata + `langPath`; Arabic Tesseract **deferred** (prefer DOCX); `ara` pack not shipped. Vision/LLM OCR → **1.6.0+**.
+**Status:** **Shipped** — bundled `eng` / `fra` / `ara` tessdata + `langPath` resolution (`tesseract-ocr.ts`); packaged OCR smoke PASS.
 
 **Residual:** if packs are missing, Tesseract may still network-fallback — surface that warning honestly; keep offline-first-use coverage in release smoke.
 
@@ -258,7 +258,7 @@ The former **1.2.2–1.2.9** slots shipped together in **1.3.0**:
 | 1.2.5 | Masdar attach | Per-reference PDF attach; content-addressed cache; offline re-ground |
 | 1.2.6 | Raqim Resolve | Repair panel; scholarly registries + HF/Kaggle/GitHub; manual apply only |
 | 1.2.7 | Projects + Help | `.nassila` save/open; first-run tip; Help → website |
-| 1.2.8 | OCR O2 + a11y | Bundled eng/fra tessdata (ara deferred in **1.3.1**); enhanced OCR; loop keyboard nav |
+| 1.2.8 | OCR O2 + a11y | Bundled eng/fra/ara tessdata; enhanced OCR; loop keyboard nav |
 | 1.2.9 | Preflight | Submission gates; opt-in diagnostic export |
 | 1.3.0 | Sharh-lite | Deterministic evidence summary; DOCX/PDF split fix; Windows icons |
 | — | Legislation (partial) | EU ELI URL + `Regulation (EU) YYYY/NNN` in Resolve |
@@ -359,10 +359,9 @@ Trust and submission outputs — finish gaps that overlap 1.3.0 preflight but br
 
 ### Worker maturity (direction)
 
-| Worker | Today (1.3.1) | Target (via map above) |
+| Worker | Today (1.3.0) | Target (via map above) |
 |--------|----------------|-------------------------|
 | **Raqim** | L1/L2, Resolve, partial EU legislation | 1.4–1.5: statute + web gray lit |
-| **Maktab** | DOCX/pdf.js; Latin Enhanced OCR; Arabic → DOCX | 1.6: fixtures + vision/LLM Arabic OCR |
 | **Sanad** | L3; S12/S14 | Deeper Masdar text; S15 only if eval gap |
 | **Masdar** | OA PDF + attach | 1.6: auto cited-PDF ingest; chunking |
 | **Maktab** | pdf.js + OCR O2 | 1.6: fixtures, provenance |
@@ -404,7 +403,7 @@ Design record for the trust reset that landed with the 1.3.0 consolidation. Item
 6. Remove synthetic-span grounding when mappings fail.
 7. Add mapping coverage and ambiguity reporting (Sharh-lite + mapping summary).
 8. Replace character-cut passage windows with sentence/paragraph windows.
-9. Bundle OCR language packs (eng/fra; ara deferred in **1.3.1**).
+9. Bundle OCR language packs (eng/fra/ara).
 10. Add basic CI (`.github/workflows/ci.yml`).
 
 **Exit gates:** **Met** for 1.3.0 packaged smoke + prompt re-eval. Residual rate-limit / mid-LLM abort / dirty-close → **1.7.0**.
@@ -577,8 +576,8 @@ S12 and S14 are useful shipping baselines. Do not train S15 merely to recover S1
 Parallel work should mean **data curation only**, not Vast GPU spend.
 
 - **Park** abstract-only combined-score recovery (repeats v1.13 cap/trim risk).
-- **Allow parallel:** reviewing masdar-lite field notes into boost JSONL; locking Tier 3 schemas; piloting OA fetch; app tracks.
-- **Un-park S15 train only when:** human-reviewed field-note boosts **or** Tier 3 body holdout exists, plus explicit go/no-go criteria that preserve h-045/h-088 behavior.
+- **Allow parallel:** reviewing masdar-lite field notes into boost JSONL; locking Tier 3 schemas; piloting OA fetch; **PDF-body holdout drafting + S14 offline scoring** (2026-07-22 draft: 84 rows, 96.4% expect / 98.8% parse — not product GO); app tracks.
+- **Un-park S15 train only when:** explicit go/no-go after quote ≥98% on a **frozen** body holdout (and/or clear model gap vs pipeline), preserving h-045/h-088 behavior. See NassilaT [`EVAL_GONOGO_TIER3_MEMO.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/EVAL_GONOGO_TIER3_MEMO.md).
 
 ### Separate three evaluations
 
@@ -591,6 +590,8 @@ Current Sanad evaluation mostly measures grounding given a supplied excerpt. Tie
 Without this separation, a retrieval error is incorrectly treated as a model error.
 
 ### Build a real full-text holdout before training
+
+**Progress (2026-07-24):** Scale freeze **159** re-scored S12+S14 **98.74%** expect/quote. Contrastive false-supported S14 near gate. Batch3 DOI list ready for operator PDFs. Still **NO-GO train**; e2e pending. Details: NassilaT [`EVAL_GONOGO_TIER3_MEMO.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/EVAL_GONOGO_TIER3_MEMO.md).
 
 The planned 30–50-row Tier 3 holdout is enough for a pilot, not a product gate.
 

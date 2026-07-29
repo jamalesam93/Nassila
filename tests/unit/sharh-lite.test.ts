@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   buildQualityLedgerEntry,
   buildSharhLiteSummary,
+  buildSubmissionIntegrityBundle,
   evaluateSubmissionPreflight
 } from '../../src/engine/manuscript/sharh-lite'
 import type { AuditReport, CitationFinding } from '../../src/engine/manuscript/types'
@@ -90,11 +91,36 @@ describe('sharh-lite + preflight', () => {
     expect(gate.blockers.length).toBeGreaterThan(0)
   })
 
+  it('blocks preflight on low mapping coverage', () => {
+    const report = baseReport([emptyFinding()])
+    report.citationMapping = { matched: 1, ambiguous: 0, unmatched: 4 }
+    const gate = evaluateSubmissionPreflight(report)
+    expect(gate.ok).toBe(false)
+    expect(gate.mappingCoverage).toBe(0.2)
+    expect(gate.blockers.some((b) => /mapping coverage/i.test(b))).toBe(true)
+  })
+
+  it('warns on abstract-only source coverage', () => {
+    const report = baseReport([emptyFinding({ l3Coverage: 'abstract_only_closed' })])
+    const gate = evaluateSubmissionPreflight(report)
+    expect(gate.ok).toBe(true)
+    expect(gate.warnings.some((w) => /abstract-only/i.test(w))).toBe(true)
+  })
+
   it('builds quality ledger without manuscript text', () => {
     const report = baseReport([emptyFinding()])
     const entry = buildQualityLedgerEntry(report, '1.3.0', 1200)
     expect(entry.appVersion).toBe('1.3.0')
     expect(entry.findingCount).toBe(1)
+    expect(entry.preflightOk).toBe(true)
     expect(JSON.stringify(entry)).not.toMatch(/Hello|manuscript body/i)
+  })
+
+  it('builds submission integrity bundle without manuscript body', () => {
+    const report = baseReport([emptyFinding()])
+    const bundle = buildSubmissionIntegrityBundle(report, '1.4.0')
+    expect(bundle.preflight.ok).toBe(true)
+    expect(bundle.provenance.findingIndex).toHaveLength(1)
+    expect(JSON.stringify(bundle)).not.toMatch(/manuscript_passage|passageWindow/i)
   })
 })

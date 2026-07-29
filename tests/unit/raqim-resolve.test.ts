@@ -60,6 +60,16 @@ describe('Raqim candidate ranking', () => {
   it('uses token overlap without punctuation sensitivity', () => {
     expect(textSimilarity('Gemma: Open Models', 'Gemma — open models!')).toBe(1)
   })
+
+  it('executes exact DataCite DOI lookup without reference errors', async () => {
+    const { lookupRaqimCandidates } = await import('../../src/engine/resolver/raqim-resolve')
+    const candidates = await lookupRaqimCandidates({
+      item: query,
+      kind: 'doi',
+      key: '10.48550/arXiv.2507.19530'
+    })
+    expect(Array.isArray(candidates)).toBe(true)
+  })
 })
 
 describe('Raqim lookup IPC sanitizer', () => {

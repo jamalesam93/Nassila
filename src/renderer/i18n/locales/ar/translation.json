@@ -48,6 +48,10 @@
     "importManuscriptHint": "تحميل DOCX أو PDF أو نص/Markdown (Ctrl+I).",
     "importHint": "تحميل .bib أو .ris أو CSL-JSON (Ctrl+I). يستخرج DOCX/PDF قوائم المراجع عند الاستيراد.",
     "export": "تصدير",
+    "exportRis": "تصدير RIS (.ris)",
+    "exportBibtex": "تصدير BibTeX (.bib)",
+    "exportCslJson": "تصدير CSL-JSON (.json)",
+    "exportOther": "تصدير نص مجرد (.txt)",
     "exportHint": "احفظ قائمة المراجع المنسّقة حسب أسلوب CSL المختار.",
     "autocorrect": "تصحيح تلقائي",
     "autocorrectBusy": "جارٍ التصحيح…",
@@ -427,6 +431,7 @@
     "verifyRow": "التحقق من المرجع",
     "autocorrectRow": "تصحيح المرجع تلقائيًا",
     "hint": "ابحث في السجلات العلمية ومستودعات المواد البحثية. لن تُطبَّق أي نتيجة قبل أن تحددها.",
+    "legislationHint": "صفوف التشريع تُطابَق مع السجلات الرسمية (ELI للاتحاد الأوروبي، التشريع الفيدرالي الأمريكي، legislation.gov.uk، وعناوين .gov المعتمدة)—وليس Crossref أو PubMed.",
     "keyType": "نوع مفتاح البحث",
     "keyPlaceholder": "العنوان أو DOI أو PMID أو PMCID أو URL",
     "search": "البحث عن مطابقات",
@@ -454,7 +459,11 @@
       "huggingface": "Hugging Face",
       "kaggle": "Kaggle",
       "github": "GitHub",
-      "eli": "الاتحاد الأوروبي (ELI)"
+      "eli": "الاتحاد الأوروبي (ELI)",
+      "us_federal": "تشريع فيدرالي أمريكي",
+      "uk_legislation": "تشريع المملكة المتحدة",
+      "official_catalogue": "سجل حكومي رسمي",
+      "grey_web": "صفحة ويب رمادية"
     },
     "candidateKind": {
       "artifact_citation": "مرجع مادة بحثية",
@@ -824,6 +833,9 @@
     "preflightOk": "لا موانع في الهوية أو ربط الاقتباسات.",
     "nextActions": "الخطوات التالية",
     "exportDiagnostic": "تصدير حزمة تشخيص…",
-    "diagnosticExported": "حُفظت حزمة التشخيص"
+    "diagnosticExported": "حُفظت حزمة التشخيص",
+    "mappingCoverage": "تغطية ربط الاقتباسات: {{percent}}٪",
+    "exportSubmissionBundle": "تصدير حزمة نزاهة التسليم…",
+    "submissionBundleExported": "حُفظت حزمة نزاهة التسليم"
   }
 }
