@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import i18n from '../i18n/config'
 import {
   SANAD_HF_12B_URL,
-  SANAD_HF_E4B_URL,
+  SANAD_HF_4B_URL,
   sanadSetupDocsUrl
 } from '../../shared/sanad-setup-links'
 import { Button } from './ui/button'
@@ -75,7 +75,7 @@ export default function SanadSetupModal() {
           <h3 className="text-xs font-semibold text-foreground">{t('sanadSetup.modelsTitle')}</h3>
           <ul className="mt-2 list-disc space-y-1 ps-4 text-sm leading-relaxed text-foreground">
             <li>
-              <ExternalLink href={SANAD_HF_E4B_URL}>{t('sanadSetup.models.e4b')}</ExternalLink>
+              <ExternalLink href={SANAD_HF_4B_URL}>{t('sanadSetup.models.4b')}</ExternalLink>
             </li>
             <li>
               <ExternalLink href={SANAD_HF_12B_URL}>{t('sanadSetup.models.12b')}</ExternalLink>

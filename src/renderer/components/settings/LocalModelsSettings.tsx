@@ -460,7 +460,7 @@ export default function LocalModelsSettings() {
 
           <div className="mt-2 flex flex-wrap gap-2">
 
-            {(['e4b', '12b'] as const).map((id) => {
+            {(['4b', '12b'] as const).map((id) => {
 
               const active = tier === id && isNassilaSanadModel(llmModel)
 

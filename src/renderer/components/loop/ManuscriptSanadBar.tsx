@@ -152,7 +152,7 @@ export default function ManuscriptSanadBar() {
 
             <div className="flex items-center gap-1">
 
-              {(['e4b', '12b'] as const).map((id) => {
+              {(['4b', '12b'] as const).map((id) => {
 
                 const active = tier === id && isNassilaSanadModel(llmModel)
 

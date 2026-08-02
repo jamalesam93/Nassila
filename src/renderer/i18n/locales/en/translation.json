@@ -132,8 +132,9 @@
       "nassilaTierHint": "Trained for cite-to-source grounding. Load the GGUF in your local runner, then pick a tier.",
       "tierLabel": "Model tier",
       "tier": {
-        "e4b": "Default (E4B v1.12)",
-        "12b": "Quality (12B v1.14)"
+        "4b": "Default (4B S15)",
+        "12b": "Quality (12B v1.14)",
+        "e4b": "Legacy (E4B v1.12)"
       },
       "showAdvanced": "Advanced endpoint…",
       "hideAdvanced": "Hide advanced",
@@ -670,8 +671,9 @@
     "llmEnabled": "Enable LLM grounding",
     "openSettings": "Settings…",
     "tier": {
-      "e4b": "Default (E4B v1.12)",
-      "12b": "Quality (12B v1.14)"
+      "4b": "Default (4B S15)",
+      "12b": "Quality (12B v1.14)",
+      "e4b": "Legacy (E4B v1.12)"
     },
     "tier2LimitNote": "Tier 2: excerpt-only grounding. Full-paper and table/figure evidence require Tier 3 (Masdar, Shahid).",
     "run": "Run grounding",
@@ -715,8 +717,9 @@
     "sanadBar": {
       "grounding": "Sanad grounding",
       "tier": {
-        "e4b": "E4B",
-        "12b": "12B"
+        "4b": "4B",
+        "12b": "12B",
+        "e4b": "E4B"
       },
       "statusOn": "On",
       "statusOff": "Off",
