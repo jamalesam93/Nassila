@@ -67,7 +67,11 @@ export function modelForSanadTier(tier: SanadTier): string {
 }
 
 export function isNassilaSanadModel(model: string): boolean {
-  return model === NASSILA_MODEL_ARTIFACTS.sanadE4b || model === NASSILA_MODEL_ARTIFACTS.sanad12b
+  return (
+    model === NASSILA_MODEL_ARTIFACTS.sanad4b ||
+    model === NASSILA_MODEL_ARTIFACTS.sanad12b ||
+    model === NASSILA_MODEL_ARTIFACTS.sanadE4b
+  )
 }
 
 export function allowsShortLlmKey(presetId: string, baseUrl: string): boolean {
