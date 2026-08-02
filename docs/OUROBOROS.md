@@ -92,7 +92,7 @@ Training pack: [`TRAINING.md`](./TRAINING.md) → [NassilaT `training/`](https:/
 
 | Stage | Artifact | Base | Notes |
 |-------|----------|------|-------|
-| **Sanad default** | `nassila-sanad-e4b` | E4B | Q6_K ~8 GB; **checkpoint S12** on model card |
+| **Sanad default** | `nassila-sanad-4b` | 4B | Q6_K ~3.3 GB; **checkpoint S15** on model card |
 | **Sanad optional** | `nassila-sanad-12b` | 12B | Q6_K; **checkpoint S14** on model card |
 | **Merged Ouroboros (future)** | `nassila-agent-e12b-v1` | 12B+ | Multi-worker + multimodal when ready |
 
@@ -106,7 +106,7 @@ Training pack: [`TRAINING.md`](./TRAINING.md) → [NassilaT `training/`](https:/
 | **Quality** | Gemma 4 12B | Q6_K | **90.43%** (S14) | **Tier 2 PASS** | Selected quality tier; v1.12 12B = 94.20% fallback |
 | Shahid (future) | Gemma 4 12B | Q4–Q8 ladder | — | — | Multimodal worker |
 
-E4B is the **default** LM Studio download (`nassila-sanad-e4b-q6_k.gguf`, **checkpoint S12**). **`nassila-sanad-12b-q6_k.gguf`** (**checkpoint S14**) is the quality tier — Tier 2 PASS with h-045/h-088 fixed (multi_claim 84.62%). v1.12 12B remains higher-combined fallback. Validate locally via NassilaT [`LAPTOP_SMOKE_TEST.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/LAPTOP_SMOKE_TEST.md).
+4B is the **default** LM Studio download (`nassila-sanad-4b-q6_k.gguf`, **checkpoint S15**). **`nassila-sanad-12b-q6_k.gguf`** (**checkpoint S14**) is the quality tier — Tier 2 PASS with h-045/h-088 fixed (multi_claim 84.62%). v1.12 12B remains higher-combined fallback. Validate locally via NassilaT [`LAPTOP_SMOKE_TEST.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/LAPTOP_SMOKE_TEST.md).
 
 Full walkthrough + HF upload: [NassilaT `PHASE2_9_AB_PILOT_WALKTHROUGH.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/PHASE2_9_AB_PILOT_WALKTHROUGH.md).
 

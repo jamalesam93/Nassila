@@ -87,7 +87,7 @@ export const useManuscriptAuditStore = create<ManuscriptAuditState>((set, get) =
   llmEnabled: true,
   llmPresetId: 'lmstudio',
   llmBaseUrl: LM_STUDIO_DEFAULT_URL,
-  llmModel: NASSILA_MODEL_ARTIFACTS.sanadE4b,
+  llmModel: NASSILA_MODEL_ARTIFACTS.sanad4b,
   unpaywallEmail: '',
   llmPrefsHydrated: false,
   enhancedOcr: false,

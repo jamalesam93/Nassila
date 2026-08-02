@@ -10,7 +10,7 @@ export interface LlmPreset {
 
 /** Suggested Sanad GGUF ids for local runners (datalist only). */
 export const NASSILA_SANAD_MODEL_HINTS = [
-  NASSILA_MODEL_ARTIFACTS.sanadE4b,
+  NASSILA_MODEL_ARTIFACTS.sanad4b,
   NASSILA_MODEL_ARTIFACTS.sanad12b
 ] as const
 

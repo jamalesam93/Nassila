@@ -49,7 +49,7 @@ Single source of truth for **user-facing Arabic** in the app, native menus, and 
 
 ## Technical isolates (do not translate)
 
-Keep in Latin script in UI: **DOI**, **PMID**, **ISBN**, **Crossref**, **PubMed**, **OpenAlex**, **CSL**, **CSL-JSON**, **BibTeX**, **RIS**, **L1**, **L2**, **L3**, **GGUF**, **LM Studio**, **Ollama**, **vLLM**, **Hugging Face**, **Unpaywall**, **Europe PMC**, **JSON**, **PDF**, **DOCX**, **API**, **IPC**, model ids (`nassila-sanad-e4b`, etc.).
+Keep in Latin script in UI: **DOI**, **PMID**, **ISBN**, **Crossref**, **PubMed**, **OpenAlex**, **CSL**, **CSL-JSON**, **BibTeX**, **RIS**, **L1**, **L2**, **L3**, **GGUF**, **LM Studio**, **Ollama**, **vLLM**, **Hugging Face**, **Unpaywall**, **Europe PMC**, **JSON**, **PDF**, **DOCX**, **API**, **IPC**, model ids (`nassila-sanad-4b`, etc.).
 
 ---
 

@@ -22,8 +22,8 @@ Sanad checks manuscript claims against source excerpts using a local LLM and ret
 
 1. Open **Settings → Passage grounding**.
 2. Choose a local runner (LM Studio, Ollama, vLLM, or Custom) or a **Cloud API**.
-3. Select a tier chip: **E4B** (default, ~8 GB VRAM) or **12B** (quality, ~12 GB+ VRAM).
-4. The model auto-defaults to `nassila-sanad-e4b` / `nassila-sanad-12b`.
+3. Select a tier chip: **4B** (default, ~3.3 GB VRAM) or **12B** (quality, ~9.1 GB+ VRAM).
+4. The model auto-defaults to `nassila-sanad-4b` / `nassila-sanad-12b`.
 
 A **Set up Sanad** modal appears on first use with links to Hugging Face, runner downloads, and Ollama pull commands. Dismiss it after setup.
 
@@ -32,7 +32,7 @@ A **Set up Sanad** modal appears on first use with links to Hugging Face, runner
 When editing a manuscript, a **Sanad bar** appears at the top with:
 
 - **Toggle** — enable/disable grounding for the current session
-- **Tier chip** — switch between E4B and 12B
+- **Tier chip** — switch between 4B and 12B
 - **Setup / Configure** links — reopen the Sanad setup modal or Passage grounding settings
 
 ### Open-access source fetch (Unpaywall)

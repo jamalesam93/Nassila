@@ -1,7 +1,7 @@
 # Ouroboros context brief
 
 > **For agents.** Single entry point for Nassila + NassilaT. Last updated: 2026-07-18.
-> **Ship checkpoints:** `nassila-sanad-e4b` **S12** (default-tier, legacy v1.12) · `nassila-sanad-12b` **S14** (Tier 2, legacy v1.14). **v1.13 NO-GO.** **Laptop smoke PASS** (RTX 4060 8 GB, 2026-06-21). Operator map: NassilaT [`training/OUROBOROS_OPERATOR_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/OUROBOROS_OPERATOR_MAP.md). Sign-off: [`outputs/LAPTOP_SMOKE_SIGNOFF.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/outputs/LAPTOP_SMOKE_SIGNOFF.md).
+> **Ship checkpoints:** `nassila-sanad-4b` **S15** (default-tier, Qwen 3.5) · `nassila-sanad-12b` **S14** (Tier 2, legacy v1.14). **v1.13 NO-GO.** **Laptop smoke PASS** (RTX 4060 8 GB, 2026-06-21). Operator map: NassilaT [`training/OUROBOROS_OPERATOR_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/OUROBOROS_OPERATOR_MAP.md). Sign-off: [`outputs/LAPTOP_SMOKE_SIGNOFF.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/outputs/LAPTOP_SMOKE_SIGNOFF.md).
 > Training pack: [`TRAINING.md`](./TRAINING.md) → NassilaT repo. Do not read every historical walkthrough — use this brief, then drill into linked paths only.
 
 ## 1. Mission
@@ -125,7 +125,7 @@ Production manuscript UX is the Ouroboros loop above.
 | v1.8 | 91.43% | 100% | 9/10 | 90.91% | — | 2.94% | 5/5 | NO-GO (legacy 70-row harness) |
 | **v1.10 E4B Q6_K** | **88.12%** | **100%** | **10/10** | **89.47%** | — | **6.57%** | **5/5** | Superseded (default-tier only) |
 | **v1.10 12B Q6_K** | **94.79%** | **100%** | **10/10** | **100%** | — | **2.82%** | **5/5** | **TIER 2 PASS** (optional quality tier) |
-| **v1.12 E4B Q6_K** | **89.27%** | **100%** | **9–10/10** | **92.98%** | — | **3.81%** | **5/5** | **DEFAULT-TIER SHIP** (`nassila-sanad-e4b`) |
+| **S15 4B Q6_K** | **89.27%** | **100%** | **9–10/10** | **92.98%** | — | **3.81%** | **5/5** | **DEFAULT-TIER SHIP** (`nassila-sanad-4b`) |
 
 **Gate policy:** `false_supported` gates on **holdout only** (≤5%). **Monitor** extended-core false-supported (11.1% at v1.4a) in every report — it is not a ship gate but flags regression risk.
 
@@ -133,7 +133,7 @@ Production manuscript UX is the Ouroboros loop above.
 
 **HF adapter (checkpoint):** [`QinEmPeRoR93/nassila-grounding-e4b-v1.4a-adapter`](https://huggingface.co/QinEmPeRoR93/nassila-grounding-e4b-v1.4a-adapter) (legacy name; v1.4a only)
 
-**HF Sanad GGUF:** [`QinEmPeRoR93/nassila-sanad-e4b`](https://huggingface.co/QinEmPeRoR93/nassila-sanad-e4b) (E4B Q6_K, **checkpoint S12**, legacy v1.12) · [`QinEmPeRoR93/nassila-sanad-12b`](https://huggingface.co/QinEmPeRoR93/nassila-sanad-12b) (12B Q6_K, **checkpoint S14**, legacy v1.14). Upload: [`PHASE2_9_AB_PILOT_WALKTHROUGH.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/PHASE2_9_AB_PILOT_WALKTHROUGH.md) Part 9 · Verify: [`HF_RELEASE_VERIFY.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/HF_RELEASE_VERIFY.md)
+**HF Sanad GGUF:** [`QinEmPeRoR93/nassila-sanad-4b`](https://huggingface.co/QinEmPeRoR93/nassila-sanad-4b) (4B Q6_K, **checkpoint S15**) · [`QinEmPeRoR93/nassila-sanad-12b`](https://huggingface.co/QinEmPeRoR93/nassila-sanad-12b) (12B Q6_K, **checkpoint S14**, legacy v1.14). Upload: [`PHASE2_9_AB_PILOT_WALKTHROUGH.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/PHASE2_9_AB_PILOT_WALKTHROUGH.md) Part 9 · Verify: [`HF_RELEASE_VERIFY.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/HF_RELEASE_VERIFY.md)
 
 ## 6. v1.4 fixes (what worked)
 
@@ -214,7 +214,7 @@ Manual Sanad paste does **not** satisfy Tier 3 product ship; it is a bridge unti
 
 ## 11. Model tier policy (A/B pilot — recorded)
 
-- **Default tier:** Gemma 4 **E4B** Q6_K — **`nassila-sanad-e4b` S12** = 89.27% combined, E4B default-tier **PASS**
+- **Default tier:** Qwen 3.5 **4B** Q6_K — **`nassila-sanad-4b` S15** = 89.27% combined, 4B default-tier **PASS**
 - **Quality tier:** Gemma 4 **12B** Q6_K — **S14 selected** = 90.43% combined, quote 100%, Tier 2 **PASS** (h-045/h-088 fixed); v1.12 12B = 94.20% higher-combined fallback
 - **v1.13:** **NO-GO** — do not publish ([`OUROBOROS_OPERATOR_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/OUROBOROS_OPERATOR_MAP.md))
 - **Shahid:** 12B when multimodal worker forges (unchanged)

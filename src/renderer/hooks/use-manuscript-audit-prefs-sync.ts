@@ -56,7 +56,7 @@ export function applyPrefsToStore(p: ManuscriptAuditPrefsV1) {
 
   if (p.llmEnabled === undefined) store.setLlmEnabled(true)
 
-  if (!p.llmModel) store.setLlmModel(NASSILA_MODEL_ARTIFACTS.sanadE4b)
+  if (!p.llmModel) store.setLlmModel(NASSILA_MODEL_ARTIFACTS.sanad4b)
 
   if (!store.llmBaseUrl && migratedPresetId !== 'cloud') store.setLlmBaseUrl(LM_STUDIO_DEFAULT_URL)
 

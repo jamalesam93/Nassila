@@ -12,7 +12,7 @@ Import or paste your bibliography, fix common errors, verify rows against Crossr
 | | |
 |---|---|
 | **Download (Windows)** | [**v1.4.0**](https://github.com/jamalesam93/Nassila/releases/tag/v1.4.0) · [Latest release](https://github.com/jamalesam93/Nassila/releases/latest) |
-| **Sanad models (HF)** | [`nassila-sanad-e4b`](https://huggingface.co/QinEmPeRoR93/nassila-sanad-e4b) · [`nassila-sanad-12b`](https://huggingface.co/QinEmPeRoR93/nassila-sanad-12b) — setup on the [website](https://nassila-web.vercel.app/en/docs/manuscript) |
+| **Sanad models (HF)** | [`nassila-sanad-4b`](https://huggingface.co/QinEmPeRoR93/nassila-sanad-4b) · [`nassila-sanad-12b`](https://huggingface.co/QinEmPeRoR93/nassila-sanad-12b) — setup on the [website](https://nassila-web.vercel.app/en/docs/manuscript) |
 | **Website & docs** | [nassila-web.vercel.app](https://nassila-web.vercel.app) — [How-to](https://nassila-web.vercel.app/en/docs/how-to) · [User guide](https://nassila-web.vercel.app/en/docs/user-guide) · [Changelog](https://nassila-web.vercel.app/en/changelog) |
 | **Documentation (repo)** | [How-to guide](docs/HOW_TO_GUIDE.md) · [User guide](docs/USER_GUIDE.md) · [Brand](docs/BRAND.md) · [Changelog](CHANGELOG.md) |
 | **License** | [MIT](LICENSE) |
@@ -56,7 +56,7 @@ Full notes: [CHANGELOG.md](CHANGELOG.md) · [v1.4.0 release](https://github.com/
 | Resolution | DOI, ISBN, PMID, URL → Crossref, PubMed, Open Library |
 | Verification | Unified L1+L2 registry check (main-process IPC in packaged app), up to 200 rows per run |
 | Integrity | Predatory/suspicious journal flags, duplicate groups with merge |
-| Manuscript | Ouroboros loop: L1/L2 verify, OA source fetch, optional Sanad L3 ([HF models](https://huggingface.co/QinEmPeRoR93/nassila-sanad-e4b)) |
+| Manuscript | Ouroboros loop: L1/L2 verify, OA source fetch, optional Sanad L3 ([HF models](https://huggingface.co/QinEmPeRoR93/nassila-sanad-4b)) |
 | Output | CSL formatting, undo/redo, dark/light mode, EN/AR UI |
 
 ## Getting started
