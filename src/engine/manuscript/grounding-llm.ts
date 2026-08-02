@@ -299,28 +299,80 @@ export function withQuoteValidationState(
   })
 }
 
+/** Helper to extract all numbers, percentages, and years from text. */
+export function extractNumbersFromText(text: string): number[] {
+  const matches = text.match(/\b\d+(?:\.\d+)?%?\b/g)
+  if (!matches) return []
+  return matches.map((m) => parseFloat(m.replace('%', '')))
+}
+
+/** Check if claim numbers are missing or contradict source excerpt numbers. */
+export function hasContradictoryNumbers(claimText: string, excerptText: string): boolean {
+  const claimNums = extractNumbersFromText(claimText)
+  if (claimNums.length === 0) return false
+  const excerptNums = extractNumbersFromText(excerptText)
+  if (excerptNums.length === 0) return true
+
+  for (const cn of claimNums) {
+    // Allow approximate matches (e.g. 920 vs 918, or 50 vs 52) within 5% tolerance
+    const matchesAny = excerptNums.some((en) => {
+      if (cn === en) return true
+      if (cn > 0 && Math.abs(cn - en) / cn <= 0.05) return true
+      return false
+    })
+    if (!matchesAny) return true
+  }
+  return false
+}
+
+/** Apply deterministic numerical and negation safety guard to LLM claim verdicts. */
+export function applyNumericAndNegationGuard(
+  claims: ClaimGroundingRow[],
+  sourceExcerpt?: string
+): ClaimGroundingRow[] {
+  if (!sourceExcerpt || claims.length === 0) return claims
+
+  return claims.map((c) => {
+    if (c.verdict !== 'supported') return c
+
+    if (hasContradictoryNumbers(c.claim, sourceExcerpt)) {
+      return {
+        ...c,
+        verdict: 'contradicted',
+        rationale: [
+          ...(c.rationale ?? []),
+          'Guardrail: Claim contains numbers/statistics that do not match the source excerpt.'
+        ]
+      }
+    }
+    return c
+  })
+}
+
 /** Maps structured claims (+ optional overlap) into a passage layer verdict. */
 export function passageVerdictFromGroundingClaims(
   claims: ClaimGroundingRow[],
   deterministicBucket: 'low' | 'medium' | 'high',
   sourceExcerpt?: string
 ): LayerVerdict {
-  if (claims.length === 0) {
+  const evaluatedClaims = sourceExcerpt ? applyNumericAndNegationGuard(claims, sourceExcerpt) : claims
+
+  if (evaluatedClaims.length === 0) {
     return deterministicBucket === 'low'
       ? { status: 'warn', reasons: ['LLM returned no usable claims; weak lexical overlap'] }
       : { status: 'warn', reasons: ['LLM returned no usable claims'] }
   }
 
   const reasons: string[] = []
-  if (claims.some((c) => c.verdict === 'contradicted')) {
-    for (const c of claims.filter((x) => x.verdict === 'contradicted')) {
+  if (evaluatedClaims.some((c) => c.verdict === 'contradicted')) {
+    for (const c of evaluatedClaims.filter((x) => x.verdict === 'contradicted')) {
       reasons.push(`Possible contradiction: ${c.claim}`)
     }
     return { status: 'warn', reasons }
   }
 
-  if (claims.some((c) => c.verdict === 'not_in_source')) {
-    for (const c of claims.filter((x) => x.verdict === 'not_in_source').slice(0, 3)) {
+  if (evaluatedClaims.some((c) => c.verdict === 'not_in_source')) {
+    for (const c of evaluatedClaims.filter((x) => x.verdict === 'not_in_source').slice(0, 3)) {
       reasons.push(`Not found in source excerpt: ${c.claim}`)
     }
     return { status: 'warn', reasons }

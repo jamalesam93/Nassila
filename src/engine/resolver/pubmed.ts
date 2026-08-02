@@ -179,6 +179,12 @@ export async function pmcidToPmid(pmcid: string): Promise<string | null> {
   }
 }
 
+export async function resolvePmcid(pmcid: string): Promise<CslItem | null> {
+  const pmid = await pmcidToPmid(pmcid)
+  if (!pmid) return null
+  return resolvePmid(pmid)
+}
+
 export async function searchPubMed(item: CslItem, limit = 5): Promise<CslItem[]> {
   const term = buildPubMedSearchTerm(item)
   if (!term) return []

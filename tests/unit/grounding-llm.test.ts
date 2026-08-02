@@ -2,11 +2,13 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
+  applyNumericAndNegationGuard,
   buildGroundingSystemPrompt,
   buildGroundingUserPrompt,
   buildGroundingLlmMessages,
   findInvalidSourceQuotes,
   GROUNDING_PROMPT_CONTRACT_VERSION,
+  hasContradictoryNumbers,
   isVerbatimQuoteSubstring,
   parseGroundingJson,
   passageVerdictFromGroundingClaims,
@@ -259,5 +261,21 @@ describe('selectSourceChunksForGroundingWithBoundaries', () => {
     )
     expect(selection.excerpt.toLowerCase()).toContain('mortality')
     expect(selection.pageHint).toContain('2')
+  })
+})
+
+describe('applyNumericAndNegationGuard', () => {
+  it('detects contradictory numbers in supported claim', () => {
+    expect(hasContradictoryNumbers('Mortality rate was 54.2%', 'The overall mortality rate was 24.1%.')).toBe(true)
+    expect(hasContradictoryNumbers('Mortality rate was 24.1%', 'The overall mortality rate was 24.1%.')).toBe(false)
+    expect(hasContradictoryNumbers('Mortality rate was 24.0%', 'The overall mortality rate was 24.1%.')).toBe(false)
+  })
+
+  it('downgrades supported claim to contradicted when numbers mismatch excerpt', () => {
+    const claims = [{ claim: 'Mortality rate was 54.2%', verdict: 'supported' as const }]
+    const excerpt = 'The overall mortality rate was 24.1% in the treatment group.'
+    const guarded = applyNumericAndNegationGuard(claims, excerpt)
+    expect(guarded[0].verdict).toBe('contradicted')
+    expect(guarded[0].rationale?.[0]).toContain('Guardrail: Claim contains numbers/statistics')
   })
 })

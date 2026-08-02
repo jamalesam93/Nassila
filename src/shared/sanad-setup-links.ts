@@ -8,6 +8,7 @@ export function sanadSetupDocsUrl(locale: string): string {
 }
 
 /** Hugging Face GGUF repos (public). */
+export const SANAD_HF_4B_URL = 'https://huggingface.co/QinEmPeRoR93/nassila-sanad-4b'
 export const SANAD_HF_E4B_URL = 'https://huggingface.co/QinEmPeRoR93/nassila-sanad-e4b'
 export const SANAD_HF_12B_URL = 'https://huggingface.co/QinEmPeRoR93/nassila-sanad-12b'
 
@@ -24,8 +25,9 @@ export const OLLAMA_DEFAULT_BASE = 'http://localhost:11434'
  * Ollama HF Hub one-liners (verify :Q6_K tags against your HF filenames).
  * Model id in Nassila must match `ollama list` after pull.
  */
+export const OLLAMA_HF_PULL_4B = `ollama pull huggingface.co/QinEmPeRoR93/${NASSILA_MODEL_ARTIFACTS.sanad4b}:Q6_K`
 export const OLLAMA_HF_PULL_E4B = `ollama pull huggingface.co/QinEmPeRoR93/${NASSILA_MODEL_ARTIFACTS.sanadE4b}:Q6_K`
 export const OLLAMA_HF_PULL_12B = `ollama pull huggingface.co/QinEmPeRoR93/${NASSILA_MODEL_ARTIFACTS.sanad12b}:Q6_K`
 
-export const SANAD_DEFAULT_MODEL_ID = NASSILA_MODEL_ARTIFACTS.sanadE4b
+export const SANAD_DEFAULT_MODEL_ID = NASSILA_MODEL_ARTIFACTS.sanad4b
 export const SANAD_QUALITY_MODEL_ID = NASSILA_MODEL_ARTIFACTS.sanad12b

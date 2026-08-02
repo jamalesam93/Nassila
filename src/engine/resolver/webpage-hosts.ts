@@ -1,8 +1,9 @@
 import type { CslItem } from '../types'
 
-/** Deterministic grey-web host classification (Raqim Web / 1.5.0 prep). */
+/** Deterministic grey-web host classification (Raqim Web / 1.5.0). */
 
-export type WebpageHostKind =  | 'scholarly_journal'
+export type WebpageHostKind =
+  | 'scholarly_journal'
   | 'preprint'
   | 'government'
   | 'organization'
@@ -11,6 +12,7 @@ export type WebpageHostKind =  | 'scholarly_journal'
   | 'video'
   | 'social'
   | 'repository'
+  | 'dataset'
   | 'unknown'
 
 export interface WebpageHostProfile {
@@ -27,6 +29,8 @@ const HOST_RULES: { pattern: RegExp; profile: WebpageHostProfile }[] = [
   { pattern: /(?:^|\.)medium\.com$/i, profile: { kind: 'blog', platform: 'medium', stableParser: false } },
   { pattern: /(?:^|\.)github\.com$/i, profile: { kind: 'repository', platform: 'github', stableParser: true } },
   { pattern: /(?:^|\.)gitlab\.com$/i, profile: { kind: 'repository', platform: 'gitlab', stableParser: false } },
+  { pattern: /(?:^|\.)kaggle\.com$/i, profile: { kind: 'dataset', platform: 'kaggle', stableParser: true } },
+  { pattern: /(?:^|\.)huggingface\.co$/i, profile: { kind: 'repository', platform: 'huggingface', stableParser: true } },
   { pattern: /(?:^|\.)zenodo\.org$/i, profile: { kind: 'repository', platform: 'zenodo', stableParser: true } },
   { pattern: /(?:^|\.)who\.int$/i, profile: { kind: 'organization', platform: 'who', stableParser: false } },
   { pattern: /\.gov(?:\.[a-z]{2})?$/i, profile: { kind: 'government', stableParser: false, notes: 'Prefer official catalogue URL patterns for legislation' } },
@@ -62,7 +66,48 @@ function hashUrl(value: string): string {
   return hash.toString(16)
 }
 
-/** Deterministic grey-web catalogue stub — no page fetch (Raqim Web / 1.5.0 prep). */
+/** Extract host-specific structured title & metadata signals (GitHub owner/repo, Kaggle dataset name, etc.) */
+export function parseHostSpecificTitle(url: URL, profile: WebpageHostProfile): { title: string; publisher: string } | null {
+  const host = url.hostname.toLowerCase()
+  const pathSegments = url.pathname.split('/').filter(Boolean)
+
+  if (profile.platform === 'github' && pathSegments.length >= 2) {
+    const [owner, repo] = pathSegments
+    return {
+      title: `${owner}/${repo}`,
+      publisher: 'GitHub'
+    }
+  }
+
+  if (profile.platform === 'kaggle' && pathSegments.length >= 2) {
+    const datasetName = pathSegments[pathSegments.length - 1].replace(/-/g, ' ')
+    return {
+      title: `Dataset: ${datasetName}`,
+      publisher: 'Kaggle'
+    }
+  }
+
+  if (profile.platform === 'huggingface' && pathSegments.length >= 2) {
+    const [owner, repo] = pathSegments
+    return {
+      title: `${owner}/${repo}`,
+      publisher: 'Hugging Face'
+    }
+  }
+
+  if (profile.platform === 'substack') {
+    const blogName = host.split('.')[0]
+    const articleSlug = pathSegments.length > 0 ? pathSegments[pathSegments.length - 1].replace(/-/g, ' ') : ''
+    return {
+      title: articleSlug ? `${articleSlug}` : `${blogName} on Substack`,
+      publisher: `${blogName}.substack.com`
+    }
+  }
+
+  return null
+}
+
+/** Deterministic grey-web catalogue stub — no page fetch (Raqim Web / 1.5.0). */
 export function buildGreyWebPageItem(rawUrl: string): CslItem | null {
   let url: URL
   try {
@@ -74,6 +119,18 @@ export function buildGreyWebPageItem(rawUrl: string): CslItem | null {
 
   const profile = classifyWebpageHost(rawUrl)
   if (profile.kind === 'social') return null
+
+  const hostSpecific = parseHostSpecificTitle(url, profile)
+  if (hostSpecific) {
+    return {
+      id: `grey-web-${hashUrl(rawUrl)}`,
+      type: profile.kind === 'dataset' ? 'dataset' : 'webpage',
+      title: hostSpecific.title,
+      URL: rawUrl,
+      publisher: hostSpecific.publisher,
+      genre: profile.kind
+    }
+  }
 
   const pathLabel = url.pathname.replace(/\//g, ' ').replace(/\s+/g, ' ').trim()
   const kindLabel = profile.kind.replace(/_/g, ' ')

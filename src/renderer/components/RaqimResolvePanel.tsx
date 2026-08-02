@@ -70,6 +70,35 @@ export default function RaqimResolvePanel({ item }: RaqimResolvePanelProps) {
     }
   }
 
+  const webpageUrl = item.URL ?? (item.DOI ? `https://doi.org/${item.DOI}` : undefined)
+  const waybackUrl = webpageUrl ? `https://web.archive.org/web/*/${webpageUrl}` : undefined
+
+  const fetchWebpageMeta = async () => {
+    if (!webpageUrl || !window.api?.resolveWebpageMetadata || networkStatus !== 'online') return
+    setBusy(true)
+    setError(null)
+    try {
+      const result = (await window.api.resolveWebpageMetadata(webpageUrl)) as {
+        item: CslItem | null
+        health: { isDead: boolean; waybackUrl: string }
+      } | null
+
+      if (result?.item) {
+        useCitationStore.getState().updateCitation(item.id, {
+          ...result.item,
+          id: item.id,
+          _original: item._original
+        })
+      } else {
+        setError(t('raqimResolve.webpageMetaFailed'))
+      }
+    } catch (metaErr) {
+      setError(metaErr instanceof Error ? metaErr.message : t('raqimResolve.webpageMetaFailed'))
+    } finally {
+      setBusy(false)
+    }
+  }
+
   return (
     <div className="mt-2 ps-4">
       <div className="flex flex-wrap gap-1.5">
@@ -92,6 +121,16 @@ export default function RaqimResolvePanel({ item }: RaqimResolvePanelProps) {
         >
           {busy ? t('raqimResolve.searching') : t('raqimResolve.verifyRow')}
         </button>
+        {webpageUrl && (
+          <button
+            type="button"
+            className="rounded border border-input bg-background px-2 py-1 text-xs text-foreground hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={networkStatus !== 'online' || busy}
+            onClick={() => void fetchWebpageMeta()}
+          >
+            {busy ? t('raqimResolve.fetchingWebpageMeta') : t('raqimResolve.fetchWebpageMeta')}
+          </button>
+        )}
         <button
           type="button"
           className="rounded border border-input bg-background px-2 py-1 text-xs text-foreground hover:bg-accent"
@@ -99,6 +138,16 @@ export default function RaqimResolvePanel({ item }: RaqimResolvePanelProps) {
         >
           {t('raqimResolve.autocorrectRow')}
         </button>
+        {waybackUrl && (
+          <a
+            href={waybackUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center rounded border border-input bg-background px-2 py-1 text-xs text-foreground hover:bg-accent"
+          >
+            {t('raqimResolve.waybackArchive')} ↗
+          </a>
+        )}
       </div>
 
       {open && (

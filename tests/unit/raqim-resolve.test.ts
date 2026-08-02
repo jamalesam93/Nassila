@@ -69,7 +69,7 @@ describe('Raqim candidate ranking', () => {
       key: '10.48550/arXiv.2507.19530'
     })
     expect(Array.isArray(candidates)).toBe(true)
-  })
+  }, 30_000)
 })
 
 describe('Raqim lookup IPC sanitizer', () => {

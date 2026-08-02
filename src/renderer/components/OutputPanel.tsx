@@ -318,11 +318,27 @@ export default function OutputPanel() {
                       )}
                       {item.URL && (
                         <p
-                          className="mt-0.5 ps-4 text-xs text-blue-600 dark:text-blue-400 truncate"
+                          className="mt-0.5 ps-4 text-xs text-blue-600 dark:text-blue-400 truncate flex items-center gap-1.5"
                           title={item.URL}
                         >
                           <span className="font-medium">{t('outputPanel.labelUrl')}: </span>
-                          {item.URL}
+                          <a
+                            href={item.URL}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="underline hover:opacity-80 truncate min-w-0"
+                          >
+                            {item.URL}
+                          </a>
+                          <a
+                            href={`https://web.archive.org/web/*/${item.URL}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="shrink-0 text-[10px] font-medium text-muted-foreground hover:text-foreground underline underline-offset-2"
+                            title={t('raqimResolve.waybackArchive')}
+                          >
+                            [Wayback ↗]
+                          </a>
                         </p>
                       )}
                       {item.DOI && (

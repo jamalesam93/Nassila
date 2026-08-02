@@ -79,4 +79,13 @@ export function registerRegistryIpcHandlers(): void {
       return alignMetadata(user, canon, src)
     }
   )
+
+  /** Raqim Web webpage metadata resolution IPC. */
+  ipcMain.handle('registry:resolveWebpageMetadata', async (_event, rawUrl: unknown) => {
+    if (typeof rawUrl !== 'string' || !rawUrl.trim()) {
+      return null
+    }
+    const { resolveWebpageMetadata } = await import('../engine/resolver/webpage-metadata')
+    return resolveWebpageMetadata(rawUrl.trim())
+  })
 }

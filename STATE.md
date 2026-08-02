@@ -11,11 +11,11 @@ Read this at the start of every agent session. Update when focus, blockers, or s
 
 | Priority | Track | Status |
 |----------|-------|--------|
-| **P0** | **1.4.0 Raqim Statute** ship | **Shipped** — v1.4.0 release cut |
-| **P0** | **1.5.0 Raqim Web** | Active (webpage fetch + dead-link visibility) |
+| **P0** | **1.5.0 Raqim Web** ship | **Shipped** — v1.5.0 release cut |
+| **P1** | **1.6.0** Ouroboros Stage Polish | Next planned milestone |
 | **P1∥** | NassilaT field-note labels; S15 parked | **49/49** labels exported; W4 100 DOI; body holdout contrastive v2 benchmarked |
 
-**Latest app:** **1.4.0** (Raqim Statute) — shipped.
+**Latest app:** **1.5.0** (Raqim Web) — shipped.
 
 ---
 

@@ -249,7 +249,10 @@ const api = {
     checkForUpdates: (): Promise<UpdateCheckResult> => ipcRenderer.invoke('predatory:checkForUpdates'),
     applyUpdate: (): Promise<{ meta: PredatoryListMeta; list: PredatoryList }> =>
       ipcRenderer.invoke('predatory:applyUpdate')
-  }
+  },
+
+  resolveWebpageMetadata: (rawUrl: string): Promise<unknown> =>
+    ipcRenderer.invoke('registry:resolveWebpageMetadata', rawUrl)
 }
 
 contextBridge.exposeInMainWorld('api', api)

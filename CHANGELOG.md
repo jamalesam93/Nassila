@@ -4,6 +4,19 @@ All notable changes to **Nassila** are documented here.
 
 ## [Unreleased]
 
+## [1.5.0] — 2026-07-29 · Raqim Web
+
+Windows installer `Nassila Setup 1.5.0.exe`. **GitHub Release:** [v1.5.0](https://github.com/jamalesam93/Nassila/releases/tag/v1.5.0).
+
+### Added
+
+- **Raqim Web metadata resolver** — deterministic webpage resolution (`webpage-metadata.ts`) extracting Open Graph (`og:*`), Dublin Core (`dc.*`), Schema.org JSON-LD, and standard HTML meta tags.
+- **Host-specific platform extractors** — structured title/publisher extraction for GitHub repositories (`owner/repo`), Kaggle datasets, Hugging Face models/datasets, Substack, Medium, and YouTube videos (`webpage-hosts.ts`).
+- **Wayback Machine archive integration** — automatic fallback link generation (`web.archive.org/web/*/${url}`) and `[Wayback ↗]` action on webpage URL citations.
+- **IPC IPC bridge** — `registry:resolveWebpageMetadata` exposed via `window.api` for packaged Electron app parity (bypasses renderer CORS).
+- **Raqim Resolve UX** — "Fetch webpage metadata" button and inline Wayback Machine archive link.
+- **Parser & access date support** — plain-text parser extracts `accessed` dates and auto-classifies URL-only references as `type: 'webpage'`.
+
 ## [1.4.0] — 2026-07-21 · Raqim Statute
 
 Windows installer `Nassila Setup 1.4.0.exe`. **GitHub Release:** [v1.4.0](https://github.com/jamalesam93/Nassila/releases/tag/v1.4.0).

@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
+  OLLAMA_HF_PULL_4B,
   OLLAMA_HF_PULL_E4B,
+  SANAD_HF_4B_URL,
   SANAD_HF_E4B_URL,
   SANAD_HF_12B_URL
 } from '../../src/shared/sanad-setup-links'
@@ -22,13 +24,14 @@ describe('shouldAutoOpenSanadSetup', () => {
 
 describe('sanad-setup-links', () => {
   it('exports canonical HF URLs', () => {
+    expect(SANAD_HF_4B_URL).toContain('nassila-sanad-4b')
     expect(SANAD_HF_E4B_URL).toContain('nassila-sanad-e4b')
     expect(SANAD_HF_12B_URL).toContain('nassila-sanad-12b')
   })
 
   it('exports Ollama HF pull command', () => {
-    expect(OLLAMA_HF_PULL_E4B).toContain('huggingface.co/QinEmPeRoR93/nassila-sanad-e4b')
-    expect(OLLAMA_HF_PULL_E4B).toContain(':Q6_K')
-    expect(OLLAMA_HF_PULL_E4B).toMatch(/^ollama pull /)
+    expect(OLLAMA_HF_PULL_4B).toContain('huggingface.co/QinEmPeRoR93/nassila-sanad-4b')
+    expect(OLLAMA_HF_PULL_4B).toContain(':Q6_K')
+    expect(OLLAMA_HF_PULL_4B).toMatch(/^ollama pull /)
   })
 })

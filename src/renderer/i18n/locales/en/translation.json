@@ -157,8 +157,9 @@
     "subtitle": "Sanad checks manuscript passages against source excerpts using a local model you run. For the full step-by-step setup, open the guide below.",
     "modelsTitle": "Download models",
     "models": {
-      "e4b": "Default — nassila-sanad-e4b (E4B v1.12, Q6_K)",
-      "12b": "Quality — nassila-sanad-12b (12B v1.14, Q6_K)"
+      "4b": "Default — nassila-sanad-4b (4B S15, Q6_K)",
+      "12b": "Quality — nassila-sanad-12b (12B v1.14, Q6_K)",
+      "e4b": "Legacy — nassila-sanad-e4b (E4B v1.12, Q6_K)"
     },
     "runnersTitle": "Pick a runner",
     "recommended": "recommended",
@@ -430,6 +431,12 @@
     "close": "Close resolve",
     "verifyRow": "Verify row",
     "autocorrectRow": "Autocorrect row",
+    "fetchWebpageMeta": "Fetch webpage metadata",
+    "fetchingWebpageMeta": "Fetching metadata…",
+    "waybackArchive": "Wayback archive",
+    "webpageMetaApplied": "Webpage metadata fetched and applied.",
+    "webpageMetaFailed": "Failed to fetch webpage metadata from URL.",
+    "deadLinkWarning": "Webpage metadata could not be fetched (link may be dead or restricted). Use Wayback archive fallback.",
     "hint": "Search scholarly registries and artifact hosts. A candidate is never applied until you select it.",
     "legislationHint": "Legislation rows are matched against official catalogues (EU ELI, US federal, UK legislation.gov.uk, and allowlisted .gov URLs)—not Crossref or PubMed.",
     "keyType": "Lookup key type",
