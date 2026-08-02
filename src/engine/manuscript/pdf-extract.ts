@@ -13,6 +13,8 @@
  * is unaffected.
  */
 
+import { extractFromPdfInspector } from './pdf-inspector-extract'
+
 const MAX_PDF_PAGES = 200
 const MAX_EXTRACTED_TEXT_CHARS = 4_000_000
 
@@ -42,6 +44,17 @@ export interface PdfManuscriptExtraction {
 export async function extractManuscriptFromPdf(
   buffer: ArrayBuffer
 ): Promise<PdfManuscriptExtraction> {
+  // Primary Fast Path: Try firecrawl/pdf-inspector WASM engine (Rust PDF->Markdown)
+  const inspectorResult = extractFromPdfInspector(buffer)
+  if (inspectorResult && inspectorResult.text.length > 0) {
+    return {
+      text: inspectorResult.text,
+      pageCount: inspectorResult.pageCount,
+      pageBoundaries: inspectorResult.pageBoundaries,
+      warnings: inspectorResult.warnings
+    }
+  }
+
   const warnings: string[] = []
 
   const { loadPdfJs, configurePdfJsWorker } = await import('./pdfjs-loader')

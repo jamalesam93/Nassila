@@ -10,12 +10,17 @@ Windows installer `Nassila Setup 1.5.0.exe`. **GitHub Release:** [v1.5.0](https:
 
 ### Added
 
+- **Maktab Tier A Rust WASM Engine** — integrated `@firecrawl/pdf-inspector-wasm` into `extractManuscriptFromPdf` (`pdf-inspector-extract.ts`). Accelerates text-based PDF ingest by 10–20× (~10–50ms execution), extracts Markdown headings (`# Intro`) and vector/heuristic Markdown tables (`| ... |`), while maintaining seamless fallback to `pdfjs-dist` and Maktab Tesseract OCR.
 - **Raqim Web metadata resolver** — deterministic webpage resolution (`webpage-metadata.ts`) extracting Open Graph (`og:*`), Dublin Core (`dc.*`), Schema.org JSON-LD, and standard HTML meta tags.
 - **Host-specific platform extractors** — structured title/publisher extraction for GitHub repositories (`owner/repo`), Kaggle datasets, Hugging Face models/datasets, Substack, Medium, and YouTube videos (`webpage-hosts.ts`).
 - **Wayback Machine archive integration** — automatic fallback link generation (`web.archive.org/web/*/${url}`) and `[Wayback ↗]` action on webpage URL citations.
 - **IPC IPC bridge** — `registry:resolveWebpageMetadata` exposed via `window.api` for packaged Electron app parity (bypasses renderer CORS).
 - **Raqim Resolve UX** — "Fetch webpage metadata" button and inline Wayback Machine archive link.
 - **Parser & access date support** — plain-text parser extracts `accessed` dates and auto-classifies URL-only references as `type: 'webpage'`.
+
+### Changed
+
+- **Sanad model preset alignment** — swapped default Sanad model target from `nassila-sanad-e4b` to `nassila-sanad-4b` for S15 default grounding performance and compatibility.
 
 ## [1.4.0] — 2026-07-21 · Raqim Statute
 

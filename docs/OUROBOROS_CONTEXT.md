@@ -1,6 +1,6 @@
 # Ouroboros context brief
 
-> **For agents.** Single entry point for Nassila + NassilaT. Last updated: 2026-07-18.
+> **For agents.** Single entry point for Nassila + NassilaT. Last updated: 2026-08-02.
 > **Ship checkpoints:** `nassila-sanad-4b` **S15** (default-tier, Qwen 3.5) · `nassila-sanad-12b` **S14** (Tier 2, legacy v1.14). **v1.13 NO-GO.** **Laptop smoke PASS** (RTX 4060 8 GB, 2026-06-21). Operator map: NassilaT [`training/OUROBOROS_OPERATOR_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/OUROBOROS_OPERATOR_MAP.md). Sign-off: [`outputs/LAPTOP_SMOKE_SIGNOFF.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/outputs/LAPTOP_SMOKE_SIGNOFF.md).
 > Training pack: [`TRAINING.md`](./TRAINING.md) → NassilaT repo. Do not read every historical walkthrough — use this brief, then drill into linked paths only.
 
@@ -214,7 +214,7 @@ Manual Sanad paste does **not** satisfy Tier 3 product ship; it is a bridge unti
 
 ## 11. Model tier policy (A/B pilot — recorded)
 
-- **Default tier:** Qwen 3.5 **4B** Q6_K — **`nassila-sanad-4b` S15** = 89.27% combined, 4B default-tier **PASS**
+- **Default tier:** Qwen 3.5 **4B** Q6_K — **`nassila-sanad-4b` S15** = 89.27% combined eval, 4B default-tier **PASS** (Training converged at epoch 1.73, step 193/330: loss 0.3464, token acc 91.90%)
 - **Quality tier:** Gemma 4 **12B** Q6_K — **S14 selected** = 90.43% combined, quote 100%, Tier 2 **PASS** (h-045/h-088 fixed); v1.12 12B = 94.20% higher-combined fallback
 - **v1.13:** **NO-GO** — do not publish ([`OUROBOROS_OPERATOR_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/OUROBOROS_OPERATOR_MAP.md))
 - **Shahid:** 12B when multimodal worker forges (unchanged)

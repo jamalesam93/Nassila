@@ -32,7 +32,7 @@ Operator map: NassilaT [`training/OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/tra
 
 | Tier | Engine | When | Status |
 |------|--------|------|--------|
-| **A — embedded text** | `pdfjs-dist` via `pdf-extract.ts` | PDF has extractable glyphs | **Live** |
+| **A — embedded text** | `@firecrawl/pdf-inspector-wasm` (Fast Rust PDF-to-Markdown) with `pdfjs-dist` fallback via `pdf-extract.ts` | PDF has extractable glyphs | **Live (v1.5+)** |
 | **B — OCR** | Tesseract.js (Apache-2.0) + Leptonica (BSD-2) | Scan, empty glyph map, or OCR is requested | **Live (O1)** |
 
 **Mode** (`MaktabExtractionOptions.mode`):
@@ -52,7 +52,8 @@ OCR language packs for Tesseract are **`eng`/`fra` only**. Soft page budget for 
 | [`src/engine/maktab/extract.ts`](../src/engine/maktab/extract.ts) | Public entry: `extractFromPdf` |
 | [`src/engine/maktab/types.ts`](../src/engine/maktab/types.ts) | `MaktabExtractionResult`, languages, tiers |
 | [`src/engine/maktab/ocr/`](../src/engine/maktab/ocr/) | OCR backend interface + post-process |
-| [`src/engine/manuscript/pdf-extract.ts`](../src/engine/manuscript/pdf-extract.ts) | Tier A implementation (column-aware pdf.js) |
+| [`src/engine/manuscript/pdf-inspector-extract.ts`](../src/engine/manuscript/pdf-inspector-extract.ts) | Tier A primary engine (`@firecrawl/pdf-inspector-wasm`) |
+| [`src/engine/manuscript/pdf-extract.ts`](../src/engine/manuscript/pdf-extract.ts) | Tier A orchestrator (WASM primary + column-aware pdf.js fallback) |
 
 DOCX ingest remains separate (parser/document path); OCR applies to PDF and image-only inputs.
 
