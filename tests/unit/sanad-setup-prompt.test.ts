@@ -33,5 +33,6 @@ describe('sanad-setup-links', () => {
     expect(OLLAMA_HF_PULL_4B).toContain('huggingface.co/QinEmPeRoR93/nassila-sanad-4b')
     expect(OLLAMA_HF_PULL_4B).toContain(':Q6_K')
     expect(OLLAMA_HF_PULL_4B).toMatch(/^ollama pull /)
+    expect(OLLAMA_HF_PULL_E4B).toContain('huggingface.co/QinEmPeRoR93/nassila-sanad-e4b')
   })
 })
