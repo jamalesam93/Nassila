@@ -45,9 +45,10 @@ function withArabicOcrDeferred(embedded: MaktabExtractionResult): MaktabExtracti
 
 async function extractEmbeddedTier(
   buffer: ArrayBuffer,
-  languages: MaktabLanguage[]
+  languages: MaktabLanguage[],
+  engine?: 'inspector' | 'pdfjs'
 ): Promise<MaktabExtractionResult> {
-  const embedded = await extractManuscriptFromPdf(buffer)
+  const embedded = await extractManuscriptFromPdf(buffer, engine ? { engine } : {})
   const sparse = embeddedTextLooksSparse(embedded.warnings)
   const reversedArabic = embeddedArabicLooksReversed(embedded.warnings)
   return toResult(
@@ -139,7 +140,7 @@ export async function extractFromPdf(
     // Prefer OCR for Latin scans, but use embedded when it is already good.
     let embedded: MaktabExtractionResult | null = null
     try {
-      embedded = await extractEmbeddedTier(buffer, languages)
+      embedded = await extractEmbeddedTier(buffer, languages, options.engine)
     } catch {
       embedded = null
     }
@@ -154,7 +155,7 @@ export async function extractFromPdf(
 
   if (mode === 'embedded_only') {
     try {
-      return await extractEmbeddedTier(buffer, languages)
+      return await extractEmbeddedTier(buffer, languages, options.engine)
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)
       throw new MaktabExtractError(msg)
@@ -163,7 +164,7 @@ export async function extractFromPdf(
 
   // auto: tier A first; escalate to tier B for sparse Latin / true scans — not Arabic Tesseract
   try {
-    const embedded = await extractEmbeddedTier(buffer, languages)
+    const embedded = await extractEmbeddedTier(buffer, languages, options.engine)
     if (!embedded.needsReview && embedded.text.length > 0) {
       return embedded
     }

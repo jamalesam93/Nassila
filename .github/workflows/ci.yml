@@ -53,3 +53,6 @@ jobs:
 
       - name: Probe bundled OCR & native dependencies
         run: npm run probe:ocr
+
+      - name: Probe golden OCR content (real Tesseract)
+        run: npm run probe:ocr:golden

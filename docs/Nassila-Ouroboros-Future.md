@@ -275,7 +275,7 @@ Suggested versions and worker-themed codenames. **Not dates, not public promises
 |---------|---------------|---------------|----------------|-------------------|
 | **1.4.0** | **Raqim Statute** | **رقيم تشريع** | Raqim | Legislation + gray-lit Resolve; parser hardening for legal refs |
 | **1.5.0** | **Raqim Web** | **رقيم ويب** | Raqim / Tasnif | Webpage & grey-web citations; dead links; host parsers |
-| **1.6.0** | **Maktab Loop** | **حلقة مكتب** | Maktab / Masdar | OCR fixtures; one-upload loop; source chunking polish |
+| **1.6.0** | **Maktab Loop** | **حلقة مكتب** | Maktab / Masdar | OCR fixtures; one-upload loop; source chunking polish | **Shipped 2026-08-05** |
 | **1.7.0** | **Integrity Bundle** | **حزمة النزاهة** | Loop / export | Preflight+; submission export; trust & packaged parity |
 | **1.8.0** | **Shahid** | **شاهد** | Shahid (+ Sanad) | Tier 3+ multimodal; model-assisted grey lit (confirm-before-apply) |
 
@@ -314,6 +314,8 @@ From `WEBPAGE_ROADMAP.md` and website roadmap — deterministic first.
 Registry verify and citeproc remain **deterministic** — not LLM-replaced.
 
 #### 1.6.0 — Maktab Loop · حلقة مكتب
+
+**Shipped in 1.6.0 (2026-08-05):** Maktab OCR golden fixtures + CI OCR probe; scan coverage; cache controls (source-artifact + Maktab extraction); review-after-import banner; deterministic Sharh summary aggregation with localized headline + per-finding copy; Masdar per-reference PDF attach verified and documented as live; loop a11y RTL acceptance pass. **Deferred to 1.7.0:** auto cited-PDF ingest; Maktab page/scan-coverage provenance surfacing.
 
 | Area | Deliverable |
 |------|-------------|
@@ -551,6 +553,13 @@ Sharh-lite summarizes structured evidence — not another unconstrained LLM call
 - Mid-LLM abort / AbortSignal → **1.7.0**.
 - Broader RTL acceptance + OCR golden fixtures → **1.6.0**.
 - Five-to-ten real researcher usability sessions → ongoing / post-1.4.
+
+**Shipped in 1.6.0 (T3):** richer **deterministic** summaries — report headline
+sentence, per-finding one-line explanations (claim mix, quote misses,
+unresolved identity, coverage), `coverageBreakdown` / `passageBuckets` /
+`claimBreakdownByFinding` aggregates on `SharhLiteSummary` feeding the
+integrity bundle. Still no new LLM call; copy stays i18n-localized
+(`src/renderer/utils/sharh-copy.ts`).
 
 *(Legislation-aware Resolve detail lives under **§5 Future release map → 1.4.0 Raqim Statute**.)*
 
@@ -798,7 +807,7 @@ If Sanad validation metrics appear on the site, do not publish bare “accuracy.
 |---------|---------------|---------------|--------|
 | 1.4.0 | Raqim Statute | رقيم تشريع | Planned — US/UK legislation patterns; parser hardening |
 | 1.5.0 | Raqim Web | رقيم ويب | Planned — webpage / grey-web cites |
-| 1.6.0 | Maktab Loop | حلقة مكتب | Planned — OCR fixtures; loop UX; Masdar chunking |
+| 1.6.0 | Maktab Loop | حلقة مكتب | **Shipped 2026-08-05** |
 | 1.7.0 | Integrity Bundle | حزمة النزاهة | Planned — preflight+; submission export; trust parity |
 | 1.8.0 | Shahid | شاهد | Planned — Tier 3+ gate; tables/figures; confirm-before-apply grey lit |
 
@@ -935,7 +944,7 @@ Nassila should spend the next cycles becoming more **trustworthy on gray literat
 
 1. **1.4.0 Raqim Statute** — legislation pattern families; no Crossref false fixes.
 2. **1.5.0 Raqim Web** — webpage / grey-web deterministic path.
-3. **1.6.0 Maktab Loop** — OCR fixtures; one-upload loop; chunking.
+3. **1.6.0 Maktab Loop** — shipped 2026-08-05 (OCR fixtures, cache controls, deterministic Sharh summaries, Masdar attach verified, RTL acceptance).
 4. **1.7.0 Integrity Bundle** — preflight+; submission export; remaining packaged parity.
 5. **Tier 3 eval gate** (NassilaT) — then **1.8.0 Shahid** and S15 only if measurements show a model gap.
 

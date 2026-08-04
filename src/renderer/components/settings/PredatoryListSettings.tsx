@@ -81,7 +81,7 @@ export default function PredatoryListSettings() {
     meta?.origin === 'downloaded' ? t('predatoryUpdates.originDownloaded') : t('predatoryUpdates.originBundled')
 
   return (
-    <div className="mt-4 rounded-md border border-border bg-muted/20 p-3 text-left">
+    <div className="mt-4 rounded-md border border-border bg-muted/20 p-3 text-start">
       <h3 className="text-xs font-semibold text-foreground">{t('predatoryUpdates.sectionTitle')}</h3>
       <dl className="mt-2 space-y-0.5 text-[11px] text-muted-foreground">
         <div>

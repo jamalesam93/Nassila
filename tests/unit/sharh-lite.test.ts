@@ -123,4 +123,101 @@ describe('sharh-lite + preflight', () => {
     expect(bundle.provenance.findingIndex).toHaveLength(1)
     expect(JSON.stringify(bundle)).not.toMatch(/manuscript_passage|passageWindow/i)
   })
+
+  it('aggregates coverage, passage buckets, and per-finding claim breakdown', () => {
+    const report = baseReport([
+      emptyFinding({
+        bibKey: 'b1',
+        l3Coverage: 'full_text_oa_unpaywall',
+        citeSites: [
+          {
+            inTextSpan: { start: 0, end: 1, raw: '1' },
+            passageWindow: 'x',
+            deterministicScore: 0.9,
+            deterministicBucket: 'high',
+            matchedTermsSample: [],
+            passageVerdict: { status: 'pass' },
+            claimGrounding: [
+              {
+                claim: 'a',
+                verdict: 'supported',
+                rationale: ['Source table confirms the dose.'],
+                quoteValidation: { status: 'found', checkedQuotes: 1, matchedQuotes: 1 }
+              },
+              {
+                claim: 'b',
+                verdict: 'contradicted',
+                quoteValidation: { status: 'not_found', checkedQuotes: 1, matchedQuotes: 0 }
+              }
+            ]
+          },
+          {
+            inTextSpan: { start: 2, end: 3, raw: '2' },
+            passageWindow: 'y',
+            deterministicScore: 0.3,
+            deterministicBucket: 'low',
+            matchedTermsSample: [],
+            passageVerdict: { status: 'warn', reasons: ['low overlap'] },
+            claimGrounding: [{ claim: 'c', verdict: 'weak' }]
+          }
+        ]
+      }),
+      emptyFinding({
+        bibKey: 'b2',
+        l3Coverage: 'abstract_only_closed'
+      })
+    ])
+    const summary = buildSharhLiteSummary(report)
+
+    expect(summary.findingsReviewed).toBe(2)
+    expect(summary.coverageBreakdown.full_text_oa_unpaywall).toBe(1)
+    expect(summary.coverageBreakdown.abstract_only_closed).toBe(1)
+    expect(summary.passageBuckets).toEqual({ low: 1, medium: 0, high: 1 })
+
+    const b1 = summary.claimBreakdownByFinding.find((row) => row.bibKey === 'b1')
+    expect(b1).toBeDefined()
+    expect(b1!.supported).toBe(1)
+    expect(b1!.contradicted).toBe(1)
+    expect(b1!.weak).toBe(1)
+    expect(b1!.auditedClaims).toBe(3)
+    expect(b1!.invalidQuotes).toBe(1)
+    expect(b1!.topRationale).toContain('Source table confirms the dose.')
+    expect(b1!.l3Coverage).toBe('full_text_oa_unpaywall')
+
+    expect(summary.claimBreakdownByFinding.find((row) => row.bibKey === 'b2')).toBeUndefined()
+  })
+
+  it('flags unresolved identity per finding and skips early-exit findings without coverage', () => {
+    const report = baseReport([
+      emptyFinding({
+        bibKey: 'b1',
+        layers: {
+          registry: { status: 'fail', reasons: ['not found'] },
+          metadata: { status: 'fail', reasons: ['title mismatch'] },
+          passage: { status: 'pass' }
+        },
+        citeSites: [
+          {
+            inTextSpan: { start: 0, end: 1, raw: '1' },
+            passageWindow: 'x',
+            deterministicScore: 0.5,
+            deterministicBucket: 'medium',
+            matchedTermsSample: [],
+            passageVerdict: { status: 'pass' },
+            claimGrounding: [{ claim: 'a', verdict: 'supported' }]
+          }
+        ]
+      }),
+      emptyFinding({ bibKey: 'b2' })
+    ])
+    const summary = buildSharhLiteSummary(report)
+
+    const b1 = summary.claimBreakdownByFinding.find((row) => row.bibKey === 'b1')
+    expect(b1!.unresolvedIdentity).toBe(true)
+    expect(b1!.topRationale).toEqual([])
+    expect(summary.unresolvedIdentities).toBe(1)
+    expect(summary.claimBreakdownByFinding).toHaveLength(1)
+    expect(summary.findingsReviewed).toBe(2)
+    expect(summary.coverageBreakdown.unavailable).toBe(0)
+  })
 })

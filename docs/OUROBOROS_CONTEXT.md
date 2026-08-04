@@ -32,7 +32,7 @@ Do **not** read “no LLM facet yet” as “not part of Ouroboros.” Registry 
 
 **Agent warning:** Future UI work must **not** recreate seven disconnected mini-apps (Hydra). Sanad must ultimately consume **Maktab** + **Masdar** outputs automatically; manual passage/excerpt paste remains a Tier 2 fallback and model test panel only.
 
-**Today:** Maktab manuscript extraction is deterministic and live (pdf.js plus Tesseract O1); Masdar-lite deterministically fetches and extracts OA source text. Their optional `doc_extract` / `source_pdf_extract` LLM facets remain planned, and per-reference local PDF attach is not wired yet. **Target:** the same loop-first UI per [`DESIGN.md`](./DESIGN.md), with no peer-worker Hydra.
+**Today:** Maktab manuscript extraction is deterministic and live (pdf.js plus Tesseract O1); Masdar-lite deterministically fetches and extracts OA source text, and per-reference local PDF attach is live (loop detail → Attach source PDF → pdf.js extract → single-reference re-audit). Their optional `doc_extract` / `source_pdf_extract` LLM facets remain planned. **Target:** the same loop-first UI per [`DESIGN.md`](./DESIGN.md), with no peer-worker Hydra.
 
 ```
 Ingest (Maktab) → Sources (Masdar) → Ground (Sanad) → Evidence (Shahid)
@@ -49,7 +49,7 @@ Codenames: `docs/BRAND.md`, `src/shared/nassila-agent-tasks.ts`. Forge **one LLM
 |---|--------|--------|-----------|----------------------------|----------------------------------------|-----------|-------|--------|
 | 1 | **Sanad** | سند | `l3_grounding` | Ground claims to sources | JSON repair, quote substring checks, caps | Passage vs excerpt → grounding JSON | 1 | **E4B default-tier PASS** (S12 ship); **Tier 2 PASS** (12B S14) |
 | 2 | **Maktab** | مكتب | `doc_extract` | Bring in the manuscript | File I/O, DOCX/PDF routing, pdf.js + Tesseract O1 | Structured text/chunks from PDF/DOCX | 2 | **Deterministic live**; LLM facet planned; O2 planned |
-| 3 | **Masdar** | مصدر | `source_pdf_extract` | Get source text for citations | OA fetch, PDF extraction, chunking, secure desktop I/O | Cited OA PDF → text for Sanad | 2 | **Masdar-lite deterministic live**; LLM facet and local attach planned |
+| 3 | **Masdar** | مصدر | `source_pdf_extract` | Get source text for citations | OA fetch, PDF extraction, chunking, secure desktop I/O, per-reference local PDF attach | Cited OA PDF → text for Sanad | 2 | **Deterministic live** with local PDF attach; `source_pdf_extract` LLM facet planned |
 | 4 | **Shahid** | شاهد | `table_figure_grounding` | Tables & figures as evidence | Region detection (future) | Claims vs table/figure regions | 3+ | Planned (12B) |
 | 5 | **Raqim** | رقيم | `webpage_metadata` | Build & fix reference **records** | **L1/L2 verify**, import parsers (BibTeX/RIS/Zotero), metadata merge, **citeproc export** | Webpage → CSL field suggestions | 2+ | Planned |
 | 6 | **Tasnif** | تصنيف | `webpage_classify` | Sort, type, dedupe, flag risk | **Predatory lists**, **dedup**, reference-type rules | Grey-web / platform typing | 2+ | Planned |

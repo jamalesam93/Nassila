@@ -191,7 +191,7 @@ export default function TargetSelector() {
                 className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               />
               {searching && (
-                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                <span className="absolute end-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
                   {t('targetSelector.searching')}
                 </span>
               )}
@@ -202,7 +202,7 @@ export default function TargetSelector() {
                   <button
                     key={`${entry.name}-${idx}`}
                     onClick={() => handleSelectJournal(entry)}
-                    className="block w-full px-3 py-2 text-left hover:bg-accent transition-colors border-b border-border/50 last:border-0"
+                    className="block w-full px-3 py-2 text-start hover:bg-accent transition-colors border-b border-border/50 last:border-0"
                   >
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium text-foreground flex-1">{entry.name}</span>
@@ -265,7 +265,7 @@ export default function TargetSelector() {
                 <button
                   key={style.id}
                   onClick={() => handleSelectStyle(style.id)}
-                  className={`block w-full rounded-md px-3 py-2 text-left text-sm transition-colors ${
+                  className={`block w-full rounded-md px-3 py-2 text-start text-sm transition-colors ${
                     selectedStyleId === style.id
                       ? 'bg-primary/10 text-primary font-medium'
                       : 'text-foreground hover:bg-accent'
@@ -287,7 +287,7 @@ export default function TargetSelector() {
               <button
                 key={styleId}
                 onClick={() => handleSelectStyle(styleId)}
-                className="block w-full rounded px-2 py-1 text-left text-xs text-foreground hover:bg-accent transition-colors"
+                className="block w-full rounded px-2 py-1 text-start text-xs text-foreground hover:bg-accent transition-colors"
               >
                 {availableStyles.find((s) => s.id === styleId)?.name ?? styleId}
               </button>

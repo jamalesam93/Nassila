@@ -16,6 +16,8 @@ interface ManuscriptAuditState {
   report: AuditReport | null
   step: AuditStep
   error: string | null
+  /** Dismissible review notice after PDF import when extraction needs human attention. */
+  reviewNotice: string | null
   /** Incremental audit progress while runAudit is in flight. */
   auditProgress: { processed: number; total: number } | null
   /** Manuscript file import (PDF OCR can take minutes). */
@@ -53,6 +55,7 @@ interface ManuscriptAuditState {
   consumeAuditProgress: (progress: ManuscriptAuditProgressEvent) => void
   setStep: (step: AuditStep) => void
   setError: (error: string | null) => void
+  setReviewNotice: (notice: string | null) => void
   setImportProgress: (
     progress: ManuscriptAuditState['importProgress']
   ) => void
@@ -77,6 +80,7 @@ export const useManuscriptAuditStore = create<ManuscriptAuditState>((set, get) =
   report: null,
   step: 'idle',
   error: null,
+  reviewNotice: null,
   auditProgress: null,
   importProgress: null,
   activeRunId: null,
@@ -207,6 +211,7 @@ export const useManuscriptAuditStore = create<ManuscriptAuditState>((set, get) =
   },
   setStep: (step) => set({ step }),
   setError: (error) => set({ error }),
+  setReviewNotice: (reviewNotice) => set({ reviewNotice }),
   setImportProgress: (importProgress) => set({ importProgress }),
 
   setUserAction: (bibKey, action) => {
@@ -232,6 +237,7 @@ export const useManuscriptAuditStore = create<ManuscriptAuditState>((set, get) =
       report: null,
       step: 'idle',
       error: null,
+      reviewNotice: null,
       auditProgress: null,
       importProgress: null,
       activeRunId: null,

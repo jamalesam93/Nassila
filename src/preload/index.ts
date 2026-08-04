@@ -188,6 +188,12 @@ const api = {
   attachSourcePdf: (filePath: string): Promise<SourceArtifact> =>
     ipcRenderer.invoke(SOURCE_ARTIFACT_ATTACH_CHANNEL, filePath),
 
+  extractionCacheInfo: (): Promise<{ count: number; bytes: number }> =>
+    ipcRenderer.invoke('maktab:extractionCacheInfo'),
+
+  clearExtractionCache: (): Promise<{ clearedCount: number; freedBytes: number }> =>
+    ipcRenderer.invoke('maktab:clearExtractionCache'),
+
   // ── Secrets / LLM (main-process only) ───────────────────────────────────
   isEncryptionAvailable: (): Promise<boolean> =>
     ipcRenderer.invoke('secrets:isEncryptionAvailable'),

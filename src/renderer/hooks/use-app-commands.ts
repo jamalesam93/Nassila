@@ -31,6 +31,7 @@ export function useAppCommands() {
   const setSettingsModalOpen = useShellStore((s) => s.setSettingsModalOpen)
   const setRawManuscriptText = useManuscriptAuditStore((s) => s.setRawManuscriptText)
   const setAuditError = useManuscriptAuditStore((s) => s.setError)
+  const setReviewNotice = useManuscriptAuditStore((s) => s.setReviewNotice)
   const setManuscriptSourceFormat = useManuscriptAuditStore((s) => s.setManuscriptSourceFormat)
   const setAppSurface = useShellStore((s) => s.setAppSurface)
 
@@ -80,6 +81,7 @@ export function useAppCommands() {
       try {
         setImportProgress({ phase: 'reading', processed: 0, total: 0, elapsedMs: 0 })
         setAuditError(null)
+        setReviewNotice(null)
 
         if (ext === 'docx') {
           const buf = await window.api?.readFileBinary(first)
@@ -109,9 +111,18 @@ export function useAppCommands() {
             })
             text = extraction.text
             sourceFormat = 'pdf'
-            if (extraction.warnings.length > 0) {
+            if (extraction.needsReview) {
+              setAuditError(null)
+              setReviewNotice(
+                extraction.warnings.length > 0
+                  ? translatePdfImportWarnings(extraction.warnings)
+                  : t('manuscriptAudit.reviewNeeded')
+              )
+            } else if (extraction.warnings.length > 0) {
+              setReviewNotice(null)
               setAuditError(translatePdfImportWarnings(extraction.warnings))
             } else {
+              setReviewNotice(null)
               setAuditError(null)
             }
           }
@@ -135,7 +146,7 @@ export function useAppCommands() {
         setImportProgress(null)
       }
     },
-    [setAppSurface, setAuditError, setManuscriptSourceFormat, setRawManuscriptText, t]
+    [setAppSurface, setAuditError, setManuscriptSourceFormat, setRawManuscriptText, setReviewNotice, t]
   )
 
   const importManuscript = useCallback(async () => {

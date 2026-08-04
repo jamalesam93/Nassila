@@ -1,4 +1,18 @@
-import type { AuditReport, CitationFinding, ClaimSupportVerdict } from './types'
+import type { AuditReport, CitationFinding, ClaimGroundingRow, ClaimSupportVerdict, L3Coverage } from './types'
+
+export interface FindingClaimBreakdown {
+  bibKey: string
+  supported: number
+  weak: number
+  contradicted: number
+  notInSource: number
+  insufficient: number
+  invalidQuotes: number
+  auditedClaims: number
+  l3Coverage: L3Coverage
+  unresolvedIdentity: boolean
+  topRationale: string[]
+}
 
 export interface SharhLiteSummary {
   supported: number
@@ -9,6 +23,10 @@ export interface SharhLiteSummary {
   unmappedCitations: number
   unresolvedIdentities: number
   invalidQuotes: number
+  findingsReviewed: number
+  coverageBreakdown: Record<L3Coverage, number>
+  passageBuckets: { low: number; medium: number; high: number }
+  claimBreakdownByFinding: FindingClaimBreakdown[]
   sourceCoverageLimitations: string[]
   nextActions: string[]
 }
@@ -35,6 +53,72 @@ function countInvalidQuotes(findings: CitationFinding[]): number {
     }
   }
   return n
+}
+
+function countVerdictInClaimList(claims: ClaimGroundingRow[], verdict: ClaimSupportVerdict): number {
+  let n = 0
+  for (const claim of claims) {
+    if (claim.verdict === verdict) n++
+  }
+  return n
+}
+
+function buildFindingClaimBreakdown(finding: CitationFinding): FindingClaimBreakdown | null {
+  const claims: ClaimGroundingRow[] = []
+  for (const site of finding.citeSites ?? []) {
+    if (site.claimGrounding) claims.push(...site.claimGrounding)
+  }
+  if (claims.length === 0) return null
+
+  const topRationale: string[] = []
+  for (const claim of claims) {
+    for (const line of claim.rationale ?? []) {
+      if (line.trim() && !topRationale.includes(line.trim())) {
+        topRationale.push(line.trim())
+      }
+      if (topRationale.length >= 3) break
+    }
+    if (topRationale.length >= 3) break
+  }
+
+  return {
+    bibKey: finding.bibKey,
+    supported: countVerdictInClaimList(claims, 'supported'),
+    weak: countVerdictInClaimList(claims, 'weak'),
+    contradicted: countVerdictInClaimList(claims, 'contradicted'),
+    notInSource: countVerdictInClaimList(claims, 'not_in_source'),
+    insufficient: countVerdictInClaimList(claims, 'insufficient_evidence'),
+    invalidQuotes: claims.filter((claim) => claim.quoteValidation?.status === 'not_found').length,
+    auditedClaims: claims.length,
+    l3Coverage: finding.l3Coverage,
+    unresolvedIdentity: finding.layers.registry.status === 'fail' || finding.layers.metadata.status === 'fail',
+    topRationale
+  }
+}
+
+function buildPassageBuckets(findings: CitationFinding[]): { low: number; medium: number; high: number } {
+  const buckets = { low: 0, medium: 0, high: 0 }
+  for (const f of findings) {
+    for (const site of f.citeSites ?? []) {
+      buckets[site.deterministicBucket] += 1
+    }
+  }
+  return buckets
+}
+
+function buildCoverageBreakdown(findings: CitationFinding[]): Record<L3Coverage, number> {
+  const breakdown: Record<L3Coverage, number> = {
+    full_text_oa_europe_pmc: 0,
+    full_text_oa_unpaywall: 0,
+    full_text_attached_pdf: 0,
+    abstract_only_closed: 0,
+    unavailable: 0
+  }
+  for (const f of findings) {
+    // Early-exit findings (parse/offline errors) may not carry an l3Coverage — skip them.
+    if (f.l3Coverage) breakdown[f.l3Coverage] += 1
+  }
+  return breakdown
 }
 
 /** Deterministic Sharh-lite summary — no LLM. */
@@ -64,6 +148,10 @@ export function buildSharhLiteSummary(report: AuditReport): SharhLiteSummary {
   }
   if (nextActions.length === 0) nextActions.push('Export corrected bibliography and audit report')
 
+  const claimBreakdownByFinding = findings
+    .map((f) => buildFindingClaimBreakdown(f))
+    .filter((b): b is FindingClaimBreakdown => b !== null)
+
   return {
     supported: countClaimVerdict(findings, 'supported'),
     weak: countClaimVerdict(findings, 'weak'),
@@ -73,6 +161,10 @@ export function buildSharhLiteSummary(report: AuditReport): SharhLiteSummary {
     unmappedCitations: unmapped,
     unresolvedIdentities,
     invalidQuotes,
+    findingsReviewed: findings.length,
+    coverageBreakdown: buildCoverageBreakdown(findings),
+    passageBuckets: buildPassageBuckets(findings),
+    claimBreakdownByFinding,
     sourceCoverageLimitations,
     nextActions
   }

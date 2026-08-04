@@ -34,7 +34,7 @@ Worker codenames (Raqim, Sanad, Maktab, …) remain **product vocabulary** and *
 The intended main screen is a **single connected workflow**, not a worker picker:
 
 1. **Upload manuscript** (top) — DOCX, PDF, or text; extract structure and in-text citations (**Maktab**).
-2. **Cited sources** (bottom) — resolve via Crossref / PubMed / OpenAlex and fetch open-access text where available (**Masdar-lite** + **Raqim** L1/L2). Per-reference local PDF attach is planned for Masdar.
+2. **Cited sources** (bottom) — resolve via Crossref / PubMed / OpenAlex and fetch open-access text where available (**Masdar-lite** + **Raqim** L1/L2). Per-reference local PDF attach re-grounds just that citation.
 3. **Audit** — ground claims against source excerpts (**Sanad**); flag duplicates, predatory journals, and validation issues (**Tasnif**); surface table/figure evidence when Tier 3 ships (**Shahid**).
 4. **Explain** — deterministic mismatch and risk copy today; richer narrative later (**Sharh**).
 5. **Export** — corrected bibliography and audit summary (**Raqim** citeproc).
@@ -100,7 +100,7 @@ The shipping app may still expose a **seven-item worker nav** from the first Our
 1. User opens **Manuscript** (default) or switches to **Bibliography** (Raqim).
 2. In the loop: upload/paste manuscript → **Run audit** → L1/L2 per cite, OA/abstract fetch, L3 Sanad when Passage grounding is enabled.
 3. **Tasnif** / **Sharh** copy appears inline in loop detail; bibliography drawer opens Raqim filters.
-4. **Maktab** and **Masdar-lite** deterministic stages are live; their LLM facets and Masdar local-PDF attach remain planned. **Shahid** remains planned — none are separate peer tabs.
+4. **Maktab** and **Masdar-lite** deterministic stages are live, including Masdar local-PDF attach; their LLM facets remain planned. **Shahid** remains planned — none are separate peer tabs.
 5. Engine applies JSON repair + quote-substring guardrails; LLM is advisory.
 
 **Target (full Ouroboros):**
@@ -136,5 +136,5 @@ The shipping app may still expose a **seven-item worker nav** from the first Our
 - Docs and future UI treat **Ouroboros loop** as primary IA; worker nav is secondary or advanced.
 - Sanad wired to `nassila-sanad-4b` (S15) / `nassila-sanad-12b` (S14) with Tier 2b guardrails (invalid quotes never show as pass).
 - Raqim + Tasnif remain usable for bibliography-only users during transition.
-- Copy distinguishes live deterministic Maktab/Masdar-lite from planned LLM facets and local-PDF attach; Tier 3 adds the full evaluated manuscript/source pipeline.
+- Copy distinguishes live deterministic Maktab/Masdar-lite (including local-PDF attach) from planned LLM facets; Tier 3 adds the full evaluated manuscript/source pipeline.
 - RTL parity; no AI-template UI tells per `DESIGN.md`.

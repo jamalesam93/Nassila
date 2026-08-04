@@ -2,7 +2,22 @@
 
 All notable changes to **Nassila** are documented here.
 
-## [Unreleased]
+## [1.6.0] — 2026-08-05 · Ouroboros Stage Polish
+
+Windows installer `Nassila Setup 1.6.0.exe`. **GitHub Release:** [v1.6.0](https://github.com/jamalesam93/Nassila/releases/tag/v1.6.0).
+
+### Added
+
+- **Maktab OCR golden fixtures** — generated PDF suite (text + image/scan pages) with byte-level goldens and a real-Tesseract OCR probe (`scripts/probe-ocr-golden.mjs`) wired into the Windows CI packaging job. Signoff recorded in `tests/smoke/MAKTAB_OCR_GOLDEN_SIGNOFF.md`.
+- **Cache controls** — settings → Storage section with source-artifact and Maktab extraction cache info + clear actions (new `sourceArtifactCacheInfo`/`clearSourceArtifactCache` and `maktab:extractionCacheInfo`/`maktab:clearExtractionCache` IPC, policy-policed).
+- **Review-after-import banner** — dismissible needsReview notice in the loop when PDF import extraction needs human attention.
+- **Richer deterministic Sharh summaries** — aggregate `coverageBreakdown`/`passageBuckets`/`claimBreakdownByFinding` in `sharh-lite.ts`, localized headline + per-finding copy (`sharh-copy.ts`), and an expanded SharhLitePanel (EN/AR).
+- **LoopAuditDetail source-attach coverage** — renderer test asserting attach stores the artifact, surfaces descriptor, re-audits the single bibKey, and that attach/clear are guarded while an audit is in flight.
+- **RTL acceptance pass** — swept physical-direction strays to logical utilities (`text-start`, `end-2`) across panels, settings, and tooltip chrome.
+
+### Fixed
+
+- Reconcile stale "local-PDF attach planned" wording across `OUROBOROS_CONTEXT`, `PRODUCT`, `OUROBOROS`, and `USER_GUIDE` — Masdar per-reference PDF attach and single-reference re-audit are live.
 
 ## [1.5.0] — 2026-07-29 · Raqim Web
 

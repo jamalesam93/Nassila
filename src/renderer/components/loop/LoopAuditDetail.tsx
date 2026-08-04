@@ -9,6 +9,7 @@ import { notifyCopied, pushToast } from '../../lib/notify'
 import { useShellStore } from '../../stores/shell-store'
 import { useCitationStore } from '../../stores/citation-store'
 import { useOuroborosLoopStore } from '../../stores/ouroboros-loop-store'
+import { useManuscriptAuditStore } from '../../stores/manuscript-audit-store'
 import { Button } from '../ui/button'
 import { LayerRow, SiteBlock } from './LoopVerdictUi'
 
@@ -37,6 +38,7 @@ export default function LoopAuditDetail({ finding, onReaudit }: LoopAuditDetailP
   const [attaching, setAttaching] = useState(false)
   const setAppSurface = useShellStore((s) => s.setAppSurface)
   const citations = useCitationStore((s) => s.citations)
+  const auditInFlight = useManuscriptAuditStore((s) => s.activeRunId !== null)
   const artifact = useOuroborosLoopStore((s) =>
     finding ? s.sourceArtifactsByBibKey[finding.bibKey] : undefined
   )
@@ -115,7 +117,7 @@ export default function LoopAuditDetail({ finding, onReaudit }: LoopAuditDetailP
             variant="outline"
             size="sm"
             className="h-7 text-xs"
-            disabled={attaching}
+            disabled={attaching || auditInFlight}
             onClick={() => void handleAttachPdf()}
           >
             {t('loop.attachPdfAction')}
@@ -126,6 +128,7 @@ export default function LoopAuditDetail({ finding, onReaudit }: LoopAuditDetailP
               variant="ghost"
               size="sm"
               className="h-7 text-xs"
+              disabled={auditInFlight}
               onClick={() => clearAttachedSourcePdf(finding.bibKey)}
             >
               {t('loop.attachPdfClear')}

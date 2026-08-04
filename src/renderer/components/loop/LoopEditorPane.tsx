@@ -26,6 +26,8 @@ export default function LoopEditorPane({ running, onRun, onCancel }: LoopEditorP
   const auditProgress = useManuscriptAuditStore((s) => s.auditProgress)
   const importProgress = useManuscriptAuditStore((s) => s.importProgress)
   const error = useManuscriptAuditStore((s) => s.error)
+  const reviewNotice = useManuscriptAuditStore((s) => s.reviewNotice)
+  const setReviewNotice = useManuscriptAuditStore((s) => s.setReviewNotice)
   const networkStatus = useCitationStore((s) => s.networkStatus)
   const auditReferenceSource = useManuscriptAuditStore((s) => s.auditReferenceSource)
   const setAuditReferenceSource = useManuscriptAuditStore((s) => s.setAuditReferenceSource)
@@ -166,6 +168,20 @@ export default function LoopEditorPane({ running, onRun, onCancel }: LoopEditorP
         <p className="shrink-0 border-b border-border bg-red-50 px-3 py-2 text-sm text-red-800 dark:bg-red-950/40 dark:text-red-200">
           {error}
         </p>
+      ) : null}
+
+      {reviewNotice ? (
+        <div className="flex shrink-0 items-start gap-2 border-b border-border bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:bg-amber-950/30 dark:text-amber-100">
+          <p className="min-w-0 flex-1">{reviewNotice}</p>
+          <button
+            type="button"
+            aria-label={t('manuscriptAudit.dismissReview')}
+            className="shrink-0 rounded p-0.5 text-xs leading-none hover:bg-amber-200/60 dark:hover:bg-amber-900/40"
+            onClick={() => setReviewNotice(null)}
+          >
+            ×
+          </button>
+        </div>
       ) : null}
 
       {networkStatus === 'offline' ? (

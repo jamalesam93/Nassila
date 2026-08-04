@@ -7,6 +7,7 @@ import PredatoryListSettings from './settings/PredatoryListSettings'
 import NotificationSettings from './settings/NotificationSettings'
 import LocalModelsSettings from './settings/LocalModelsSettings'
 import SourceFetchSettings from './settings/SourceFetchSettings'
+import StorageSettings from './settings/StorageSettings'
 import { useShellStore } from '../stores/shell-store'
 
 type SettingsTab = 'general' | 'localModels'
@@ -59,6 +60,7 @@ export default function SettingsModal() {
               <NotificationSettings />
               <PredatoryListSettings />
               <SourceFetchSettings />
+              <StorageSettings />
             </div>
           ) : null}
           {tab === 'localModels' ? <LocalModelsSettings /> : null}

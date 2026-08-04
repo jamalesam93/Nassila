@@ -45,7 +45,7 @@ For **DOI** references, Nassila can ask [Unpaywall](https://unpaywall.org/produc
 
 If the email is unset, the loop still uses **registry abstracts** and **Europe PMC** where available; only the Unpaywall OA path is skipped.
 
-**This is not university login.** Your `@institution.edu` address is only an Unpaywall API contact. It does **not** unlock paywalled publisher PDFs through your library subscription. For those papers, use open-access copies when Unpaywall finds them, or attach PDFs you download yourself (Masdar, planned). Tier 3 may add library proxy or institutional login — separate from this field.
+**This is not university login.** Your `@institution.edu` address is only an Unpaywall API contact. It does **not** unlock paywalled publisher PDFs through your library subscription. For those papers, use open-access copies when Unpaywall finds them, or attach PDFs you download yourself (Masdar, live). Tier 3 may add library proxy or institutional login — separate from this field.
 
 ## Bibliography before manuscript audit
 

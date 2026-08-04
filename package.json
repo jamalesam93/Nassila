@@ -1,6 +1,6 @@
 {
   "name": "nassila",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "productName": "Nassila",
   "description": "Nassila — verify references, ground claims, and export submit-ready bibliographies.",
   "type": "module",
@@ -25,6 +25,7 @@
     "skills:install:antigravity": "node scripts/install-antigravity-skills.mjs",
     "skills:scan": "node scripts/scan-skills.mjs",
     "probe:ocr": "electron scripts/probe-ocr-bundled.mjs",
+    "probe:ocr:golden": "electron scripts/probe-ocr-golden.mjs",
     "loop:audit": "npx --yes @cobusgreyling/loop-audit . --suggest"
   },
   "keywords": [

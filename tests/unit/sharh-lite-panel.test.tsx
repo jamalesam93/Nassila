@@ -10,7 +10,11 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, opts?: Record<string, unknown>) => {
       if (key === 'sharhLite.mappingCoverage') return `Coverage: ${opts?.percent}%`
-      return key
+      if (!opts) return key
+      return Object.entries(opts).reduce(
+        (acc, [k, v]) => acc.replaceAll(`{{${k}}}`, String(v)),
+        key
+      )
     }
   })
 }))
@@ -109,5 +113,48 @@ describe('SharhLitePanel', () => {
         expect.stringContaining('nassila-sanad-4b')
       )
     })
+  })
+
+  it('renders headline and per-finding explanations when claims are grounded', () => {
+    const report = createSampleReport()
+    report.findings[0] = {
+      ...report.findings[0],
+      citeSites: [
+        {
+          inTextSpan: { start: 0, end: 1, raw: '(Ref1)' },
+          passageWindow: 'window',
+          deterministicScore: 0.9,
+          deterministicBucket: 'high',
+          matchedTermsSample: [],
+          passageVerdict: { status: 'pass' },
+          claimGrounding: [
+            {
+              claim: 'dose claim',
+              verdict: 'supported',
+              quoteValidation: { status: 'found', checkedQuotes: 1, matchedQuotes: 1 }
+            },
+            {
+              claim: 'timing claim',
+              verdict: 'contradicted',
+              quoteValidation: { status: 'not_found', checkedQuotes: 1, matchedQuotes: 0 }
+            }
+          ]
+        }
+      ],
+      l3Coverage: 'full_text_oa_unpaywall',
+      layers: {
+        registry: { status: 'pass', source: 'crossref' },
+        metadata: { status: 'pass' },
+        passage: { status: 'pass' }
+      }
+    } as unknown as (typeof report.findings)[number]
+
+    render(<SharhLitePanel report={report} />)
+
+    expect(screen.getByText('sharhLite.perFinding')).toBeTruthy()
+    expect(screen.getByText('Ref1')).toBeTruthy()
+    expect(
+      screen.getByText(/supported.*contradicted/i)
+    ).toBeTruthy()
   })
 })

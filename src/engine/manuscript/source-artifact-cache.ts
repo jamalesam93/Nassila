@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { mkdir, readFile, stat, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, readdir, stat, unlink, writeFile } from 'node:fs/promises'
 import { extname, join } from 'node:path'
 import { extractFromPdf } from '../maktab/extract'
 import type { MaktabExtractionResult } from '../maktab/types'
@@ -101,6 +101,60 @@ export async function loadSourceArtifact(
 
 export function sourceArtifactCacheDirectory(userDataPath: string): string {
   return join(userDataPath, 'source-artifacts')
+}
+
+export interface SourceArtifactCacheInfo {
+  count: number
+  bytes: number
+}
+
+export interface SourceArtifactCacheClearResult {
+  clearedCount: number
+  freedBytes: number
+}
+
+/** Only cache entries written by this module (sha256.json) are counted or cleared. */
+const CACHE_FILE_PATTERN = /^[a-f0-9]{64}\.json$/
+
+export async function sourceArtifactCacheInfo(cacheDirectory: string): Promise<SourceArtifactCacheInfo> {
+  const files = await listCacheFiles(cacheDirectory)
+  let bytes = 0
+  for (const file of files) {
+    try {
+      const fileStat = await stat(file)
+      if (fileStat.isFile()) bytes += fileStat.size
+    } catch {
+      // Ignore entries removed between listing and stat.
+    }
+  }
+  return { count: files.length, bytes }
+}
+
+export async function clearSourceArtifactCache(
+  cacheDirectory: string
+): Promise<SourceArtifactCacheClearResult> {
+  const files = await listCacheFiles(cacheDirectory)
+  let freedBytes = 0
+  for (const file of files) {
+    try {
+      const fileStat = await stat(file)
+      if (fileStat.isFile()) freedBytes += fileStat.size
+      await unlink(file)
+    } catch {
+      // Ignore entries removed between listing and unlink.
+    }
+  }
+  return { clearedCount: files.length, freedBytes }
+}
+
+async function listCacheFiles(cacheDirectory: string): Promise<string[]> {
+  let names: string[]
+  try {
+    names = await readdir(cacheDirectory)
+  } catch {
+    return []
+  }
+  return names.filter((name) => CACHE_FILE_PATTERN.test(name)).map((name) => join(cacheDirectory, name))
 }
 
 function cacheFilePath(cacheDirectory: string, sha256: string): string {

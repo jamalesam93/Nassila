@@ -41,17 +41,26 @@ export interface PdfManuscriptExtraction {
   warnings: string[]
 }
 
+export type PdfExtractionEngine = 'inspector' | 'pdfjs'
+
+export interface PdfExtractionOptions {
+  engine?: PdfExtractionEngine
+}
+
 export async function extractManuscriptFromPdf(
-  buffer: ArrayBuffer
+  buffer: ArrayBuffer,
+  options: PdfExtractionOptions = {}
 ): Promise<PdfManuscriptExtraction> {
-  // Primary Fast Path: Try firecrawl/pdf-inspector WASM engine (Rust PDF->Markdown)
-  const inspectorResult = extractFromPdfInspector(buffer)
-  if (inspectorResult && inspectorResult.text.length > 0) {
-    return {
-      text: inspectorResult.text,
-      pageCount: inspectorResult.pageCount,
-      pageBoundaries: inspectorResult.pageBoundaries,
-      warnings: inspectorResult.warnings
+  if (options.engine !== 'pdfjs') {
+    // Primary Fast Path: Try firecrawl/pdf-inspector WASM engine (Rust PDF->Markdown)
+    const inspectorResult = extractFromPdfInspector(buffer)
+    if (inspectorResult && inspectorResult.text.length > 0) {
+      return {
+        text: inspectorResult.text,
+        pageCount: inspectorResult.pageCount,
+        pageBoundaries: inspectorResult.pageBoundaries,
+        warnings: inspectorResult.warnings
+      }
     }
   }
 

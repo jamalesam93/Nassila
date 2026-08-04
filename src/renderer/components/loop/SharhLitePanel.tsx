@@ -7,6 +7,7 @@ import {
   evaluateSubmissionPreflight
 } from '../../../engine/manuscript/sharh-lite'
 import type { AuditReport } from '../../../engine/manuscript/types'
+import { buildFindingExplanation, buildSharhHeadline } from '../../utils/sharh-copy'
 import { pushToast } from '../../lib/notify'
 
 type Props = {
@@ -17,6 +18,10 @@ export default function SharhLitePanel({ report }: Props) {
   const { t } = useTranslation()
   const summary = useMemo(() => (report ? buildSharhLiteSummary(report) : null), [report])
   const preflight = useMemo(() => evaluateSubmissionPreflight(report), [report])
+  const headline = useMemo(
+    () => (summary ? buildSharhHeadline(t, summary) : null),
+    [summary, t]
+  )
 
   if (!report || !summary) {
     return (
@@ -81,6 +86,10 @@ export default function SharhLitePanel({ report }: Props) {
         </div>
       </dl>
 
+      {headline ? (
+        <p className="mt-3 text-xs leading-relaxed text-foreground">{headline}</p>
+      ) : null}
+
       <div className="mt-3 space-y-1">
         <h4 className="text-xs font-semibold">{t('sharhLite.preflight')}</h4>
         {preflight.ok ? (
@@ -116,6 +125,23 @@ export default function SharhLitePanel({ report }: Props) {
           ))}
         </ul>
       </div>
+
+      {summary.claimBreakdownByFinding.length > 0 ? (
+        <div className="mt-3 space-y-1">
+          <h4 className="text-xs font-semibold">{t('sharhLite.perFinding')}</h4>
+          <p className="text-[11px] text-muted-foreground">{t('sharhLite.perFindingHint')}</p>
+          <ul className="space-y-1.5">
+            {summary.claimBreakdownByFinding.map((row) => (
+              <li key={row.bibKey} className="rounded border border-border/80 px-2.5 py-2">
+                <span className="text-[11px] font-semibold text-foreground">{row.bibKey}</span>
+                <span className="mt-0.5 block text-xs leading-relaxed text-muted-foreground">
+                  {buildFindingExplanation(t, row)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
 
       <div className="mt-3 flex flex-wrap gap-2">
         <button

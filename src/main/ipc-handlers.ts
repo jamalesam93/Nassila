@@ -17,7 +17,9 @@ import { registerNotificationHandlers } from './notification'
 import { checkNetworkStatus, resetNetworkStatusState } from './network-status'
 import {
   attachSourcePdf,
-  sourceArtifactCacheDirectory
+  clearSourceArtifactCache,
+  sourceArtifactCacheDirectory,
+  sourceArtifactCacheInfo
 } from '../engine/manuscript/source-artifact-cache'
 import { SOURCE_ARTIFACT_ATTACH_CHANNEL } from '../shared/source-artifact'
 
@@ -208,6 +210,14 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(SOURCE_ARTIFACT_ATTACH_CHANNEL, async (_event, filePath: unknown) => {
     const allowedPath = assertAllowedPath(filePath, readablePaths, 'read')
     return attachSourcePdf(allowedPath, sourceArtifactCacheDirectory(app.getPath('userData')))
+  })
+
+  ipcMain.handle('maktab:extractionCacheInfo', async () => {
+    return sourceArtifactCacheInfo(sourceArtifactCacheDirectory(app.getPath('userData')))
+  })
+
+  ipcMain.handle('maktab:clearExtractionCache', async () => {
+    return clearSourceArtifactCache(sourceArtifactCacheDirectory(app.getPath('userData')))
   })
 
   ipcMain.handle('fs:write-file', async (_event, filePath: string, content: string) => {

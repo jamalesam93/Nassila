@@ -386,7 +386,7 @@ export default function IssuePanel() {
                 <button
                   key={m.id}
                   type="button"
-                  className="w-full rounded-md border border-yellow-500/30 bg-yellow-500/10 px-3 py-2 text-left transition hover:border-yellow-600/50 hover:bg-yellow-500/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="w-full rounded-md border border-yellow-500/30 bg-yellow-500/10 px-3 py-2 text-start transition hover:border-yellow-600/50 hover:bg-yellow-500/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   onClick={() => scrollToCitationRow(m.citationId)}
                   aria-label={t('issuePanel.mismatchJumpAria', { title: citeTitle, field: m.field })}
                 >

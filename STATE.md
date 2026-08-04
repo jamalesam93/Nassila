@@ -1,6 +1,6 @@
 # Ouroboros loop state
 
-**Last updated:** 2026-08-03  
+**Last updated:** 2026-08-05  
 **Operator:** Nassila maintainer
 
 Read this at the start of every agent session. Update when focus, blockers, or ship gates change.
@@ -11,11 +11,24 @@ Read this at the start of every agent session. Update when focus, blockers, or s
 
 | Priority | Track | Status |
 |----------|-------|--------|
-| **P0** | **1.6.0 Ouroboros Stage Polish** | Active — Tier-4 dead features (template picker, source format badge) wired; loop panels split + component tests done |
+| **P0** | **1.6.0 Ouroboros Stage Polish** | **Shipped 2026-08-05** — T1 golden fixtures; T2 cache controls + needsReview banner; T3 richer deterministic Sharh summaries; T4 Masdar attach verified + docs/test; T5 RTL acceptance + release cut |
 | **P1** | Infrastructure hygiene | Windows CI packaging job, dead-code cleanup, agent rule refresh |
 | **P1∥** | NassilaT S15 corpus | 49/49 labels exported; W4 100 DOI; body holdout contrastive v2 benchmarked; S15 is **shipped default** in app |
 
-**Latest app:** **1.5.0** (Raqim Web) — shipped 2026-07-29.
+**Latest app:** **1.6.0** (Ouroboros Stage Polish) — shipped 2026-08-05.
+
+---
+
+## 1.6.0 ship notes (2026-08-05)
+
+| Step | Status |
+|------|--------|
+| T1 Maktab OCR golden fixtures + CI OCR probe (`tests/smoke/MAKTAB_OCR_GOLDEN_SIGNOFF.md`) | **PASS** |
+| T2 Cache controls (source-artifact + Maktab extraction) + Storage section + needsReview import banner | **PASS** |
+| T3 Richer deterministic Sharh summaries (aggregate coverage/passage/claim + headline + per-finding copy, EN/AR) | **PASS** |
+| T4 Masdar attach verified (single-ref re-audit), docs reconciled, `LoopAuditDetail` attach test + in-flight guard | **PASS** |
+| T5 RTL acceptance pass (logical-direction sweep) + release cut | **PASS** |
+| Version bump + CHANGELOG + STATE.md/future-map synced | **PASS** |
 
 ---
 
@@ -31,9 +44,9 @@ Read this at the start of every agent session. Update when focus, blockers, or s
 | Version bump + CHANGELOG + release notes | **PASS** |
 | GitHub **v1.5.0** tag + installer | **PASS** |
 
-**Locked train:** 1.4.0 Raqim Statute → **1.5.0 Raqim Web** (shipped)
+**Locked train:** 1.4.0 Raqim Statute → 1.5.0 Raqim Web → **1.6.0 Ouroboros Stage Polish** (shipped)
 
-**Next map:** 1.6.0 Stage Polish → 1.7.0 Integrity Bundle → 1.8.0 Shahid (see `docs/Nassila-Ouroboros-Future.md` §5)
+**Next map:** 1.7.0 Integrity Bundle → 1.8.0 Shahid (see `docs/Nassila-Ouroboros-Future.md` §5)
 
 **Models:** Sanad **S15** (4B, default) / **S14** (12B, quality). S15 is the shipped default; model improvements depend on Tier 3 corpus.
 
@@ -53,4 +66,9 @@ Read this at the start of every agent session. Update when focus, blockers, or s
 3. Wire Tier-4 dead features: **structure template picker UI** + **`manuscriptSourceFormat` badge** in loop. ✅ done — shipped in 1.5.0/1.6.0 tree; see rules §2 live structure.
 4. Split the three loop monolith panels + add jsdom component tests. ✅ done (2026-08-03) — `LoopEditorPane`, `LoopSourcesPanel`, `LoopVerdictUi`; `SharhLitePanel` was already ~140 lines and kept as-is.
 5. Housekeeping: gitignore `*.tsbuildinfo`, migrate `PRESETS_DIR` from `~/.citations-style` → `~/.nassila`, fill `package.json` author. ✅ done (2026-07-29/08-03 hygiene sweep).
-6. Continue NassilaT Tier 3 body holdout corpus work for S15 refinement.
+6. 1.6.0 T1 golden fixtures: generated PDF suite + unit goldens + real-Tesseract OCR probe wired into `package-windows` CI; signoff `tests/smoke/MAKTAB_OCR_GOLDEN_SIGNOFF.md`. ✅ done (2026-08-03/04).
+7. 1.6.0 T2 cache controls: `sourceArtifactCacheInfo`/`clearSourceArtifactCache`, `maktab:extractionCacheInfo`/`maktab:clearExtractionCache` IPC + policy rows, Settings → Storage section, needsReview import banner. ✅ done (2026-08-04).
+8. 1.6.0 T3 richer deterministic Sharh summaries: aggregate `coverageBreakdown`/`passageBuckets`/`claimBreakdownByFinding` in `sharh-lite.ts`; localized headline + per-finding copy via `sharh-copy.ts`; SharhLitePanel additions; EN/AR `sharhLite.*` keys. ✅ done (2026-08-05).
+9. 1.6.0 T4 Masdar loop polish: attach verified against single-ref re-audit, stale "planned" docs reconciled, `LoopAuditDetail` attach/in-flight-guard renderer tests. ✅ done (2026-08-05).
+10. 1.6.0 T5 RTL acceptance + release cut: logical-direction sweep, version 1.6.0, CHANGELOG, installer. ✅ done (2026-08-05).
+11. Continue NassilaT Tier 3 body holdout corpus work for S15 refinement.

@@ -191,7 +191,7 @@ function TooltipFloating(props: {
             id={tooltipId}
             role="tooltip"
             style={style}
-            className="pointer-events-none box-border max-w-[min(18rem,calc(100vw-1.25rem))] rounded-md border border-border bg-popover px-2.5 py-1.5 text-left text-[11px] leading-snug text-popover-foreground shadow-md"
+            className="pointer-events-none box-border max-w-[min(18rem,calc(100vw-1.25rem))] rounded-md border border-border bg-popover px-2.5 py-1.5 text-start text-[11px] leading-snug text-popover-foreground shadow-md"
           >
             {props.label}
           </span>,

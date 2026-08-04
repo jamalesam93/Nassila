@@ -3,6 +3,8 @@
  * OCR plan: docs/MAKTAB_OCR.md
  */
 
+import type { PdfExtractionEngine } from '../manuscript/pdf-extract'
+
 /** Tesseract traineddata language codes shipped or detected for academic PDFs. */
 export type MaktabLanguage = 'eng' | 'fra' | 'ara'
 
@@ -23,6 +25,8 @@ export interface MaktabExtractionOptions {
   languages?: MaktabLanguage[]
   /** OCR rasterization DPI when tier B runs (default 300). */
   ocrDpi?: number
+  /** Pin the tier-A extraction engine (test/fallback seam). */
+  engine?: PdfExtractionEngine
 }
 
 export interface MaktabExtractionResult {
