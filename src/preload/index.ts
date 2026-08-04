@@ -5,6 +5,8 @@ import {
   MANUSCRIPT_AUDIT_CANCEL_CHANNEL,
   MANUSCRIPT_AUDIT_PROGRESS_CHANNEL,
   MANUSCRIPT_AUDIT_START_CHANNEL,
+  MANUSCRIPT_AUDIT_TRAIL_EXPORT_CHANNEL,
+  MANUSCRIPT_AUDIT_TRAIL_READ_CHANNEL,
   type ManuscriptAuditProgressEvent,
   type ManuscriptAuditStartRequest
 } from '../shared/manuscript-audit-contract'
@@ -213,6 +215,12 @@ const api = {
 
   cancelManuscriptAudit: (runId: string): Promise<boolean> =>
     ipcRenderer.invoke(MANUSCRIPT_AUDIT_CANCEL_CHANNEL, runId),
+
+  readAuditTrail: (runId: string): Promise<string | null> =>
+    ipcRenderer.invoke(MANUSCRIPT_AUDIT_TRAIL_READ_CHANNEL, runId),
+
+  exportAuditTrailBundle: (runId: string, report: AuditReport): Promise<string | null> =>
+    ipcRenderer.invoke(MANUSCRIPT_AUDIT_TRAIL_EXPORT_CHANNEL, { runId, report }),
 
   onManuscriptAuditProgress: (
     callback: (progress: ManuscriptAuditProgressEvent) => void

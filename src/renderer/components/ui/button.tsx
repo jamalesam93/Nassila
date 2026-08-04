@@ -1,7 +1,7 @@
 import type { ButtonHTMLAttributes } from 'react'
 
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: 'default' | 'secondary' | 'ghost' | 'destructive'
+  variant?: 'default' | 'secondary' | 'ghost' | 'outline' | 'destructive'
   size?: 'sm' | 'md'
 }
 
@@ -9,6 +9,7 @@ const VARIANT: Record<NonNullable<Props['variant']>, string> = {
   default: 'bg-primary text-primary-foreground hover:bg-primary/90',
   secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
   ghost: 'hover:bg-accent text-foreground',
+  outline: 'border border-border bg-background text-foreground hover:bg-accent',
   destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90'
 }
 

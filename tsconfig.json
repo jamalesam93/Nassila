@@ -12,6 +12,7 @@
     "isolatedModules": true,
     "declaration": true,
     "composite": true,
+    "tsBuildInfoFile": "out/tsconfig.tsbuildinfo",
     "paths": {
       "@engine/*": ["./src/engine/*"],
       "@renderer/*": ["./src/renderer/*"]

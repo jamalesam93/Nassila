@@ -3,7 +3,9 @@ import { applyPrefsToStore } from './use-manuscript-audit-prefs-sync'
 import { useManuscriptAuditStore } from '../stores/manuscript-audit-store'
 import { registerMaktabOcrBackendWhenReady } from '../maktab/register-maktab-ocr'
 
-const BUILTIN_TEMPLATES = [
+type StructureTemplate = { id: string; name: string; headings: Record<string, string[]> }
+
+const BUILTIN_TEMPLATES: StructureTemplate[] = [
   {
     id: 'imrad',
     name: 'Empirical (IMRAD)',

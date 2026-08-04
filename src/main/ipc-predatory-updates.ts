@@ -130,7 +130,7 @@ export function registerPredatoryIpcHandlers(): void {
     if (shouldThrottlePredatoryNetworkCheck(meta.lastNetworkAttemptAt, nowMs)) {
       return {
         upToDate: !meta.updateAvailablePending,
-        remoteVersion: meta.remoteFingerprint,
+        remoteVersion: meta.remoteFingerprint ?? null,
         localVersion: localList.version,
         updateAvailable: meta.updateAvailablePending === true,
         throttled: true,

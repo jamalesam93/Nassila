@@ -269,6 +269,10 @@ Phase P1 — implemented 2026-06-27
 Phase P2 — implemented 2026-06-27 (Option A: shipping Ouroboros)
 [x] SEC-07  docs synced — loop ships via OuroborosLoopWorkspace; legacy AuditView retired; AGENTS, README, OUROBOROS_CONTEXT, ManuscriptAudit/README updated
 
+Phase P3 — implemented 2026-08-04 (agent-patterns hardening, see docs/OUROBOROS.md)
+[x] IPC_POLICY  declarative table for every channel (direction, handler, network scope, input handling) in src/shared/ipc-policy.ts
+[x] IPC_AUDIT   tests/unit/ipc-policy.test.ts — registration surface must match the table (ipcMain.handle, preload invoke/on, main→renderer pushes)
+
 Future backlog
 [ ] SEC-02b  sandbox:true — CJS preload investigation + smoke gate (see SEC-02b section)
 [x] DEAD-CODE  Tier 1+3 removed 2026-06-27 — see docs/DEAD-CODE.md
@@ -279,7 +283,7 @@ Future backlog
 ```bash
 npm run lint
 npm test
-npx tsc --noEmit   # after tsconfig baseUrl deprecation resolved
+npm run typecheck
 ```
 
 Use `@verification-before-completion` skill before marking items done.

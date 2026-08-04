@@ -129,6 +129,79 @@ Full walkthrough + HF upload: [NassilaT `PHASE2_9_AB_PILOT_WALKTHROUGH.md`](http
 
 ---
 
+## Agent patterns: provenance, memory, hardening
+
+Design contract for borrowing from three upstream projects — **patterns, not dependencies**. None of the three is bundled or deployed as a service: TencentDB's memory hub (server, ACLs, teams), numbat's Go binary/CEL engine, and SkillSpector's Python toolchain stay **out of the product**; only their documented data models and rule categories are reused.
+
+| Upstream | Borrowed pattern | Applies to |
+|----------|------------------|------------|
+| [perplexityai/numbat](https://github.com/perplexityai/numbat) | Versioned NDJSON event trail + SHA-256 manifests | Ouroboros provenance (Sharh export), per-audit reconstruction |
+| [TencentCloud/TencentDB-Agent-Memory](https://github.com/TencentCloud/TencentDB-Agent-Memory) | L0→L3 layered memory + capped retrieval | Manuscript/prior-run context (Sanad prompts) |
+| [NVIDIA/SkillSpector](https://github.com/NVIDIA/SkillSpector) | Prompt-injection rule categories + skill install gate | Source-text sanitizer (Masdar → Sanad), `.cursor/skills` installer |
+
+### Invariants (binding)
+
+1. **Never trust source text.** Extracted PDF/JATS/webpage text is untrusted *data*, never instructions. System prompts are the only trusted instruction surface (SEC-05 delimiters stay mandatory); source content is quoted, bounded, and analyzed — never obeyed.
+2. **Never let flagged passages pass.** Any sanitizer hit, LLM failure, or unparseable output downgrades the verdict below `pass`. This extends the Phase 0-C rule (disabled/unparseable LLM output can never produce pass) to source-content signals.
+3. **Never store full LLM transcripts.** Trail records truncate LLM raw payloads (2,400 chars) and keep `sha256` of the full text; complete payloads are opt-in only (debug/export), never default.
+
+### Provenance trail (numbat data model)
+
+Every audit run emits a versioned NDJSON trail on disk (app user data): `trail-<runId>.ndjson`.
+
+| Record type | Emitted for | Key fields |
+|---|---|---|
+| `event` | Each registry / Europe PMC / Unpaywall / OA-fetch / `llmChat` call | `run_id`, `session_id`, `source_type`, `timestamp`, `source_hash`, redacted payload |
+| `finding` | Each `CitationFinding` | `evidence_refs` → event ids, `bib_key`, severity, verdict |
+| `decision` | User actions and exports | `user_action` kind, export metadata |
+
+All records carry `schema_version`; findings link to events via `evidence_refs`. `manifest.sha256` bundles the trail + report for **Sharh submission provenance** (`audit-timeline.ndjson`). Any later session can rebuild "why was this flagged" from the trail without the LLM.
+
+```mermaid
+flowchart LR
+  services["Injected audit services"] -->|wrap| recorder["withAuditTrail"]
+  recorder --> events["event records"]
+  events --> findings["finding records (evidence_refs)"]
+  findings --> decisions["decision records"]
+  events --> trail["trail-<runId>.ndjson (userData)"]
+  trail --> bundle["Sharh export: audit-timeline.ndjson + manifest.sha256"]
+```
+
+### Layered memory (TencentDB taxonomy, local-only)
+
+| Layer | Nassila meaning | Storage | Injected into prompts |
+|---|---|---|---|
+| **L0 raw** | Manuscript, source full text, raw events | On-disk cache + trail; never wholesale | No |
+| **L1 atoms** | `ClaimGroundingRow` claims, per-bib verdicts, user overrides | Audit report + persistent per-project store | Only selected excerpts |
+| **L2 scenario** | Per-manuscript audit context (prior runs, structure, template) | Persisted `priorRuns` | Compact structured JSON summary |
+| **L3 persona** | Persistent user rules: journal guidelines, CSL style, discipline defaults | Settings/preferences | On demand |
+
+Retrieval discipline: relevance-scored excerpt selection (`selectSourceChunksForGroundingWithBoundaries`) with hard caps (`GROUNDING_PASSAGE_MAX_CHARS`, `GROUNDING_EXCERPT_MAX_CHARS`, `MAX_VERIFICATION_ITEMS`). Context summaries are **structured JSON, not prose dumps**; token-savings claims are benchmarked locally, never imported from upstream marketing.
+
+**Explicitly not built:** memory-hub server, teams/ACL, vector store, cross-framework asset export, Mermaid state canvases.
+
+### Source-text hardening (SkillSpector rule categories)
+
+- Ported to a regex-only, synchronous sanitizer (`prompt-injection-scan`): prompt-injection P1–P5, anti-refusal AR1–AR3, exfiltration E1–E4, unicode deception (zero-width chars, RTL overrides).
+- Applied at extraction choke points (JATS, Unpaywall HTML, attached PDFs, webpage metadata) **before** excerpt selection.
+- Detections strip unicode tricks from excerpts, surface a warning on the passage verdict, and can never yield `pass`.
+- **Not ported:** AST/YARA/supply-chain categories — source text is never executed, and Nassila has no MCP tools to poison.
+- Dev-only gate: SkillSpector itself scans `.cursor/skills` on `npm run skills:install` — an install-time check, never a runtime dependency.
+
+### Adoption sequence
+
+| Phase | Work | Ships |
+|---|---|---|
+| 1 | `prompt-injection-scan` + fail-closed wiring | **Shipped** — sanitized grounding inputs |
+| 2 | Audit-trail recorder, IPC persistence, Sharh provenance bundle | **Shipped** — provenance + submission bundle |
+| 3 | `scripts/scan-skills.mjs` install gate | **Shipped** — safer skills install |
+| 4 | Declarative IPC policy table (extends SEC-01/03/04) | **Shipped** — auditable policy surface |
+| 5 | Persistent `priorRuns` → L2 context | **Shipped** — memory reuse across audits |
+
+Each phase lands green on `npm test` + `npm run lint`.
+
+---
+
 ## Deprecated name
 
 **One Ring** was the earlier name for this strategy; the canonical name is now **Ouroboros** (this document).

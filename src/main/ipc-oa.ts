@@ -183,7 +183,9 @@ export async function requestOaUrl(
 
   if (kind === 'pdf') {
     const bytes = await readBytesCapped(response, THRESHOLDS.http.fullTextMaxBytes)
-    const pdfBytes = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)
+    const pdfBytes = bytes.buffer instanceof ArrayBuffer
+      ? bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)
+      : new Uint8Array(bytes).buffer
     return { url: resolvedUrl, contentType, kind, pdfBytes }
   }
 

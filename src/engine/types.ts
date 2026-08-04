@@ -3,7 +3,7 @@
 // https://citeproc-js.readthedocs.io/en/latest/csl-json/markup.html
 
 export interface CslName {
-  family: string
+  family?: string
   given?: string
   'dropping-particle'?: string
   'non-dropping-particle'?: string
@@ -99,6 +99,8 @@ export interface CslItem {
   edition?: string
   'number-of-volumes'?: string
   'chapter-number'?: string
+  /** Legal/report document number (CSL `number` for legislation, hearing, patent, report). */
+  number?: string
 
   // Identifiers
   DOI?: string

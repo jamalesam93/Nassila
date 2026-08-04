@@ -71,13 +71,8 @@ export function initPdfInspectorWasm(): boolean {
     }
   }
 
-  try {
-    initSync()
-    wasmInitialized = true
-    return true
-  } catch {
-    return false
-  }
+  // initSync always requires wasm bytes; without node:fs access there is no default module to load.
+  return false
 }
 
 /**

@@ -107,7 +107,7 @@ export async function runSanadGrounding(params: {
     for (let attempt = 0; attempt < GROUNDING_LLM_RETRY_ATTEMPTS; attempt++) {
       const content = await window.api.llmChat(
         { baseUrl: llm.baseUrl, model: llm.model },
-        buildGroundingLlmMessages(cappedPassage, cappedExcerpt, { label, url })
+        buildGroundingLlmMessages(cappedPassage, cappedExcerpt, { label: label ?? '', url })
       )
       lastRaw = content
       const parsed = parseGroundingJson(content)
@@ -146,7 +146,7 @@ export async function runSanadGrounding(params: {
         claims: parsed.data.claims,
         verdict,
         raw: content,
-        repaired: parsed.repaired,
+        repaired: parsed.repaired ?? false,
         warnings,
         overallVerdict: parsed.data.overallVerdict,
         overallRationale: parsed.data.overallRationale

@@ -36,7 +36,19 @@ import {
   type BibEntry,
   type CitationMapping
 } from './mapping'
+import {
+  AUDIT_TRAIL_SCHEMA_VERSION,
+  buildTrailFinding,
+  type AuditTrailRecorder
+} from './audit-trail'
 import { fullTextFromOaPdfBytes } from './oa-pdf-grounding'
+import {
+  guardVerdictAgainstInjection,
+  sanitizeSourceText,
+  scanSourceText,
+  summarizeInjectionFindings,
+  type InjectionFinding
+} from './prompt-injection-scan'
 import { buildPassageWindow } from './passage-window'
 import { segmentManuscriptText } from './segments'
 import type {
@@ -97,6 +109,8 @@ export interface RunManuscriptAuditOptions {
   onProgress?: (event: ManuscriptAuditProgressEvent) => void
   concurrency?: Partial<typeof DEFAULT_AUDIT_CONCURRENCY>
   now?: () => Date
+  /** When provided, per-finding and per-decision trail records are emitted. */
+  recorder?: AuditTrailRecorder
 }
 
 type CanonicalItem = Pick<CslItem, 'DOI' | 'PMCID' | 'abstract' | 'URL' | 'title'>
@@ -115,6 +129,7 @@ type ResolvedL3Source =
       extractionTier: NonNullable<CiteGroundingSite['sourceExtractionTier']>
       sourceHash?: string
       pageBoundaries?: SourceArtifact['pageBoundaries']
+      injectionFindings?: InjectionFinding[]
     }
   | {
       kind: 'abstract_only'
@@ -122,6 +137,7 @@ type ResolvedL3Source =
       url?: string
       retrievedAt: string
       extractionTier: Extract<NonNullable<CiteGroundingSite['sourceExtractionTier']>, 'registry_abstract'>
+      injectionFindings?: InjectionFinding[]
     }
   | { kind: 'unavailable'; reason: string }
 
@@ -144,6 +160,7 @@ export async function runManuscriptAudit(
   const auditTimestamp = now().toISOString()
   const prepared = await prepareAudit(request, services.appVersion)
   const progress = options.onProgress ?? (() => {})
+  const recorder = options.recorder
   const limits = { ...DEFAULT_AUDIT_CONCURRENCY, ...options.concurrency }
   const registryPool = new Semaphore(limits.registry)
   const sourcePool = new Semaphore(limits.source)
@@ -184,6 +201,19 @@ export async function runManuscriptAudit(
 
     throwIfAborted(options.signal)
     findings[index] = finding
+    recorder?.record(
+      buildTrailFinding({
+        runId: request.runId,
+        sessionId: recorder.sessionId,
+        timestamp: auditTimestamp,
+        finding,
+        item: entry.item,
+        llmEnabled: request.llm.enabled,
+        llm: request.llm,
+        online: request.networkStatus === 'online',
+        attachedSourcePath: request.sourceArtifactsByBibKey?.[entry.key]?.path
+      })
+    )
     processed += 1
     progress({
       runId: request.runId,
@@ -198,6 +228,31 @@ export async function runManuscriptAudit(
 
   await Promise.all(itemRuns)
   throwIfAborted(options.signal)
+
+  if (recorder) {
+    for (const [bibKey, action] of Object.entries(request.userActionsByBibKey)) {
+      if (action.kind === 'none') continue
+      recorder.record({
+        recordType: 'decision',
+        schemaVersion: AUDIT_TRAIL_SCHEMA_VERSION,
+        runId: request.runId,
+        sessionId: recorder.sessionId,
+        timestamp: auditTimestamp,
+        kind: 'user_action',
+        bibKey,
+        detail: JSON.stringify(action)
+      })
+    }
+    recorder.record({
+      recordType: 'decision',
+      schemaVersion: AUDIT_TRAIL_SCHEMA_VERSION,
+      runId: request.runId,
+      sessionId: recorder.sessionId,
+      timestamp: auditTimestamp,
+      kind: 'audit_completed',
+      detail: `${findings.filter((finding): finding is CitationFinding => Boolean(finding)).length} findings`
+    })
+  }
 
   return {
     ...prepared.shell,
@@ -361,6 +416,13 @@ async function auditEntry(params: {
     const site = await evaluateCiteSite(passage, span, resolved, request, services, params.llmPool, signal)
     citeSites.push(site)
     groundingEvidence.push(...groundingEvidenceFromSite(site, resolved))
+    if (resolved.kind !== 'unavailable' && resolved.injectionFindings?.length) {
+      groundingEvidence.push({
+        source: resolved.kind === 'full_text' ? resolved.snippetSource : 'abstract',
+        url: resolved.url,
+        text: `Adversarial content indicators in source text: ${summarizeInjectionFindings(resolved.injectionFindings)}`
+      })
+    }
   }
 
   return {
@@ -430,7 +492,8 @@ async function resolveAttachedSource(
     retrievedAt,
     extractionTier: loaded.artifact.tier === 'ocr' ? 'pdf_ocr' : 'pdf_embedded_text',
     sourceHash: loaded.artifact.sourceHash,
-    pageBoundaries: loaded.artifact.pageBoundaries
+    pageBoundaries: loaded.artifact.pageBoundaries,
+    injectionFindings: scanSourceText(loaded.text)
   }
 }
 
@@ -452,7 +515,8 @@ async function resolveL3Source(
         snippetSource: 'europe_pmc',
         url: result.url,
         retrievedAt,
-        extractionTier: 'jats_xml'
+        extractionTier: 'jats_xml',
+        injectionFindings: scanSourceText(fullText)
       }
     } catch (error) {
       if (isAbortError(error)) throw error
@@ -505,7 +569,8 @@ async function resolveL3Source(
               snippetSource: 'unpaywall',
               url,
               retrievedAt,
-              extractionTier: 'html_text'
+              extractionTier: 'html_text',
+              injectionFindings: scanSourceText(fetched.text)
             }
           }
         }
@@ -521,7 +586,8 @@ async function resolveL3Source(
       abstract: canonical.abstract,
       url: canonical.URL,
       retrievedAt,
-      extractionTier: 'registry_abstract'
+      extractionTier: 'registry_abstract',
+      injectionFindings: scanSourceText(canonical.abstract)
     }
   }
   return { kind: 'unavailable', reason: 'No OA full text and no abstract available' }
@@ -548,6 +614,7 @@ async function evaluateCiteSite(
   }
 
   const sourceText = resolved.kind === 'full_text' ? resolved.text : resolved.abstract
+  const sourceHash = resolved.kind === 'full_text' ? resolved.sourceHash : undefined
   const scored = scorePassageAgainstSource(passage, sourceText)
   const deterministicBucket =
     resolved.kind === 'abstract_only' && scored.bucket === 'high' ? 'medium' : scored.bucket
@@ -561,20 +628,22 @@ async function evaluateCiteSite(
     GROUNDING_EXCERPT_MAX_CHARS,
     resolved.kind === 'full_text' ? resolved.pageBoundaries : undefined
   )
+  const injectionFindings = resolved.injectionFindings ?? []
+  const sanitizedExcerpt = sanitizeSourceText(chunkSelection.excerpt)
   const excerptFields = {
     ...sourceExcerptFields(
-      chunkSelection.excerpt,
+      sanitizedExcerpt,
       snippetSource,
       label,
       url,
       resolved.retrievedAt,
       resolved.extractionTier,
-      resolved.sourceHash ?? hashSourceText(sourceText)
+      sourceHash ?? hashSourceText(sourceText)
     ),
     sourcePageHint: chunkSelection.pageHint
   }
   const llmOutcome = await llmPool.run(
-    () => runGroundingLlm(passage, chunkSelection.excerpt, { url, label }, request, services, signal),
+    () => runGroundingLlm(passage, sanitizedExcerpt, { url, label }, request, services, signal),
     signal
   )
 
@@ -590,7 +659,7 @@ async function evaluateCiteSite(
   if (llmOutcome.kind === 'parsed') {
     return {
       ...base,
-      passageVerdict: llmOutcome.verdict,
+      passageVerdict: guardVerdictAgainstInjection(llmOutcome.verdict, injectionFindings),
       claimGrounding: llmOutcome.claims,
       llmParseWarning: llmOutcome.parseWarning,
       llmRawResponse: storeLlmSlice(llmOutcome.raw)
@@ -599,20 +668,29 @@ async function evaluateCiteSite(
   if (llmOutcome.kind === 'encryption_blocked') {
     return {
       ...base,
-      passageVerdict: { status: 'warn', reasons: ['LLM disabled: safeStorage encryption unavailable on this system'] }
+      passageVerdict: guardVerdictAgainstInjection(
+        { status: 'warn', reasons: ['LLM disabled: safeStorage encryption unavailable on this system'] },
+        injectionFindings
+      )
     }
   }
   if (llmOutcome.kind === 'llm_error') {
-    return { ...base, passageVerdict: { status: 'warn', reasons: [llmOutcome.message] } }
+    return {
+      ...base,
+      passageVerdict: guardVerdictAgainstInjection({ status: 'warn', reasons: [llmOutcome.message] }, injectionFindings)
+    }
   }
 
   // Phase 0-C: disabled or unparseable LLM output can never produce pass.
   return {
     ...base,
-    passageVerdict: passageVerdictWithoutParsedGrounding(
-      llmOutcome.kind === 'parse_fail'
-        ? { kind: 'parse_fail', hint: llmOutcome.hint }
-        : { kind: 'disabled' }
+    passageVerdict: guardVerdictAgainstInjection(
+      passageVerdictWithoutParsedGrounding(
+        llmOutcome.kind === 'parse_fail'
+          ? { kind: 'parse_fail', hint: llmOutcome.hint }
+          : { kind: 'disabled' }
+      ),
+      injectionFindings
     ),
     llmParseWarning: llmOutcome.kind === 'parse_fail' ? llmOutcome.hint : undefined,
     llmRawResponse: llmOutcome.kind === 'parse_fail' ? storeLlmSlice(llmOutcome.raw) : undefined
@@ -659,7 +737,7 @@ async function runGroundingLlm(
               model: request.llm.model,
               presetId: request.llm.presetId
             },
-            buildGroundingLlmMessages(cappedPassage, cappedExcerpt, meta),
+            buildGroundingLlmMessages(cappedPassage, cappedExcerpt, meta, request.priorRuns),
             signal
           ),
         signal
@@ -856,11 +934,12 @@ function unparsedFinding(entry: BibEntry, spans: InTextSpan[], userAction: UserA
   }
 }
 
-function offlineFinding(entry: BibEntry & { item: CslItem }, spans: InTextSpan[], userAction: UserAction): CitationFinding {
+function offlineFinding(entry: BibEntry, spans: InTextSpan[], userAction: UserAction): CitationFinding {
+  const item = entry.item!
   return {
     bibKey: entry.key,
     inTextSpans: spans,
-    resolvedItem: entry.item,
+    resolvedItem: item,
     referenceIntegrityRisk: referenceIntegrityRiskFromRegistry({ status: 'skipped', reason: 'offline' }),
     layers: {
       registry: { status: 'skipped', reason: 'offline' },
@@ -869,7 +948,7 @@ function offlineFinding(entry: BibEntry & { item: CslItem }, spans: InTextSpan[]
     },
     l3Coverage: 'unavailable',
     evidence: [{ source: 'abstract', text: entry.raw }],
-    greyTags: classifyGreyTags(entry.item),
+    greyTags: classifyGreyTags(item),
     userAction
   }
 }

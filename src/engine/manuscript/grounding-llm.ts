@@ -2,6 +2,9 @@ import type { ClaimGroundingRow, ClaimSupportVerdict, EvidenceSnippet, LayerVerd
 import type { SourcePageBoundary } from '../../shared/source-artifact'
 import { parseGroundingJsonWithRepair } from './grounding-json-repair'
 
+import { buildPriorRunSystemContext } from './prior-runs'
+import type { AuditRunProvenance } from './types'
+
 /** Version of the production system/user prompt contract mirrored by NassilaT. */
 export const GROUNDING_PROMPT_CONTRACT_VERSION = 'sanad-grounding-v1'
 
@@ -171,10 +174,16 @@ export function buildGroundingUserPrompt(passage: string, sourceExcerpt: string,
 export function buildGroundingLlmMessages(
   passage: string,
   sourceExcerpt: string,
-  meta: { label: string; url?: string }
+  meta: { label: string; url?: string },
+  priorRuns?: AuditRunProvenance[]
 ): GroundingLlmMessage[] {
+  const system = buildGroundingSystemPrompt()
+  const content =
+    priorRuns && priorRuns.length > 0
+      ? `${system}\n\n${buildPriorRunSystemContext(priorRuns)}`
+      : system
   return [
-    { role: 'system', content: buildGroundingSystemPrompt() },
+    { role: 'system', content },
     { role: 'user', content: buildGroundingUserPrompt(passage, sourceExcerpt, meta) }
   ]
 }

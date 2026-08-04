@@ -45,8 +45,10 @@ function formatLayerVerdict(t: (k: string) => string, v: LayerVerdict): string {
       return t('issuePanel.layerInsufficient')
     case 'skipped':
       return t('issuePanel.layerSkipped')
-    default:
-      return v.status
+    default: {
+      const exhaustive: never = v
+      return exhaustive
+    }
   }
 }
 

@@ -27,7 +27,7 @@ export default function TargetSelector() {
   const [journalSearch, setJournalSearch] = useState('')
   const [suggestions, setSuggestions] = useState<JournalSuggestion[]>([])
   const [searching, setSearching] = useState(false)
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>()
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const searchRequestIdRef = useRef(0)
   const selectedStyleId = useCitationStore((s) => s.selectedStyleId)
   const selectedJournal = useCitationStore((s) => s.selectedJournal)

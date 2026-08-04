@@ -82,6 +82,7 @@ npm install
 npm run dev          # electron-vite dev (not plain Vite)
 npm test             # vitest run
 npm run test:watch   # vitest watch
+npm run typecheck    # tsc --noEmit (tsbuildinfo goes to gitignored out/)
 npm run lint         # ESLint on src/ and tests/
 ```
 
@@ -114,7 +115,7 @@ Other: `build:mac`, `build:linux`, `build:unpack`, `preview`.
 - Keep diffs **minimal** and scoped to the task; match existing naming and patterns.
 - **Ouroboros product:** do not add Hydra-style peer worker tabs or ask users to copy manuscript text between modules; prefer loop-first UI per `PRODUCT.md`.
 - **UI craft:** follow `DESIGN.md` Impeccable discipline; product workstation, not AI SaaS chrome.
-- Run `npm test` and `npm run lint` before considering work done.
+- Run `npm test`, `npm run lint`, and `npm run typecheck` before considering work done.
 - **Ouroboros engineering loop:** [`LOOP.md`](LOOP.md), [`STATE.md`](STATE.md), [`docs/MAKTAB_OCR.md`](docs/MAKTAB_OCR.md) — read at session start for pipeline/OCR work.
 - Add or update unit tests for engine behavior you change; **new IPC handlers** need matching validation tests under `tests/unit/` (see `docs/SECURITY-FIX-PLAN.md` preload inventory).
 - Do **not** commit secrets (`.env`, API keys), large model weights, or `out/` / `dist/` artifacts.

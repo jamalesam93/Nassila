@@ -10,6 +10,8 @@ import { isSourceArtifact, type SourceArtifact } from './source-artifact'
 export const MANUSCRIPT_AUDIT_START_CHANNEL = 'manuscriptAudit:start'
 export const MANUSCRIPT_AUDIT_CANCEL_CHANNEL = 'manuscriptAudit:cancel'
 export const MANUSCRIPT_AUDIT_PROGRESS_CHANNEL = 'manuscriptAudit:progress'
+export const MANUSCRIPT_AUDIT_TRAIL_READ_CHANNEL = 'manuscriptAudit:readTrail'
+export const MANUSCRIPT_AUDIT_TRAIL_EXPORT_CHANNEL = 'manuscriptAudit:exportTrail'
 
 export type ManuscriptAuditItemStage = 'queued' | 'registry' | 'metadata' | 'source' | 'grounding' | 'done' | 'failed'
 
@@ -55,8 +57,20 @@ export type ManuscriptAuditProgressEvent =
 const MAX_MANUSCRIPT_CHARS = 20_000_000
 const MAX_LIBRARY_ITEMS = 2_000
 
+export interface AuditTrailExportRequest {
+  runId: string
+  report: AuditReport
+}
+
 export function isValidAuditRunId(value: unknown): value is string {
   return typeof value === 'string' && /^[a-zA-Z0-9_-]{8,100}$/.test(value)
+}
+
+export function sanitizeAuditTrailExportRequest(raw: unknown): AuditTrailExportRequest | null {
+  if (!isRecord(raw)) return null
+  if (!isValidAuditRunId(raw.runId)) return null
+  if (!isRecord(raw.report) || typeof raw.report.generatedAt !== 'string') return null
+  return { runId: raw.runId, report: raw.report as unknown as AuditReport }
 }
 
 export function sanitizeManuscriptAuditStartRequest(raw: unknown): ManuscriptAuditStartRequest | null {

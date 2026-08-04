@@ -20,6 +20,7 @@ function bufferFromPayload(raw: unknown): ArrayBuffer | null {
   if (raw instanceof ArrayBuffer) return raw
   if (ArrayBuffer.isView(raw)) {
     const view = raw as ArrayBufferView
+    if (!(view.buffer instanceof ArrayBuffer)) return null
     return view.buffer.slice(view.byteOffset, view.byteOffset + view.byteLength)
   }
   return null

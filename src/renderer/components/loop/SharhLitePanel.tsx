@@ -34,7 +34,7 @@ export default function SharhLitePanel({ report }: Props) {
     })
     if (!path) return
     await window.api.writeFile(path, `${JSON.stringify(entry, null, 2)}\n`)
-    pushToast(t('sharhLite.diagnosticExported'))
+    pushToast('success', t('sharhLite.diagnosticExported'))
   }
 
   const exportSubmissionBundle = async () => {
@@ -47,7 +47,7 @@ export default function SharhLitePanel({ report }: Props) {
     })
     if (!path) return
     await window.api.writeFile(path, `${JSON.stringify(bundle, null, 2)}\n`)
-    pushToast(t('sharhLite.submissionBundleExported'))
+    pushToast('success', t('sharhLite.submissionBundleExported'))
   }
 
   return (

@@ -83,10 +83,9 @@ export const NASSILA_MODEL_ARTIFACTS = {
 /** Tasks targeted by each artifact (documentation / presets; not enforced at runtime yet). */
 export const MODEL_ARTIFACT_TASKS: Record<string, NassilaAgentTaskId[]> = {
   [NASSILA_MODEL_ARTIFACTS.sanad4b]: [NASSILA_AGENT_TASKS.l3_grounding],
+  // Deprecated alias NASSILA_MODEL_ARTIFACTS.groundingE4bV1 maps to 'nassila-sanad-4b' (same string), covered above.
   [NASSILA_MODEL_ARTIFACTS.sanad12b]: [NASSILA_AGENT_TASKS.l3_grounding],
-  [NASSILA_MODEL_ARTIFACTS.sanad4b]: [NASSILA_AGENT_TASKS.l3_grounding],
   [NASSILA_MODEL_ARTIFACTS.sanadE4b]: [NASSILA_AGENT_TASKS.l3_grounding],
-  [NASSILA_MODEL_ARTIFACTS.groundingE4bV1]: [NASSILA_AGENT_TASKS.l3_grounding],
   [NASSILA_MODEL_ARTIFACTS.agentE12bV1]: [
     NASSILA_AGENT_TASKS.l3_grounding,
     NASSILA_AGENT_TASKS.doc_extract,

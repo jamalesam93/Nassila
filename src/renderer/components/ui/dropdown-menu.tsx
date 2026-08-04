@@ -15,12 +15,18 @@ import { Icon } from './icon'
 const DropdownCloseContext = createContext<() => void>(() => {})
 
 interface DropdownMenuProps {
-  label: string
+  label: ReactNode
   children: ReactNode
-  align?: 'start' | 'end'
+  align?: 'start' | 'end' | 'center'
+  disabled?: boolean
 }
 
-export function DropdownMenu({ label, children, align = 'start' }: DropdownMenuProps) {
+export function DropdownMenu({
+  label,
+  children,
+  align = 'start',
+  disabled = false
+}: DropdownMenuProps) {
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
@@ -48,10 +54,11 @@ export function DropdownMenu({ label, children, align = 'start' }: DropdownMenuP
       <button
         ref={triggerRef}
         type="button"
+        disabled={disabled}
         aria-expanded={open}
         aria-haspopup="menu"
         aria-controls={open ? menuId : undefined}
-        className="inline-flex h-8 cursor-pointer items-center gap-1 rounded-md border border-border bg-background px-2 text-xs font-medium text-foreground hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        className="inline-flex h-8 cursor-pointer items-center gap-1 rounded-md border border-border bg-background px-2 text-xs font-medium text-foreground hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50"
         onClick={() => setOpen((v) => !v)}
         onKeyDown={(e) => {
           if (e.key === 'ArrowDown' && !open) {
@@ -81,7 +88,7 @@ function DropdownMenuPanel({
   children
 }: {
   id: string
-  align: 'start' | 'end'
+  align: 'start' | 'end' | 'center'
   onClose: () => void
   children: ReactNode
 }) {
@@ -128,7 +135,11 @@ function DropdownMenuPanel({
       tabIndex={-1}
       onKeyDown={onKeyDown}
       className={`absolute top-full z-30 mt-1 min-w-[11rem] rounded-md border border-border bg-popover p-1 shadow-md ${
-        align === 'end' ? 'end-0 rtl:start-0 rtl:end-auto' : 'start-0 rtl:end-0 rtl:start-auto'
+        align === 'center'
+          ? 'left-1/2 -translate-x-1/2 rtl:right-1/2 rtl:translate-x-1/2'
+          : align === 'end'
+            ? 'end-0 rtl:start-0 rtl:end-auto'
+            : 'start-0 rtl:end-0 rtl:start-auto'
       }`}
     >
       {children}

@@ -272,7 +272,7 @@ async function titleRegistryCandidates(item: CslItem, query: string): Promise<Ra
 }
 
 function literalAuthor(name: string | null | undefined): CslName[] | undefined {
-  return name ? [{ family: '', literal: name }] : undefined
+  return name ? [{ literal: name }] : undefined
 }
 
 async function searchHuggingFace(query: string): Promise<RawCandidate[]> {

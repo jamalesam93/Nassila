@@ -172,6 +172,12 @@ async function main() {
     execFileSync(process.execPath, [antigravityInstaller], { stdio: 'inherit' })
   }
 
+  const skillsScanner = join(__dirname, 'scan-skills.mjs')
+  if (existsSync(skillsScanner)) {
+    console.log('\n→ Scanning installed skills (install gate)')
+    execFileSync(process.execPath, [skillsScanner], { stdio: 'inherit' })
+  }
+
   console.log('\nDone. See .cursor/skills/ANTIGRAVITY-SKILLS.md and docs/SECURITY-FIX-PLAN.md.')
 }
 

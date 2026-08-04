@@ -33,15 +33,7 @@ export function resolveTesseractWorkerPaths(appPath: string): {
 }
 
 async function rasterizePdfPage(
-  pdf: {
-    canvasFactory: {
-      create: (
-        width: number,
-        height: number
-      ) => { canvas: { toBuffer: (mime: string) => Buffer }; context: unknown }
-      destroy: (entry: { canvas: unknown; context: unknown }) => void
-    }
-  },
+  pdf: import('pdfjs-dist').PDFDocumentProxy,
   page: import('pdfjs-dist').PDFPageProxy,
   dpi: number
 ): Promise<Buffer> {
@@ -51,13 +43,24 @@ async function rasterizePdfPage(
   const height = Math.ceil(viewport.height)
   // pdf.js v5 NodeCanvasFactory uses @napi-rs/canvas — must render via pdf.canvasFactory,
   // not node-canvas, or embedded images throw "Image or Canvas expected".
-  const canvasEntry = pdf.canvasFactory.create(width, height)
+  const canvasFactory = pdf.canvasFactory as {
+    create: (
+      width: number,
+      height: number
+    ) => { canvas: { toBuffer: (mime: string) => Buffer }; context: unknown }
+    destroy: (entry: { canvas: unknown; context: unknown }) => void
+  }
+  const canvasEntry = canvasFactory.create(width, height)
 
   try {
-    await page.render({ canvasContext: canvasEntry.context as never, viewport }).promise
+    await page.render({
+      canvas: null,
+      canvasContext: canvasEntry.context as CanvasRenderingContext2D,
+      viewport
+    }).promise
     return canvasEntry.canvas.toBuffer('image/png')
   } finally {
-    pdf.canvasFactory.destroy(canvasEntry)
+    canvasFactory.destroy(canvasEntry)
   }
 }
 

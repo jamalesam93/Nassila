@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import mammoth from 'mammoth'
 import { APP_MENU_COMMANDS, type AppMenuCommand } from '../../shared/app-menu-commands'
 import { MAX_VERIFICATION_ITEMS } from '../../shared/verification-limits'
+import type { ExportFormat } from '../../engine/types'
 import { exportReportJson, exportReportMarkdown } from '../../engine/audit/report'
 import { translatePdfImportWarnings } from '../utils/grounding-i18n'
 import { setAppLocale } from '../i18n/config'
@@ -344,9 +345,9 @@ export function useAppCommands() {
         try {
           const raw = await window.api.readFile(paths[0])
           applyNassilaProject(parseNassilaProject(raw))
-          pushToast(t('project.opened'))
+          pushToast('success', t('project.opened'))
         } catch (err) {
-          pushToast(err instanceof Error ? err.message : t('project.openFailed'))
+          pushToast('error', err instanceof Error ? err.message : t('project.openFailed'))
         }
         return
       }
@@ -359,9 +360,9 @@ export function useAppCommands() {
         if (!path) return
         try {
           await window.api.writeFile(path, serializeNassilaProject(snapshotNassilaProject()))
-          pushToast(t('project.saved'))
+          pushToast('success', t('project.saved'))
         } catch (err) {
-          pushToast(err instanceof Error ? err.message : t('project.saveFailed'))
+          pushToast('error', err instanceof Error ? err.message : t('project.saveFailed'))
         }
         return
       }
