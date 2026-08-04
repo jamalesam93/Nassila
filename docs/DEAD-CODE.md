@@ -2,43 +2,23 @@
 
 Maintainer backlog of **unmounted**, **unreferenced**, or **noop** code paths.
 
-**Last cleanup:** 2026-06-27 — Tier 1 (legacy UI), Tier 2 (debug), Tier 3 (AppMode IPC) removed.
+**Last cleanup:** 2026-08-03 — Tier 4 (structure template picker & source format badge UI wired), Tier 5 (UI_AUDIT.md archived).
 
 ---
 
-## Removed (2026-06-27)
+## Resolved & Cleaned Up
 
-| Item | Was |
-|------|-----|
-| Legacy audit UI | `ManuscriptAudit/AuditView.tsx` |
-| Pre-reform chrome | `Toolbar.tsx`, `WorkflowStrip.tsx`, `Sidebar.tsx` |
-| Hydra stub panel | `StubWorkerPanel.tsx`, `worker-registry.ts`, `worker-registry.test.ts` |
-| LLM presets location | Moved to `src/renderer/settings/llm-presets.ts` |
-| AppMode IPC | `app-mode.ts`, `setAppMode` preload/IPC, noop menu mode state |
-| Unused menu i18n | `importManuscript`, `switchMode`, `modeReferences`, `modeManuscriptAudit` |
-| No-op npm scripts | `docs:placeholders`, `docs:images` |
-
----
-
-## Tier 4 — Engine live, UI missing (remaining)
-
-Logic runs in `use-manuscript-audit.ts` but users cannot change settings in the loop UI (only via prefs file / defaults).
-
-| Feature | Store / prefs | Notes |
-|---------|---------------|--------|
-| Structure template picker | `selectedTemplateId`, `templateStrict`, `templates` | Defaults: `imrad`, non-strict |
-| Source format badge | `manuscriptSourceFormat` | Set on import; no UI display in loop |
-
-**Next step:** Add template controls to loop settings, or drop structure checks from audit.
-
----
-
-## Tier 5 — Stale docs (remaining)
-
-| Item | Path |
-|------|------|
-| UI audit (Toolbar-centric, pre-`AppHeader`) | `docs/UI_AUDIT.md` |
-| Archive docs | `docs/archive/` — historical only |
+| Item | Action / Resolution | Date |
+|------|--------------------|------|
+| Legacy audit UI | `ManuscriptAudit/AuditView.tsx` removed | 2026-06-27 |
+| Pre-reform chrome | `Toolbar.tsx`, `WorkflowStrip.tsx`, `Sidebar.tsx` removed | 2026-06-27 |
+| Hydra stub panel | `StubWorkerPanel.tsx`, `worker-registry.ts` removed | 2026-06-27 |
+| AppMode IPC | `app-mode.ts`, `setAppMode` preload/IPC removed | 2026-06-27 |
+| Unused npm scripts | `docs:placeholders`, `docs:images`, `gen-icon-png.ps1` removed | 2026-08-03 |
+| Legacy PRESETS_DIR | Migrated `~/.citations-style` → `~/.nassila` with backward fallback | 2026-08-03 |
+| Structure template UI | Wired `selectedTemplateId`, `templateStrict`, `templates` to loop UI | 2026-08-03 |
+| Source format badge | Wired `manuscriptSourceFormat` (`[DOCX]`, `[PDF]`, `[Text]`) to loop UI | 2026-08-03 |
+| UI Audit doc rot | Archived `docs/UI_AUDIT.md`; refreshed `.cursor/rules/cursor-rules-ouroboros.md` | 2026-08-03 |
 
 ---
 
@@ -47,7 +27,7 @@ Logic runs in `use-manuscript-audit.ts` but users cannot change settings in the 
 | Item | Why it stays |
 |------|----------------|
 | `manuscript-audit-store.ts`, `use-manuscript-audit.ts` | Powers Ouroboros loop |
-| `SidebarPanel`, `InputPanel`, `OutputPanel`, `IssuePanel` | Bibliography mode |
+| `SidebarPanel`, `InputPanel`, `OutputPanel`, `IssuePanel` | Bibliography mode (Raqim) |
 | `engine/manuscript/*`, `engine/audit/*` | Loop audit pipeline |
 
 ---

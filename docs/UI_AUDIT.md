@@ -1,5 +1,7 @@
 # Nassila UI Audit — Brutal Dissection & Remediation Plan
 
+> **⚠️ ARCHIVED (2026-08-03):** This audit was written against the pre-AppHeader layout (Toolbar.tsx, StubWorkerPanel, WorkflowStrip — all deleted 2026-06-27). Many issues cited here have been addressed. Live UI guidance is in `.cursor/rules/cursor-rules-ouroboros.md` and `docs/DESIGN.md`. Do not use this file as an actionable checklist.
+
 **Date:** 2026-06-21
 **Scope:** Renderer UI — visual design, information architecture, component quality, accessibility, and adherence to `DESIGN.md`.
 

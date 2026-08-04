@@ -25,4 +25,5 @@ Nassila-Ouroboros.code-workspace
 # Local OCR downloads & file dumps
 *.traineddata
 
-
+# TypeScript incremental build cache (machine-specific)
+*.tsbuildinfo

@@ -3,7 +3,9 @@ import { existsSync, readFileSync } from 'fs'
 import { homedir } from 'os'
 import { join } from 'path'
 
-const SETTINGS_FILE = join(homedir(), '.citations-style', 'settings.json')
+const NASSILA_DIR = join(homedir(), '.nassila')
+const LEGACY_DIR = join(homedir(), '.citations-style')
+const SETTINGS_FILE = join(existsSync(NASSILA_DIR) ? NASSILA_DIR : LEGACY_DIR, 'settings.json')
 const MAX_TITLE_LEN = 120
 const MAX_BODY_LEN = 400
 

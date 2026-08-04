@@ -21,7 +21,18 @@ import {
 } from '../engine/manuscript/source-artifact-cache'
 import { SOURCE_ARTIFACT_ATTACH_CHANNEL } from '../shared/source-artifact'
 
-const PRESETS_DIR = join(homedir(), '.citations-style')
+const NASSILA_DIR = join(homedir(), '.nassila')
+const LEGACY_DIR = join(homedir(), '.citations-style')
+
+/** Use the branded directory; fall back to legacy if it exists and new one doesn't yet. */
+function resolveConfigDir(): string {
+  if (existsSync(NASSILA_DIR)) return NASSILA_DIR
+  if (existsSync(LEGACY_DIR)) return LEGACY_DIR
+  mkdirSync(NASSILA_DIR, { recursive: true })
+  return NASSILA_DIR
+}
+
+const PRESETS_DIR = resolveConfigDir()
 const PRESETS_FILE = join(PRESETS_DIR, 'presets.json')
 const SETTINGS_FILE = join(PRESETS_DIR, 'settings.json')
 const MAX_CONFIG_BYTES = 1024 * 1024

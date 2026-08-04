@@ -22,6 +22,7 @@
     "ocr:langpacks": "node scripts/download-tesseract-langpacks.mjs",
     "skills:install": "node scripts/install-cursor-skills.mjs",
     "skills:install:antigravity": "node scripts/install-antigravity-skills.mjs",
+    "probe:ocr": "electron scripts/probe-ocr-bundled.mjs",
     "loop:audit": "npx --yes @cobusgreyling/loop-audit . --suggest"
   },
   "keywords": [
@@ -32,7 +33,7 @@
     "academic",
     "formatting"
   ],
-  "author": "",
+  "author": "Nassila contributors",
   "license": "MIT",
   "devDependencies": {
     "@eslint/js": "^9.39.4",

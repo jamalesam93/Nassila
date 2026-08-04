@@ -8,6 +8,7 @@ on:
 
 jobs:
   verify:
+    name: Verify (Linux)
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -30,3 +31,25 @@ jobs:
 
       - name: Build application
         run: npm run build
+
+  package-windows:
+    name: Package & Probe (Windows)
+    runs-on: windows-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Unpack Windows build
+        run: npm run build:unpack
+
+      - name: Probe bundled OCR & native dependencies
+        run: npm run probe:ocr
