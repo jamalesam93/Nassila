@@ -321,6 +321,6 @@ Do not pull these into a tweak batch:
 9. **1.2.8 OCR O2 + a11y** — offline/bundled language packs, golden fixtures, OCR controls/provenance/cache, loop-table keyboard navigation.
 10. **1.2.9 Preflight + quality ledger** — unresolved-identity gate, mapping coverage, accessibility pass, local diagnostic/quality-ledger export.
 11. **P1 #9–11 remainder** → **1.3.0 Sharh-lite**.
-12. **∥ NassilaT:** field-note curation / Tier 3 data only; **S15 parked**.
+12. **∥ NassilaT:** field-note curation / Tier 3 data; **S15 shipped** (Qwen 3.5 4B default) — quote verify on laptop remains.
 
 **Red-line check before each merge:** no training/corpus/eval content surfaces in app UI or copy (see top of file).

@@ -151,13 +151,13 @@ July field notes (`masdar-lite-jul13`) remain useful raw material (captured unde
 - Many `truncated` / echo heuristics — **re-ground after the new window** before treating as train labels.
 - Human adjudication **in progress:** **14/49** labeled (2026-07-18); not yet boost JSONL.
 
-**Still before S15:** source-side paragraph/page chunking + locators (**1.6.0**); evaluate context quality separately from model quality; finish field-note labels → boost JSONL (never into frozen holdout).
+**Still before S15+:** source-side paragraph/page chunking + locators (**1.6.0**); evaluate context quality separately from model quality; finish field-note labels → boost JSONL (never into frozen holdout).
 
 ### 3.5 App vs training prompt contract
 
-**Status:** **Shipped** for continued use — contract `sanad-grounding-v1`; Nassila ↔ NassilaT goldens byte-identical; S12/S14 single-seed production-prompt re-eval recorded (`PROMPT_CONTRACT_REEVAL.md`). **S15 still parked.**
+**Status:** **Shipped** for continued use — contract `sanad-grounding-v1`; Nassila ↔ NassilaT goldens byte-identical; S12/S14 single-seed production-prompt re-eval recorded (`PROMPT_CONTRACT_REEVAL.md`). **S15 shipped** on Qwen 3.5 4B (`nassila-sanad-4b`) — trained on the same 874-row v1.14 dataset; single-seed contrastive-v2 eval only, quote pending local verify.
 
-**Residual:** optional multi-seed re-eval; investigate S14 quote bar miss on Ollama run; keep prompt version/hash on model cards and audit exports; train S15 only on a measured model gap after §6.
+**Residual:** optional multi-seed re-eval; investigate S14 quote bar miss on Ollama run; keep prompt version/hash on model cards and audit exports; train S15+ only on a measured model gap after §6.
 
 ### 3.6 Arabic Sanad validation
 

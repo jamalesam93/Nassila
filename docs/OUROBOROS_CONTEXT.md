@@ -47,7 +47,7 @@ Codenames: `docs/BRAND.md`, `src/shared/nassila-agent-tasks.ts`. Forge **one LLM
 
 | # | Worker | Arabic | `task` id | Future module (user-facing) | Deterministic core (no LLM replacement) | LLM facet | Phase | Status |
 |---|--------|--------|-----------|----------------------------|----------------------------------------|-----------|-------|--------|
-| 1 | **Sanad** | سند | `l3_grounding` | Ground claims to sources | JSON repair, quote substring checks, caps | Passage vs excerpt → grounding JSON | 1 | **E4B default-tier PASS** (S12 ship); **Tier 2 PASS** (12B S14) |
+| 1 | **Sanad** | سند | `l3_grounding` | Ground claims to sources | JSON repair, quote substring checks, caps | Passage vs excerpt → grounding JSON | 1 | **Default-tier PASS** (S15 ship); **Tier 2 PASS** (12B S14) |
 | 2 | **Maktab** | مكتب | `doc_extract` | Bring in the manuscript | File I/O, DOCX/PDF routing, pdf.js + Tesseract O1 | Structured text/chunks from PDF/DOCX | 2 | **Deterministic live**; LLM facet planned; O2 planned |
 | 3 | **Masdar** | مصدر | `source_pdf_extract` | Get source text for citations | OA fetch, PDF extraction, chunking, secure desktop I/O, per-reference local PDF attach | Cited OA PDF → text for Sanad | 2 | **Deterministic live** with local PDF attach; `source_pdf_extract` LLM facet planned |
 | 4 | **Shahid** | شاهد | `table_figure_grounding` | Tables & figures as evidence | Region detection (future) | Claims vs table/figure regions | 3+ | Planned (12B) |
@@ -125,7 +125,8 @@ Production manuscript UX is the Ouroboros loop above.
 | v1.8 | 91.43% | 100% | 9/10 | 90.91% | — | 2.94% | 5/5 | NO-GO (legacy 70-row harness) |
 | **v1.10 E4B Q6_K** | **88.12%** | **100%** | **10/10** | **89.47%** | — | **6.57%** | **5/5** | Superseded (default-tier only) |
 | **v1.10 12B Q6_K** | **94.79%** | **100%** | **10/10** | **100%** | — | **2.82%** | **5/5** | **TIER 2 PASS** (optional quality tier) |
-| **S15 4B Q6_K** | **89.27%** | **100%** | **9–10/10** | **92.98%** | — | **3.81%** | **5/5** | **DEFAULT-TIER SHIP** (`nassila-sanad-4b`) |
+
+*S15 (4B default) verified on a separate harness — `eval_holdout_body_contrastive_frozen_v2` (308 rows, single run): **94.48% combined expect**, **99.35% JSON (repair)**, **4.87% false-supported** (≤5% gate ✓), contradicted 85.83%, not_in_source 100%. Quote validity is **not measured on this harness — pending local verify** (`nassila-sanad-4b` = S15).*
 
 **Gate policy:** `false_supported` gates on **holdout only** (≤5%). **Monitor** extended-core false-supported (11.1% at v1.4a) in every report — it is not a ship gate but flags regression risk.
 
@@ -214,7 +215,7 @@ Manual Sanad paste does **not** satisfy Tier 3 product ship; it is a bridge unti
 
 ## 11. Model tier policy (A/B pilot — recorded)
 
-- **Default tier:** Qwen 3.5 **4B** Q6_K — **`nassila-sanad-4b` S15** = 89.27% combined eval, 4B default-tier **PASS** (Training converged at epoch 1.73, step 193/330: loss 0.3464, token acc 91.90%)
+- **Default tier:** Qwen 3.5 **4B** Q6_K — **`nassila-sanad-4b` S15** = 94.48% combined expect on `eval_holdout_body_contrastive_frozen_v2` (4.87% false-supported), 4B default-tier **PASS** (Training converged at epoch 1.73, step 193/330: loss 0.3464, token acc 91.90%; training data = same 874-row `l3_grounding_train_v114.jsonl` used for v1.14)
 - **Quality tier:** Gemma 4 **12B** Q6_K — **S14 selected** = 90.43% combined, quote 100%, Tier 2 **PASS** (h-045/h-088 fixed); v1.12 12B = 94.20% higher-combined fallback
 - **v1.13:** **NO-GO** — do not publish ([`OUROBOROS_OPERATOR_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/OUROBOROS_OPERATOR_MAP.md))
 - **Shahid:** 12B when multimodal worker forges (unchanged)
@@ -231,7 +232,7 @@ Manual Sanad paste does **not** satisfy Tier 3 product ship; it is a bridge unti
 - **HF release verify** — [`HF_RELEASE_VERIFY.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/HF_RELEASE_VERIFY.md)
 - Ouroboros loop UI (Nassila `docs/PRODUCT.md`, `docs/DESIGN.md`) — primary IA correction after laptop smoke pass
 - Maktab/Masdar → Tier 3 — [`PHASE3_TIER3_GROUNDWORK.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/PHASE3_TIER3_GROUNDWORK.md)
-- **S15 parked** while NassilaT curates field notes and Tier 3 data
+- **S15 shipped** (Qwen 3.5 4B default tier, `nassila-sanad-4b`) — quote validity pending laptop verification
 
 ## 13. NassilaT operator index
 

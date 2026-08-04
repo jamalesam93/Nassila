@@ -81,7 +81,7 @@ Training pack: [`TRAINING.md`](./TRAINING.md) → [NassilaT `training/`](https:/
 
 **Sanad** (`l3_grounding`): manuscript passage vs source excerpt → structured JSON claims (`supported`, `weak`, `contradicted`, `not_in_source`, `insufficient_evidence`) with verbatim `sourceQuotes` when supported.
 
-- **Base model:** Gemma 4 E4B (`google/gemma-4-E4B-it`)
+- **Base model (default):** Qwen 3.5 4B (`Qwen/Qwen3.5-4B`) — checkpoint **S15**; legacy E4B (`gemma-4-E4B-it`) retired
 - **Checkpoint adapter:** `nassila-grounding-e4b-v1.4a` (HF; best of v1.4 cycle)
 - **Excerpt type (train/eval v1.x):** **abstract-only**; app may pass longer chunks up to 4200 chars at inference ([`grounding-llm.ts`](../src/engine/manuscript/grounding-llm.ts))
 - **Product ship:** requires Tier 2 (abstract harness §10) then Tier 3 (Masdar + full-text eval) — see [`OUROBOROS_CONTEXT.md` §5, §10](./OUROBOROS_CONTEXT.md)
@@ -92,21 +92,21 @@ Training pack: [`TRAINING.md`](./TRAINING.md) → [NassilaT `training/`](https:/
 
 | Stage | Artifact | Base | Notes |
 |-------|----------|------|-------|
-| **Sanad default** | `nassila-sanad-4b` | 4B | Q6_K ~3.3 GB; **checkpoint S15** on model card |
-| **Sanad optional** | `nassila-sanad-12b` | 12B | Q6_K; **checkpoint S14** on model card |
+| **Sanad default** | `nassila-sanad-4b` | Qwen 3.5 4B | Q6_K ~3.3 GB; **checkpoint S15** on model card |
+| **Sanad optional** | `nassila-sanad-12b` | Gemma 4 12B | Q6_K; **checkpoint S14** on model card |
 | **Merged Ouroboros (future)** | `nassila-agent-e12b-v1` | 12B+ | Multi-worker + multimodal when ready |
 
 **Rule:** Prefer **one GGUF in LM Studio** with task routing. Separate adapters per worker during R&D; merge before marketing a unified Ouroboros bundle.
 
-**Dual-tier policy (A/B pilot — recorded June 2026):**
+**Dual-tier policy (recorded June 2026; default tier updated to 4B Aug 2026):**
 
-| Tier | Base | Quant | Combined (115-row) | Tier 2 §10 | Role |
-|------|------|-------|-------------------|------------|------|
-| **Default** | Gemma 4 E4B | Q6_K (~8GB-friendly) | **89.27%** (S12) | E4B default-tier PASS | Sanad default ship |
-| **Quality** | Gemma 4 12B | Q6_K | **90.43%** (S14) | **Tier 2 PASS** | Selected quality tier; v1.12 12B = 94.20% fallback |
+| Tier | Base | Quant | Eval | Verdict | Role |
+|------|------|-------|------|---------|------|
+| **Default** | Qwen 3.5 4B | Q6_K (~3.3 GB) | 94.48% combined expect / 4.87% false-sup on `eval_holdout_body_contrastive_frozen_v2` (S15) | Default-tier PASS (quote pending local verify) | Sanad default ship |
+| **Quality** | Gemma 4 12B | Q6_K | **90.43%** combined (S14) | **Tier 2 PASS** | Selected quality tier; v1.12 12B = 94.20% fallback |
 | Shahid (future) | Gemma 4 12B | Q4–Q8 ladder | — | — | Multimodal worker |
 
-4B is the **default** LM Studio download (`nassila-sanad-4b-q6_k.gguf`, **checkpoint S15**). **`nassila-sanad-12b-q6_k.gguf`** (**checkpoint S14**) is the quality tier — Tier 2 PASS with h-045/h-088 fixed (multi_claim 84.62%). v1.12 12B remains higher-combined fallback. Validate locally via NassilaT [`LAPTOP_SMOKE_TEST.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/LAPTOP_SMOKE_TEST.md).
+**E4B (`nassila-sanad-e4b`, S12) is retired** as default — the app ships `nassila-sanad-4b` (Qwen 3.5 4B, **S15**). 4B is the **default** LM Studio download. **`nassila-sanad-12b-q6_k.gguf`** (**checkpoint S14**) is the quality tier — Tier 2 PASS with h-045/h-088 fixed (multi_claim 84.62%). v1.12 12B remains higher-combined fallback. Validate locally via NassilaT [`LAPTOP_SMOKE_TEST.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/LAPTOP_SMOKE_TEST.md).
 
 Full walkthrough + HF upload: [NassilaT `PHASE2_9_AB_PILOT_WALKTHROUGH.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/PHASE2_9_AB_PILOT_WALKTHROUGH.md).
 
