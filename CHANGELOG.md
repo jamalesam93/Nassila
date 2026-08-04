@@ -2,7 +2,7 @@
 
 All notable changes to **Nassila** are documented here.
 
-## [1.6.0] — 2026-08-05 · Ouroboros Stage Polish
+## [1.6.0] — 2026-08-05 · Maktab Loop
 
 Windows installer `Nassila Setup 1.6.0.exe`. **GitHub Release:** [v1.6.0](https://github.com/jamalesam93/Nassila/releases/tag/v1.6.0).
 

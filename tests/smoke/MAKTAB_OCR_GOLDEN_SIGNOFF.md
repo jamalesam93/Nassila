@@ -1,7 +1,7 @@
 # Maktab OCR golden-fixtures sign-off (v1.6.0 T1)
 
 - **Date:** 2026-08-04
-- **App target:** 1.6.0 Maktab Loop (حلقة مكتب)
+- **App target:** 1.6.0 Maktab Loop (حلقة المخطوطة)
 - **Mode:** offline (unit + local probe)
 - **Result:** PASS
 

@@ -275,7 +275,7 @@ Suggested versions and worker-themed codenames. **Not dates, not public promises
 |---------|---------------|---------------|----------------|-------------------|
 | **1.4.0** | **Raqim Statute** | **رقيم تشريع** | Raqim | Legislation + gray-lit Resolve; parser hardening for legal refs |
 | **1.5.0** | **Raqim Web** | **رقيم ويب** | Raqim / Tasnif | Webpage & grey-web citations; dead links; host parsers |
-| **1.6.0** | **Maktab Loop** | **حلقة مكتب** | Maktab / Masdar | OCR fixtures; one-upload loop; source chunking polish | **Shipped 2026-08-05** |
+| **1.6.0** | **Maktab Loop** | **حلقة المخطوطة** | Maktab / Masdar | OCR fixtures; one-upload loop; source chunking polish | **Shipped 2026-08-05** |
 | **1.7.0** | **Integrity Bundle** | **حزمة النزاهة** | Loop / export | Preflight+; submission export; trust & packaged parity |
 | **1.8.0** | **Shahid** | **شاهد** | Shahid (+ Sanad) | Tier 3+ multimodal; model-assisted grey lit (confirm-before-apply) |
 
@@ -313,7 +313,7 @@ From `WEBPAGE_ROADMAP.md` and website roadmap — deterministic first.
 
 Registry verify and citeproc remain **deterministic** — not LLM-replaced.
 
-#### 1.6.0 — Maktab Loop · حلقة مكتب
+#### 1.6.0 — Maktab Loop · حلقة المخطوطة
 
 **Shipped in 1.6.0 (2026-08-05):** Maktab OCR golden fixtures + CI OCR probe; scan coverage; cache controls (source-artifact + Maktab extraction); review-after-import banner; deterministic Sharh summary aggregation with localized headline + per-finding copy; Masdar per-reference PDF attach verified and documented as live; loop a11y RTL acceptance pass. **Deferred to 1.7.0:** auto cited-PDF ingest; Maktab page/scan-coverage provenance surfacing.
 
@@ -807,7 +807,7 @@ If Sanad validation metrics appear on the site, do not publish bare “accuracy.
 |---------|---------------|---------------|--------|
 | 1.4.0 | Raqim Statute | رقيم تشريع | Planned — US/UK legislation patterns; parser hardening |
 | 1.5.0 | Raqim Web | رقيم ويب | Planned — webpage / grey-web cites |
-| 1.6.0 | Maktab Loop | حلقة مكتب | **Shipped 2026-08-05** |
+| 1.6.0 | Maktab Loop | حلقة المخطوطة | **Shipped 2026-08-05** |
 | 1.7.0 | Integrity Bundle | حزمة النزاهة | Planned — preflight+; submission export; trust parity |
 | 1.8.0 | Shahid | شاهد | Planned — Tier 3+ gate; tables/figures; confirm-before-apply grey lit |
 

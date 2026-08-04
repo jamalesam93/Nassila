@@ -11,11 +11,11 @@ Read this at the start of every agent session. Update when focus, blockers, or s
 
 | Priority | Track | Status |
 |----------|-------|--------|
-| **P0** | **1.6.0 Ouroboros Stage Polish** | **Shipped 2026-08-05** — T1 golden fixtures; T2 cache controls + needsReview banner; T3 richer deterministic Sharh summaries; T4 Masdar attach verified + docs/test; T5 RTL acceptance + release cut |
+| **P0** | **1.6.0 Maktab Loop** | **Shipped 2026-08-05** — T1 golden fixtures; T2 cache controls + needsReview banner; T3 richer deterministic Sharh summaries; T4 Masdar attach verified + docs/test; T5 RTL acceptance + release cut |
 | **P1** | Infrastructure hygiene | Windows CI packaging job, dead-code cleanup, agent rule refresh |
 | **P1∥** | NassilaT S15 corpus | 49/49 labels exported; W4 100 DOI; body holdout contrastive v2 benchmarked; S15 is **shipped default** in app |
 
-**Latest app:** **1.6.0** (Ouroboros Stage Polish) — shipped 2026-08-05.
+**Latest app:** **1.6.0** (Maktab Loop) — shipped 2026-08-05.
 
 ---
 
@@ -44,7 +44,7 @@ Read this at the start of every agent session. Update when focus, blockers, or s
 | Version bump + CHANGELOG + release notes | **PASS** |
 | GitHub **v1.5.0** tag + installer | **PASS** |
 
-**Locked train:** 1.4.0 Raqim Statute → 1.5.0 Raqim Web → **1.6.0 Ouroboros Stage Polish** (shipped)
+**Locked train:** 1.4.0 Raqim Statute → 1.5.0 Raqim Web → **1.6.0 Maktab Loop** (shipped)
 
 **Next map:** 1.7.0 Integrity Bundle → 1.8.0 Shahid (see `docs/Nassila-Ouroboros-Future.md` §5)
 
