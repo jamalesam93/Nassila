@@ -11,24 +11,26 @@ Import or paste your bibliography, fix common errors, verify rows against Crossr
 
 | | |
 |---|---|
-| **Download (Windows)** | [**v1.5.0**](https://github.com/jamalesam93/Nassila/releases/tag/v1.5.0) · [Latest release](https://github.com/jamalesam93/Nassila/releases/latest) |
+| **Download (Windows)** | [**v1.6.0**](https://github.com/jamalesam93/Nassila/releases/tag/v1.6.0) · [Latest release](https://github.com/jamalesam93/Nassila/releases/latest) |
 | **Sanad models (HF)** | [`nassila-sanad-4b`](https://huggingface.co/QinEmPeRoR93/nassila-sanad-4b) · [`nassila-sanad-12b`](https://huggingface.co/QinEmPeRoR93/nassila-sanad-12b) — setup on the [website](https://nassila-web.vercel.app/en/docs/manuscript) |
 | **Website & docs** | [nassila-web.vercel.app](https://nassila-web.vercel.app) — [How-to](https://nassila-web.vercel.app/en/docs/how-to) · [User guide](https://nassila-web.vercel.app/en/docs/user-guide) · [Changelog](https://nassila-web.vercel.app/en/changelog) |
 | **Documentation (repo)** | [How-to guide](docs/HOW_TO_GUIDE.md) · [User guide](docs/USER_GUIDE.md) · [Brand](docs/BRAND.md) · [Changelog](CHANGELOG.md) |
 | **License** | [MIT](LICENSE) |
 
-> End users: install from **Releases** ([**v1.5.0**](https://github.com/jamalesam93/Nassila/releases/tag/v1.5.0)) or visit the [**website**](https://nassila-web.vercel.app). Developers: clone this repo and see [Getting started](#getting-started).
+> End users: install from **Releases** ([**v1.6.0**](https://github.com/jamalesam93/Nassila/releases/tag/v1.6.0)) or visit the [**website**](https://nassila-web.vercel.app). Developers: clone this repo and see [Getting started](#getting-started).
 
 The name **Nassila** is coined, inspired by the idea of a **sanad** (سند): a clear chain from what you write to where it came from.
 
-## What's new in v1.5.0
+## What's new in v1.6.0
 
-- **Maktab Rust WASM Engine** — `@firecrawl/pdf-inspector-wasm` integration for 10–20× faster text-based PDF ingest (~10–50ms), Markdown heading structure, and vector/heuristic table extraction.
-- **Raqim Web Metadata Resolver** — Deterministic webpage resolution extracting Open Graph, Dublin Core, Schema.org JSON-LD, and platform-specific extractors for GitHub, Kaggle, Hugging Face, Substack, Medium, and YouTube.
-- **Wayback Machine Integration** — Automatic fallback archive links (`web.archive.org/web/*/${url}`) and `[Wayback ↗]` action on webpage URL citations.
-- **Sanad Model Alignment** — Swapped default grounding model target to `nassila-sanad-4b` for S15 default performance.
+- **Maktab OCR Golden Fixtures** — generated PDF suite (text + scan pages) with byte-level goldens and a real-Tesseract OCR probe wired into the Windows CI packaging job.
+- **Cache Controls** — Settings → Storage: inspect and clear the source-artifact and Maktab extraction caches.
+- **Review-after-Import Banner** — a dismissible notice in the loop when PDF import extraction needs human attention.
+- **Deterministic Sharh Summaries** — richer aggregate coverage/passage/claim summaries with a localized headline and per-finding copy (EN/AR).
+- **Masdar Source-PDF Attach** — attach a local PDF for any cited source and re-ground just that reference (single-reference re-audit).
+- **RTL Acceptance Pass** — swept layout-direction strays to logical utilities across panels and settings.
 
-Full notes: [CHANGELOG.md](CHANGELOG.md) · [v1.5.0 release](https://github.com/jamalesam93/Nassila/releases/tag/v1.5.0).
+Full notes: [CHANGELOG.md](CHANGELOG.md) · [v1.6.0 release](https://github.com/jamalesam93/Nassila/releases/tag/v1.6.0).
 
 ## Who is this for?
 
@@ -56,7 +58,7 @@ Full notes: [CHANGELOG.md](CHANGELOG.md) · [v1.5.0 release](https://github.com/
 | Resolution | DOI, ISBN, PMID, URL → Crossref, PubMed, Open Library |
 | Verification | Unified L1+L2 registry check (main-process IPC in packaged app), up to 200 rows per run |
 | Integrity | Predatory/suspicious journal flags, duplicate groups with merge |
-| Manuscript | Ouroboros loop: L1/L2 verify, OA source fetch, optional Sanad L3 ([HF models](https://huggingface.co/QinEmPeRoR93/nassila-sanad-4b)) |
+| Manuscript | Ouroboros loop: L1/L2 verify, OA source fetch, per-source PDF attach + single-ref re-audit, optional Sanad L3 ([HF models](https://huggingface.co/QinEmPeRoR93/nassila-sanad-4b)) |
 | Output | CSL formatting, undo/redo, dark/light mode, EN/AR UI |
 
 ## Getting started
