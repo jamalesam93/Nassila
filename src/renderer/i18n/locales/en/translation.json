@@ -23,6 +23,7 @@
   "project": {
     "newSessionConfirm": "Start a new session? This clears the manuscript, bibliography, attached sources, and audit report.",
     "openConfirmDirty": "Open a project and replace the current session?",
+    "closeDirtyConfirm": "Close Nassila? Your current session is not saved and will be lost.",
     "opened": "Project opened",
     "openFailed": "Could not open project",
     "saved": "Project saved",
@@ -241,7 +242,8 @@
     "shortBody": "{{name}} is a quick quality pass for the bibliography you already have: clean, verify, and export.",
     "shortWorkflow": "Flow: Import → Parse & fix → Verify (Crossref / PubMed / OpenAlex) → Export.",
     "privacyShort": "Privacy: nothing is uploaded to Nassila. Network calls go only to public scholarly APIs (and your chosen LLM endpoint if you enable it).",
-    "oss": "Powered by citeproc-js, Citation.js, and community CSL styles."
+    "oss": "Powered by citeproc-js, Citation.js, and community CSL styles.",
+    "credit": "Made by Gamalix"
   },
   "integrity": {
     "highBadge": "Unverified — no registry match",
@@ -269,6 +271,7 @@
     "importBridgeMissing": "File import is unavailable (the app bridge is not loaded). Try restarting the app or use a production build.",
     "importEmpty": "Imported file is empty or could not be read.",
     "importFailed": "Import failed: {{message}}",
+    "docxWarnings": "The Word document produced {{count}} import warning(s); headings may be incomplete. Check the manuscript before running the audit.",
     "reviewNeeded": "Extracted text needs review — it may be incomplete (scanned pages or broken font encoding). Check the manuscript before running the audit.",
     "dismissReview": "Dismiss",
     "pdfWarning": {
@@ -894,6 +897,7 @@
     "exportDiagnostic": "Export diagnostic bundle…",
     "diagnosticExported": "Diagnostic bundle saved",
     "mappingCoverage": "Citation mapping coverage: {{percent}}%",
+  "mappingBreakdown": "Matched {{matched}} · ambiguous {{ambiguous}} · unmatched {{unmatched}}",
     "exportSubmissionBundle": "Export submission integrity bundle…",
     "submissionBundleExported": "Submission integrity bundle saved"
   }

@@ -2,6 +2,19 @@
 
 All notable changes to **Nassila** are documented here.
 
+## [1.7.0] — 2026-08-10 · Integrity Bundle
+
+### Added
+
+- **Structured DOCX ingest for the loop (Maktab Route C)** — manuscript DOCX import now uses `mammoth.convertToHtml` instead of flat raw text: Word structure is preserved and real heading levels (`Heading1..6`) are surfaced as a segmentation side-channel (`src/engine/maktab/docx-extract.ts`). New in-memory OOXML fixture builder (`tests/fixtures/maktab-docx-builder.ts`) and `tests/unit/docx-extract.test.ts`. Bibliography `parseDocx` untouched.
+- **Dirty-close warning** — closing the window with unsaved work now asks for confirmation. Main-process close guard (`src/main/app-close-guard.ts`, channels `app:close-requested` / `app:confirm-close`) + renderer `useDirtyCloseGuard` hook reusing the existing confirm dialog (EN/AR).
+- **Preflight+ mapping breakdown** — Sharh-lite now shows matched / ambiguous / unmatched citation counts alongside the coverage percentage (EN/AR).
+- **Gamalix credit line** — About dialog shows "Made by Gamalix" (EN/AR).
+
+### Fixed
+
+- `mammoth.extractRawText({ arrayBuffer })` input-shape mismatch in the node build is replaced by `extractStructuredDocx`, which detects the correct input shape per environment.
+
 ## [1.6.0] — 2026-08-05 · Maktab Loop
 
 Windows installer `Nassila Setup 1.6.0.exe`. **GitHub Release:** [v1.6.0](https://github.com/jamalesam93/Nassila/releases/tag/v1.6.0).

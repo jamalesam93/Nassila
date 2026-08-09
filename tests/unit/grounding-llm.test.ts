@@ -6,6 +6,7 @@ import {
   buildGroundingSystemPrompt,
   buildGroundingUserPrompt,
   buildGroundingLlmMessages,
+  downgradeInvalidSupportedClaims,
   findInvalidSourceQuotes,
   GROUNDING_PROMPT_CONTRACT_VERSION,
   hasContradictoryNumbers,
@@ -277,5 +278,40 @@ describe('applyNumericAndNegationGuard', () => {
     const guarded = applyNumericAndNegationGuard(claims, excerpt)
     expect(guarded[0].verdict).toBe('contradicted')
     expect(guarded[0].rationale?.[0]).toContain('Guardrail: Claim contains numbers/statistics')
+  })
+})
+
+describe('downgradeInvalidSupportedClaims', () => {
+  const excerpt = 'Nausea was reported by approximately 30% of patients during the first cycle.'
+
+  it('keeps supported claim with valid verbatim quote', () => {
+    const claims = [
+      { claim: 'Nausea in 30% of patients', verdict: 'supported' as const, sourceQuotes: ['30% of patients during the first cycle'] }
+    ]
+    const out = downgradeInvalidSupportedClaims(claims, excerpt)
+    expect(out[0].verdict).toBe('supported')
+  })
+
+  it('downgrades supported claim with fabricated quote to weak', () => {
+    const claims = [
+      { claim: 'Nausea in 30% of patients', verdict: 'supported' as const, sourceQuotes: ['30% reduction in pain'] }
+    ]
+    const out = downgradeInvalidSupportedClaims(claims, excerpt)
+    expect(out[0].verdict).toBe('weak')
+    expect(out[0].rationale?.[0]).toContain('Downgraded from supported to weak')
+  })
+
+  it('downgrades supported claim with no quote to weak', () => {
+    const claims = [{ claim: 'Nausea in 30% of patients', verdict: 'supported' as const, sourceQuotes: [] }]
+    const out = downgradeInvalidSupportedClaims(claims, excerpt)
+    expect(out[0].verdict).toBe('weak')
+  })
+
+  it('leaves non-supported claims untouched', () => {
+    const claims = [
+      { claim: 'not in source', verdict: 'not_in_source' as const, sourceQuotes: [] }
+    ]
+    const out = downgradeInvalidSupportedClaims(claims, excerpt)
+    expect(out[0].verdict).toBe('not_in_source')
   })
 })

@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import type { AppMenuCommand } from '../shared/app-menu-commands'
+import { APP_CLOSE_REQUESTED_CHANNEL, APP_CONFIRM_CLOSE_CHANNEL } from '../shared/app-close-contract'
 import type { ManuscriptAuditPrefsV1 } from '../shared/manuscript-audit-prefs'
 import {
   MANUSCRIPT_AUDIT_CANCEL_CHANNEL,
@@ -101,6 +102,18 @@ const api = {
       ipcRenderer.removeListener('menu:command', listener)
     }
   },
+
+  // ── Window close guard (dirty-close warning) ───────────────────────────
+  onCloseRequested: (callback: () => void): (() => void) => {
+    const listener = () => callback()
+    ipcRenderer.on(APP_CLOSE_REQUESTED_CHANNEL, listener)
+    return () => {
+      ipcRenderer.removeListener(APP_CLOSE_REQUESTED_CHANNEL, listener)
+    }
+  },
+
+  confirmClose: (): Promise<boolean> =>
+    ipcRenderer.invoke(APP_CONFIRM_CLOSE_CHANNEL),
 
   // ── Network ───────────────────────────────────────────────────────────
   checkNetwork: (opts?: { reset?: boolean }): Promise<NetworkStatus> =>

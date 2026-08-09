@@ -156,7 +156,7 @@ export function buildGroundingSystemPrompt(): string {
     'Compound passages: when the passage bundles multiple claims (e.g., joined by "and"), split into one claim per conjunct and evaluate each independently. A conjunct may be supported if source_excerpt directly supports it with matching meaning and numbers — but NOT if the passage asserts a specific number that differs from the source. On compound passages where the passage asserts parity or equality across subgroups (e.g., "equally well in adults and children") and the source addresses only one subgroup, the studied subgroup receives weak (not supported), and the unstudied subgroup receives not_in_source.',
     'Scope-silence rule: if the passage asserts a claim about specific subgroups (e.g., adults and children, men and women) and source_excerpt addresses one subgroup but states or implies the other was not studied / not collected / not enrolled, split into one claim per subgroup. The unstudied subgroup receives not_in_source, never contradicted. The studied subgroup receives weak (not supported) when the passage asserts parity or equality across those subgroups.',
     'Respond with a single JSON object ONLY, no markdown fencing, keys:',
-    '{ "claims": [ { "claim": string, "verdict": "supported"|"weak"|"not_in_source"|"contradicted"|"insufficient_evidence", "hasNumericClaim"?: boolean, "sourceQuotes"?: string[], "rationale"?: string[] } ], "overallVerdict"?: "support"|"weak"|"unrelated"|"insufficient_evidence", "overallRationale"?: string[] }'
+    '{ "claims": [ { "claim": "<claim text>", "verdict": "supported"|"weak"|"not_in_source"|"contradicted"|"insufficient_evidence", "hasNumericClaim": true, "sourceQuotes": ["<verbatim text copied from source_excerpt>"], "rationale": ["<reason>"] } ], "overallVerdict": "support"|"weak"|"unrelated"|"insufficient_evidence", "overallRationale": ["<reason>"] }'
   ].join('\n')
 }
 
@@ -308,9 +308,34 @@ export function withQuoteValidationState(
   })
 }
 
+/** 
+ * Deterministic trust guardrail (Phase C2): downgrade any `supported` claim whose
+ * verbatim quote is NOT a substring of the source excerpt to `weak`.
+ * 
+ * Rationale (ERROR_FIX_ROADMAP Phase B): false-supported is the core trust risk.
+ * A `supported` verdict without a valid excerpt quote cannot be trusted — the model
+ * may have echoed the passage or fabricated the quote. The app must never present
+ * it as a confirmed support claim.
+ */
+export function downgradeInvalidSupportedClaims(
+  claims: ClaimGroundingRow[],
+  sourceExcerpt: string
+): ClaimGroundingRow[] {
+  return claims.map((claim) => {
+    if (claim.verdict !== 'supported') return claim
+    const quotes = (claim.sourceQuotes ?? []).filter((q) => q.trim().length > 0)
+    const hasValidQuote = quotes.length > 0 && quotes.every((q) => isVerbatimQuoteSubstring(q, sourceExcerpt))
+    if (hasValidQuote) return claim
+    return {
+      ...claim,
+      verdict: 'weak',
+      rationale: [...(claim.rationale ?? []), 'Downgraded from supported to weak: no verbatim quote found in the source excerpt (deterministic guardrail).']
+    }
+  })
+}
+
 /** Helper to extract all numbers, percentages, and years from text. */
-export function extractNumbersFromText(text: string): number[] {
-  const matches = text.match(/\b\d+(?:\.\d+)?%?\b/g)
+export function extractNumbersFromText(text: string): number[] {  const matches = text.match(/\b\d+(?:\.\d+)?%?\b/g)
   if (!matches) return []
   return matches.map((m) => parseFloat(m.replace('%', '')))
 }

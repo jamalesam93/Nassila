@@ -15,6 +15,7 @@ import { registerPredatoryIpcHandlers } from './ipc-predatory-updates'
 import { registerRegistryIpcHandlers } from './ipc-registry'
 import { registerNotificationHandlers } from './notification'
 import { checkNetworkStatus, resetNetworkStatusState } from './network-status'
+import { registerAppCloseGuardIpcHandler } from './app-close-guard'
 import {
   attachSourcePdf,
   clearSourceArtifactCache,
@@ -289,6 +290,8 @@ export function registerIpcHandlers(): void {
     const next: MainMenuLocale = locale === 'ar' ? 'ar' : 'en'
     buildAppMenu(win, next)
   })
+
+  registerAppCloseGuardIpcHandler()
 
   // ── Network Status ─────────────────────────────────────────────────────
   registerNotificationHandlers()

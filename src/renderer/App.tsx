@@ -17,6 +17,7 @@ import SanadSetupModal from './components/SanadSetupModal'
 import SettingsModal from './components/SettingsModal'
 import ToastContainer from './components/ui/toast'
 import { useTaskNotifier } from './hooks/use-task-notifier'
+import { useDirtyCloseGuard } from './hooks/use-dirty-close-guard'
 import { readStoredLocale } from './i18n/config'
 import { useAppSettingsStore } from './stores/app-settings-store'
 
@@ -27,6 +28,7 @@ export default function App() {
   const { executeCommand } = useAppCommands()
 
   useTaskNotifier()
+  useDirtyCloseGuard()
 
   useEffect(() => {
     void initializeTheme()

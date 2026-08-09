@@ -55,6 +55,7 @@ export const IPC_POLICY: readonly IpcPolicyEntry[] = [
   { channel: 'theme:set-native', direction: 'renderer-to-main', handler: 'ipc-handlers.ts', networkScope: 'none', input: 'sanitized', notes: 'validateThemeMode enum check' },
   { channel: 'app:get-about', direction: 'renderer-to-main', handler: 'ipc-handlers.ts', networkScope: 'none', input: 'none', notes: 'no renderer input' },
   { channel: 'app:set-menu-locale', direction: 'renderer-to-main', handler: 'ipc-handlers.ts', networkScope: 'none', input: 'sanitized', notes: 'locale coerced to en|ar enum' },
+  { channel: 'app:confirm-close', direction: 'renderer-to-main', handler: 'app-close-guard.ts', networkScope: 'none', input: 'none', notes: 'renderer confirms window close after dirty check; calls win.close again (SEC-01 no renderer input)' },
 
   // ── Network status ────────────────────────────────────────────────────────
   { channel: 'network:check', direction: 'renderer-to-main', handler: 'ipc-handlers.ts', networkScope: 'probe', input: 'typed', notes: 'opts type check; connectivity probe only' },
@@ -110,6 +111,7 @@ export const IPC_POLICY: readonly IpcPolicyEntry[] = [
 
   // ── Main-to-renderer pushes ───────────────────────────────────────────────
   { channel: 'theme:system-changed', direction: 'main-to-renderer', handler: 'ipc-handlers.ts', networkScope: 'none', input: 'none', notes: 'nativeTheme update broadcast' },
+  { channel: 'app:close-requested', direction: 'main-to-renderer', handler: 'app-close-guard.ts', networkScope: 'none', input: 'none', notes: 'window close intercepted; renderer decides based on session dirty state' },
   { channel: 'menu:command', direction: 'main-to-renderer', handler: 'app-menu.ts', networkScope: 'none', input: 'none', notes: 'menu action dispatch' },
   { channel: 'maktab:ocrProgress', direction: 'main-to-renderer', handler: 'ipc-maktab.ts', networkScope: 'none', input: 'none', notes: 'OCR progress push' },
   { channel: 'manuscriptAudit:progress', direction: 'main-to-renderer', handler: 'ipc-manuscript-audit.ts', networkScope: 'none', input: 'none', notes: 'audit run progress push' }

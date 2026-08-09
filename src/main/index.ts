@@ -4,6 +4,7 @@ import { join, resolve } from 'path'
 import { optimizer, is } from '@electron-toolkit/utils'
 import { registerIpcHandlers } from './ipc-handlers'
 import { buildAppMenu } from './app-menu'
+import { attachAppCloseGuard } from './app-close-guard'
 import { registerContentSecurityPolicy } from './content-security-policy'
 import appIconIco from '../../build/icon.ico?asset'
 import appIconPng from '../../build/icon.png?asset'
@@ -122,6 +123,8 @@ function createWindow(): BrowserWindow {
     }
     return { action: 'deny' }
   })
+
+  attachAppCloseGuard(mainWindow)
 
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])

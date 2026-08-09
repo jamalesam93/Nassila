@@ -331,12 +331,13 @@ Trust and submission outputs — finish gaps that overlap 1.3.0 preflight but br
 
 | Area | Deliverable |
 |------|-------------|
-| **Preflight+** | Stronger unresolved-identity gate; mapping-coverage summary in UI |
-| **Export** | Submission integrity bundle (audit + bibliography + provenance metadata) |
-| **Projects** | Action log; save/reopen fidelity; edge-case recovery |
-| **Cancel** | Mid-LLM abort when IPC supports `AbortSignal` |
-| **Packaged parity** | Remaining renderer vs main-process registry paths; audit rate limiting under concurrency |
-| **CI** | Packaged smoke gates on release train |
+| **Preflight+** | Stronger unresolved-identity gate; mapping-coverage summary in UI — ✅ shipped (preflight gate in 1.4.0; matched/ambiguous/unmatched breakdown added to SharhLitePanel 2026-08-10). |
+| **Maktab — structured DOCX ingest** | Loop DOCX import: `mammoth.extractRawText` → `convertToHtml` (structure preserved; headings side-channel for segmentation). ✅ **Shipped 2026-08-10** — `src/engine/maktab/docx-extract.ts`, jszip fixture builder, 6 unit tests; bibliography `parseDocx` untouched; Route C (no native deps, no IPC). |
+| **Export** | Submission integrity bundle (audit + bibliography + provenance metadata) — shipped (1.4.0) via `buildSubmissionIntegrityBundle` + SharhLite export; broaden on demand. |
+| **Projects** | Action log; save/reopen fidelity; edge-case recovery — dirty-close warning ✅ shipped 2026-08-10 (`app-close-guard.ts`, `useDirtyCloseGuard`, IPC policy entries, EN/AR). |
+| **Cancel** | Mid-LLM abort when IPC supports `AbortSignal` — ✅ shipped (audit runner threads AbortSignal through `services.llmChat`; `executeLlmChat` passes it to `fetch`; `retryTransient`/semaphore pools abort-aware). |
+| **Packaged parity** | Remaining renderer vs main-process registry paths; audit rate limiting under concurrency — ✅ shipped (registry/align OA + LLM all main-process; `DEFAULT_AUDIT_CONCURRENCY` semaphores + 429/503 retry). |
+| **CI** | Packaged smoke gates on release train — ✅ shipped (`package-windows` job with `probe:ocr` + `probe:ocr:golden`). |
 
 #### 1.8.0 — Shahid · شاهد
 
@@ -916,15 +917,15 @@ An embedded authenticated browser should be the last option because it creates c
 
 | Risk | Severity | Status | Detail |
 |------|----------|--------|--------|
-| Registry/OA rate limits under audit concurrency | High | Open → **1.7** | Scheduler shipped; polite-pool / rate limits not fully enforced |
-| Non-cancellable mid-LLM calls | High | Open → **1.7** | Cancel exists; AbortSignal through `llmChat` still needed |
-| Concurrency + cancel interaction | Medium | Partial | Run IDs / pools shipped; keep store consistent under abort |
+| Registry/OA rate limits under audit concurrency | High | **Mitigated 1.7** | Scheduler + semaphore pools (`DEFAULT_AUDIT_CONCURRENCY`) + 429/503 retry shipped |
+| Non-cancellable mid-LLM calls | High | **Mitigated 1.7** | AbortSignal threaded through `services.llmChat` → `executeLlmChat` → `fetch` |
+| Concurrency + cancel interaction | Medium | **Mitigated 1.7** | Run IDs / pools shipped; store consistency covered by run-isolation tests |
 | Packaged manuscript L1 soft-fail (CSP) | High | **Mitigated** | Main-process audit IPC; packaged smoke PASS |
-| False L3 pass on parse fail / LLM off | High | **Mitigated** | Phase 0-C invariant; do not regress |
+| False L3 pass on parse fail / LLM off | High | **Mitigated** | Phase 0-C invariant + deterministic supported-claim downgrade guardrail |
 | Prompt contract drift (app vs train) | High | **Mitigated** | `sanad-grounding-v1` synced; optional multi-seed remains |
 | Raqim legislation / web scope creep | Medium | Open → **1.4–1.5** | Pattern families + confirm-before-apply; no fuzzy auto-apply |
 | OCR first-use network dependency | Medium | **Mitigated** | Bundled packs; warn if fallback path triggers |
-| Project persistence gaps | Medium | Partial | `.nassila` live; dirty-close / recovery → **1.7** |
+| Project persistence gaps | Medium | **Partial 1.7** | `.nassila` live; dirty-close warning shipped 2026-08-10; crash recovery / action log remain |
 | Release automation thin | Medium | Partial | CI + local smoke exist; public tag / checksums / signing open |
 | Stale docs misleading agents | Medium | Open | §8 doc pass: stubs, `POST_V114` links, vision “stub” wording |
 

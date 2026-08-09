@@ -60,6 +60,7 @@ export default function AboutModal() {
           <li>{t('about.privacyShort')}</li>
         </ul>
         <p className="mt-4 text-xs text-muted-foreground">{t('about.oss')}</p>
+        <p className="mt-2 text-xs text-muted-foreground">{t('about.credit')}</p>
         <div className="mt-6 flex justify-end">
           <Button type="button" size="sm" onClick={() => setAboutModalOpen(false)}>
             {t('about.close')}

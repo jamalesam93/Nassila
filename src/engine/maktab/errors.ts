@@ -17,3 +17,10 @@ export class MaktabExtractError extends Error {
     this.name = 'MaktabExtractError'
   }
 }
+
+export class MaktabDocxError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'MaktabDocxError'
+  }
+}

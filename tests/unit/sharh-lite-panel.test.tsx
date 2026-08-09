@@ -95,6 +95,7 @@ describe('SharhLitePanel', () => {
     expect(screen.getByText('sharhLite.title')).toBeTruthy()
     expect(screen.getByText('sharhLite.supported')).toBeTruthy()
     expect(screen.getByText('sharhLite.preflightOk')).toBeTruthy()
+    expect(screen.getByText('sharhLite.mappingBreakdown')).toBeTruthy()
     expect(screen.getByText('sharhLite.exportSubmissionBundle')).toBeTruthy()
     expect(screen.getByText('sharhLite.exportDiagnostic')).toBeTruthy()
   })

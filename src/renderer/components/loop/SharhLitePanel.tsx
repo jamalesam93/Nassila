@@ -115,6 +115,15 @@ export default function SharhLitePanel({ report }: Props) {
             })}
           </p>
         ) : null}
+        {report.citationMapping ? (
+          <p className="text-xs text-muted-foreground">
+            {t('sharhLite.mappingBreakdown', {
+              matched: report.citationMapping.matched,
+              ambiguous: report.citationMapping.ambiguous,
+              unmatched: report.citationMapping.unmatched
+            })}
+          </p>
+        ) : null}
       </div>
 
       <div className="mt-3 space-y-1">

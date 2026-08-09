@@ -11,26 +11,24 @@ Import or paste your bibliography, fix common errors, verify rows against Crossr
 
 | | |
 |---|---|
-| **Download (Windows)** | [**v1.6.0**](https://github.com/jamalesam93/Nassila/releases/tag/v1.6.0) · [Latest release](https://github.com/jamalesam93/Nassila/releases/latest) |
+| **Download (Windows)** | [**v1.7.0**](https://github.com/jamalesam93/Nassila/releases/tag/v1.7.0) · [Latest release](https://github.com/jamalesam93/Nassila/releases/latest) |
 | **Sanad models (HF)** | [`nassila-sanad-4b`](https://huggingface.co/QinEmPeRoR93/nassila-sanad-4b) · [`nassila-sanad-12b`](https://huggingface.co/QinEmPeRoR93/nassila-sanad-12b) — setup on the [website](https://nassila-web.vercel.app/en/docs/manuscript) |
 | **Website & docs** | [nassila-web.vercel.app](https://nassila-web.vercel.app) — [How-to](https://nassila-web.vercel.app/en/docs/how-to) · [User guide](https://nassila-web.vercel.app/en/docs/user-guide) · [Changelog](https://nassila-web.vercel.app/en/changelog) |
 | **Documentation (repo)** | [How-to guide](docs/HOW_TO_GUIDE.md) · [User guide](docs/USER_GUIDE.md) · [Brand](docs/BRAND.md) · [Changelog](CHANGELOG.md) |
 | **License** | [MIT](LICENSE) |
 
-> End users: install from **Releases** ([**v1.6.0**](https://github.com/jamalesam93/Nassila/releases/tag/v1.6.0)) or visit the [**website**](https://nassila-web.vercel.app). Developers: clone this repo and see [Getting started](#getting-started).
+> End users: install from **Releases** ([**v1.7.0**](https://github.com/jamalesam93/Nassila/releases/tag/v1.7.0)) or visit the [**website**](https://nassila-web.vercel.app). Developers: clone this repo and see [Getting started](#getting-started).
 
 The name **Nassila** is coined, inspired by the idea of a **sanad** (سند): a clear chain from what you write to where it came from.
 
-## What's new in v1.6.0
+## What's new in v1.7.0
 
-- **Maktab OCR Golden Fixtures** — generated PDF suite (text + scan pages) with byte-level goldens and a real-Tesseract OCR probe wired into the Windows CI packaging job.
-- **Cache Controls** — Settings → Storage: inspect and clear the source-artifact and Maktab extraction caches.
-- **Review-after-Import Banner** — a dismissible notice in the loop when PDF import extraction needs human attention.
-- **Deterministic Sharh Summaries** — richer aggregate coverage/passage/claim summaries with a localized headline and per-finding copy (EN/AR).
-- **Masdar Source-PDF Attach** — attach a local PDF for any cited source and re-ground just that reference (single-reference re-audit).
-- **RTL Acceptance Pass** — swept layout-direction strays to logical utilities across panels and settings.
+- **Structured DOCX import** — manuscript DOCX now imports with real Word structure preserved: paragraph blocks plus a heading side-channel (Heading1–6) for smarter segmentation. Bibliography `parseDocx` is untouched.
+- **Dirty-close warning** — closing the window with unsaved work asks for confirmation before you lose the session.
+- **Preflight+ mapping breakdown** — Sharh-lite now shows matched / ambiguous / unmatched citation counts alongside the coverage percentage.
+- **Trust & packaging hardening** — audit rate limiting under concurrency, mid-LLM cancel via `AbortSignal`, and packaged smoke gates on release trains.
 
-Full notes: [CHANGELOG.md](CHANGELOG.md) · [v1.6.0 release](https://github.com/jamalesam93/Nassila/releases/tag/v1.6.0).
+Full notes: [CHANGELOG.md](CHANGELOG.md) · [v1.7.0 release](https://github.com/jamalesam93/Nassila/releases/tag/v1.7.0).
 
 ## Who is this for?
 

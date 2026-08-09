@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import mammoth from 'mammoth'
 import { APP_MENU_COMMANDS, type AppMenuCommand } from '../../shared/app-menu-commands'
 import { MAX_VERIFICATION_ITEMS } from '../../shared/verification-limits'
 import type { ExportFormat } from '../../engine/types'
@@ -86,9 +85,15 @@ export function useAppCommands() {
         if (ext === 'docx') {
           const buf = await window.api?.readFileBinary(first)
           if (buf) {
-            const result = await mammoth.extractRawText({ arrayBuffer: buf })
-            text = result.value
+            const { extractStructuredDocx } = await import('../../engine/maktab/docx-extract')
+            const extraction = await extractStructuredDocx(buf)
+            text = extraction.text
             sourceFormat = 'docx'
+            if (extraction.warnings.length > 0) {
+              setReviewNotice(
+                t('manuscriptAudit.docxWarnings', { count: extraction.warnings.length })
+              )
+            }
           }
         } else if (ext === 'pdf') {
           const buf = await window.api?.readFileBinary(first)

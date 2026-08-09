@@ -13,6 +13,7 @@ import type { LoadedSourceArtifact, SourceArtifact } from '../../shared/source-a
 import { bibEntriesFromCitationLibrary } from './bibliography-bridge'
 import {
   buildGroundingLlmMessages,
+  downgradeInvalidSupportedClaims,
   evidenceFromGroundingParse,
   GROUNDING_EXCERPT_MAX_CHARS,
   GROUNDING_PASSAGE_MAX_CHARS,
@@ -750,7 +751,10 @@ async function runGroundingLlm(
       }
 
       const scored = scorePassageAgainstSource(passage, sourceExcerpt)
-      const claims = withQuoteValidationState(parsed.data.claims, cappedExcerpt)
+      const claims = withQuoteValidationState(
+        downgradeInvalidSupportedClaims(parsed.data.claims, cappedExcerpt),
+        cappedExcerpt
+      )
       let verdict = passageVerdictFromGroundingClaims(claims, scored.bucket, cappedExcerpt)
       const warnings: string[] = []
       if (parsed.repaired) warnings.push('Model JSON was auto-repaired before parsing.')
