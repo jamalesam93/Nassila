@@ -1,9 +1,11 @@
-# Nassila Windows installers (v1.1.0 – v1.5.0)
+# Nassila Windows installers (v1.1.0 – v1.7.0)
 
 Built on this machine for [GitHub Releases](https://github.com/jamalesam93/Nassila/releases).
 
 | Version | Codename | Installer | Release notes |
 |---------|----------|-----------|---------------|
+| **1.7.0** | **Integrity Bundle** | `Nassila Setup 1.7.0.exe` | [v1.7.0-RELEASE_NOTES.md](./v1.7.0-RELEASE_NOTES.md) |
+| **1.6.0** | **Maktab Loop** | `Nassila Setup 1.6.0.exe` | [v1.6.0-RELEASE_NOTES.md](./v1.6.0-RELEASE_NOTES.md) |
 | **1.5.0** | **Raqim Web** | `Nassila Setup 1.5.0.exe` | [v1.5.0-RELEASE_NOTES.md](./v1.5.0-RELEASE_NOTES.md) |
 | **1.4.0** | **Raqim Statute** | `Nassila Setup 1.4.0.exe` | [v1.4.0-RELEASE_NOTES.md](./v1.4.0-RELEASE_NOTES.md) |
 | **1.3.1** | **Maktab OCR hardening** | `Nassila Setup 1.3.1.exe` | See [CHANGELOG.md](../CHANGELOG.md) — notes file not archived here |
@@ -15,15 +17,15 @@ Built on this machine for [GitHub Releases](https://github.com/jamalesam93/Nassi
 | **1.1.1** | **Bibliography-first** | `Nassila Setup 1.1.1.exe` | [v1.1.1-RELEASE_NOTES.md](./v1.1.1-RELEASE_NOTES.md) |
 | **1.1.0** | **Sanad** | `Nassila Setup 1.1.0.exe` | [v1.1.0-RELEASE_NOTES.md](./v1.1.0-RELEASE_NOTES.md) |
 
-**Planned (see NassilaT [`OUROBOROS_OPERATOR_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/OUROBOROS_OPERATOR_MAP.md) § App release train):** 1.6.0 Maktab Loop (OCR fixtures, one-upload loop, Masdar chunking) → 1.7.0 Integrity Bundle → 1.8.0 Shahid; ∥ NassilaT field-note/Tier 3 data curation; S15 parked
+**Planned (see NassilaT [`OUROBOROS_OPERATOR_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/OUROBOROS_OPERATOR_MAP.md) § App release train):** 1.8.0 Shahid → (Tier 3 eval gate); ∥ NassilaT field-note/Tier 3 data curation; S15 active
 
-**Latest:** use **1.5.0**. Older installers are for release history.
+**Latest:** use **1.7.0**. Older installers are for release history.
 
-## Create GitHub release (1.5.0)
+## Create GitHub release (1.7.0)
 
 ```bash
 npm run build:win
-gh release create v1.5.0 "dist/Nassila Setup 1.5.0.exe" --title "v1.5.0 — Raqim Web" --latest --notes-file release-notes/v1.5.0-RELEASE_NOTES.md
+gh release create v1.7.0 "dist/Nassila Setup 1.7.0.exe" --title "v1.7.0 — Integrity Bundle" --latest --notes-file release-artifacts/v1.7.0-RELEASE_NOTES.md
 ```
 
 **Note:** This folder is local build output — do not commit `.exe` files to git.
