@@ -500,7 +500,7 @@ export default function LocalModelsSettings() {
 
       ) : null}
 
-      {isNassilaSanadModel(llmModel) ? <SanadQwenTemplateCard /> : null}
+      {isNassilaSanadModel(llmModel) && llmPresetId !== 'lmstudio' ? <SanadQwenTemplateCard /> : null}
 
       <label className="block">
 
