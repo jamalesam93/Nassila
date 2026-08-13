@@ -16,6 +16,8 @@ import { pushToast } from '../../lib/notify'
 
 import { useShellStore } from '../../stores/shell-store'
 
+import SanadQwenTemplateCard from './SanadQwenTemplateCard'
+
 import {
 
   allowsShortLlmKey,
@@ -44,9 +46,7 @@ import {
 
   sanadTierFromModel,
 
-  type CloudProviderKind,
-
-  type SanadTier
+  type CloudProviderKind
 
 } from '../../utils/llm-config-utils'
 
@@ -98,7 +98,7 @@ export default function LocalModelsSettings() {
 
   const preset = getLlmPreset(llmPresetId)
 
-  const tier = sanadTierFromModel(llmModel)
+  const tier = sanadTierFromModel()
 
   const isCloud = llmPresetId === CLOUD_LLM_PRESET_ID
 
@@ -184,9 +184,9 @@ export default function LocalModelsSettings() {
 
   const applyTier = useCallback(
 
-    (next: SanadTier) => {
+    () => {
 
-      setLlmModel(modelForSanadTier(next))
+      setLlmModel(modelForSanadTier())
 
       if (!llmBaseUrl.trim()) {
 
@@ -460,7 +460,7 @@ export default function LocalModelsSettings() {
 
           <div className="mt-2 flex flex-wrap gap-2">
 
-            {(['4b', '12b'] as const).map((id) => {
+            {(['9b'] as const).map((id) => {
 
               const active = tier === id && isNassilaSanadModel(llmModel)
 
@@ -484,7 +484,7 @@ export default function LocalModelsSettings() {
 
                   }`}
 
-                  onClick={() => applyTier(id)}
+                  onClick={() => applyTier()}
 
                 >
 
@@ -502,7 +502,7 @@ export default function LocalModelsSettings() {
 
       ) : null}
 
-
+      {isNassilaSanadModel(llmModel) ? <SanadQwenTemplateCard /> : null}
 
       <label className="block">
 

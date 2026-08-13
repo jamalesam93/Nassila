@@ -37,11 +37,11 @@ function createSampleReport(): AuditReport {
     grounding: {
       enabled: true,
       runner: 'lmstudio',
-      presetId: 'nassila-sanad-4b',
-      modelId: 'nassila-sanad-4b',
-      checkpoint: 'v1.12',
+      presetId: 'nassila-sanad-9b',
+      modelId: 'nassila-sanad-9b',
+      checkpoint: 'FT-5',
       usedFallback: false,
-      tier: '4b'
+      tier: '9b'
     },
     inTextCitations: [
       { citeKey: 'Ref1', rawText: '(Ref1)', paragraphIndex: 0, mappedBibKey: 'Ref1' }
@@ -111,7 +111,7 @@ describe('SharhLitePanel', () => {
       expect(window.api.saveFileDialog).toHaveBeenCalled()
       expect(window.api.writeFile).toHaveBeenCalledWith(
         'test-export.json',
-        expect.stringContaining('nassila-sanad-4b')
+        expect.stringContaining('nassila-sanad-9b')
       )
     })
   })

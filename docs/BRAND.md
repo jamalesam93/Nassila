@@ -44,8 +44,8 @@ Use these on README, About, and marketing. In the app UI, `toolbar.brandSubtitle
 | `productName` (electron-builder) | Nassila |
 | `appId` | `com.nassila.app` |
 | User-Agent (registry APIs) | `Nassila/1.0` |
-| Sanad default (4B Q6_K) | `nassila-sanad-4b` |
-| Sanad optional (12B Q6_K) | `nassila-sanad-12b` |
+| Sanad (9B, sole tier) | `nassila-sanad-9b` |
+| Sanad legacy (retired) | `nassila-sanad-4b` (S15) · `nassila-sanad-12b` (S14) · `nassila-sanad-e4b` (S12) |
 | Unified local model (future) | `nassila-agent-e12b-v1` (or merged multi-task GGUF) |
 | Strategy doc | [`OUROBOROS.md`](./OUROBOROS.md) · agent brief [`OUROBOROS_CONTEXT.md`](./OUROBOROS_CONTEXT.md) |
 | Locale storage key | `nassila.locale` |

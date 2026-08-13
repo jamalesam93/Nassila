@@ -8,11 +8,8 @@ export interface LlmPreset {
   modelHints: string[]
 }
 
-/** Suggested Sanad GGUF ids for local runners (datalist only). */
-export const NASSILA_SANAD_MODEL_HINTS = [
-  NASSILA_MODEL_ARTIFACTS.sanad4b,
-  NASSILA_MODEL_ARTIFACTS.sanad12b
-] as const
+/** Suggested Sanad GGUF id for local runners (datalist only) — sole 9B tier. */
+export const NASSILA_SANAD_MODEL_HINTS = [NASSILA_MODEL_ARTIFACTS.sanad9b] as const
 
 export const LLM_PRESETS: LlmPreset[] = [
   {

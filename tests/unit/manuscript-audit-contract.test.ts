@@ -17,7 +17,7 @@ const validRequest = {
     enabled: true,
     presetId: 'lmstudio',
     baseUrl: 'http://localhost:1234',
-    model: 'nassila-sanad-4b'
+    model: 'nassila-sanad-9b'
   },
   unpaywallEmail: ''
 }

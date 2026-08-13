@@ -1,7 +1,7 @@
 # Ouroboros context brief
 
-> **For agents.** Single entry point for Nassila + NassilaT. Last updated: 2026-08-02.
-> **Ship checkpoints:** `nassila-sanad-4b` **S15** (default-tier, Qwen 3.5) · `nassila-sanad-12b` **S14** (Tier 2, legacy v1.14). **v1.13 NO-GO.** **Laptop smoke PASS** (RTX 4060 8 GB, 2026-06-21). Operator map: NassilaT [`training/OUROBOROS_OPERATOR_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/OUROBOROS_OPERATOR_MAP.md). Sign-off: [`outputs/LAPTOP_SMOKE_SIGNOFF.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/outputs/LAPTOP_SMOKE_SIGNOFF.md).
+> **For agents.** Single entry point for Nassila + NassilaT. Last updated: 2026-08-13.
+> **Ship checkpoints:** `nassila-sanad-9b` **FT-5** (Qwen 3.5 9B, sole Sanad tier) · `nassila-sanad-4b` **S15** and `nassila-sanad-12b` **S14** retired (abstract-era). **v1.13 NO-GO.** **Laptop smoke PASS** (RTX 4060 8 GB, 2026-06-21). Operator map: NassilaT [`training/OUROBOROS_OPERATOR_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/OUROBOROS_OPERATOR_MAP.md). Sign-off: [`outputs/LAPTOP_SMOKE_SIGNOFF.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/outputs/LAPTOP_SMOKE_SIGNOFF.md).
 > Training pack: [`TRAINING.md`](./TRAINING.md) → NassilaT repo. Do not read every historical walkthrough — use this brief, then drill into linked paths only.
 
 ## 1. Mission
@@ -47,7 +47,7 @@ Codenames: `docs/BRAND.md`, `src/shared/nassila-agent-tasks.ts`. Forge **one LLM
 
 | # | Worker | Arabic | `task` id | Future module (user-facing) | Deterministic core (no LLM replacement) | LLM facet | Phase | Status |
 |---|--------|--------|-----------|----------------------------|----------------------------------------|-----------|-------|--------|
-| 1 | **Sanad** | سند | `l3_grounding` | Ground claims to sources | JSON repair, quote substring checks, caps | Passage vs excerpt → grounding JSON | 1 | **Default-tier PASS** (S15 ship); **Tier 2 PASS** (12B S14) |
+| 1 | **Sanad** | سند | `l3_grounding` | Ground claims to sources | JSON repair, quote substring checks, caps | Passage vs excerpt → grounding JSON | 1 | **PASS** (9B FT-5 ship; sole tier — 4B S15 / 12B S14 retired) |
 | 2 | **Maktab** | مكتب | `doc_extract` | Bring in the manuscript | File I/O, DOCX/PDF routing, pdf.js + Tesseract O1 | Structured text/chunks from PDF/DOCX | 2 | **Deterministic live**; LLM facet planned; O2 planned |
 | 3 | **Masdar** | مصدر | `source_pdf_extract` | Get source text for citations | OA fetch, PDF extraction, chunking, secure desktop I/O, per-reference local PDF attach | Cited OA PDF → text for Sanad | 2 | **Deterministic live** with local PDF attach; `source_pdf_extract` LLM facet planned |
 | 4 | **Shahid** | شاهد | `table_figure_grounding` | Tables & figures as evidence | Region detection (future) | Claims vs table/figure regions | 3+ | Planned (12B) |
@@ -134,7 +134,7 @@ Production manuscript UX is the Ouroboros loop above.
 
 **HF adapter (checkpoint):** [`QinEmPeRoR93/nassila-grounding-e4b-v1.4a-adapter`](https://huggingface.co/QinEmPeRoR93/nassila-grounding-e4b-v1.4a-adapter) (legacy name; v1.4a only)
 
-**HF Sanad GGUF:** [`QinEmPeRoR93/nassila-sanad-4b`](https://huggingface.co/QinEmPeRoR93/nassila-sanad-4b) (4B Q6_K, **checkpoint S15**) · [`QinEmPeRoR93/nassila-sanad-12b`](https://huggingface.co/QinEmPeRoR93/nassila-sanad-12b) (12B Q6_K, **checkpoint S14**, legacy v1.14). Upload: [`PHASE2_9_AB_PILOT_WALKTHROUGH.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/PHASE2_9_AB_PILOT_WALKTHROUGH.md) Part 9 · Verify: [`HF_RELEASE_VERIFY.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/HF_RELEASE_VERIFY.md)
+**HF Sanad GGUF:** [`QinEmPeRoR93/nassila-sanad-9b`](https://huggingface.co/QinEmPeRoR93/nassila-sanad-9b) (9B, 6 quants Q2_K–Q8_0, **checkpoint FT-5** — sole tier) · [`QinEmPeRoR93/nassila-sanad-9b-lora`](https://huggingface.co/QinEmPeRoR93/nassila-sanad-9b-lora) (LoRA adapter) · [`QinEmPeRoR93/nassila-sanad-4b`](https://huggingface.co/QinEmPeRoR93/nassila-sanad-4b) (4B Q6_K, **S15**, retired) · [`QinEmPeRoR93/nassila-sanad-12b`](https://huggingface.co/QinEmPeRoR93/nassila-sanad-12b) (12B Q6_K, **S14**, retired) · E4B S12 legacy. Upload: [`PHASE2_9_AB_PILOT_WALKTHROUGH.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/PHASE2_9_AB_PILOT_WALKTHROUGH.md) Part 9 · Verify: [`HF_RELEASE_VERIFY.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/HF_RELEASE_VERIFY.md)
 
 ## 6. v1.4 fixes (what worked)
 
@@ -215,7 +215,8 @@ Manual Sanad paste does **not** satisfy Tier 3 product ship; it is a bridge unti
 
 ## 11. Model tier policy (A/B pilot — recorded)
 
-- **Default tier:** Qwen 3.5 **4B** Q6_K — **`nassila-sanad-4b` S15** = 94.48% combined expect on `eval_holdout_body_contrastive_frozen_v2` (4.87% false-supported), 4B default-tier **PASS** (Training converged at epoch 1.73, step 193/330: loss 0.3464, token acc 91.90%; training data = same 874-row `l3_grounding_train_v114.jsonl` used for v1.14)
+- **Default tier (now):** Qwen 3.5 **9B** — **`nassila-sanad-9b` FT-5** (Qwen3.5-9B QLoRA, 2000-row verdict-balanced full-text train; 6 quants Q2_K–Q8_0, Q6_K ~6.9 GB). 4B S15 retired as default (app registry switch per `FEATURES-AND-TWEAKS.md` #17).
+- **Default tier (record):** Qwen 3.5 **4B** Q6_K — **`nassila-sanad-4b` S15** = 94.48% combined expect on `eval_holdout_body_contrastive_frozen_v2` (4.87% false-supported), 4B default-tier **PASS** (Training converged at epoch 1.73, step 193/330: loss 0.3464, token acc 91.90%; training data = same 874-row `l3_grounding_train_v114.jsonl` used for v1.14)
 - **Quality tier:** Gemma 4 **12B** Q6_K — **S14 selected** = 90.43% combined, quote 100%, Tier 2 **PASS** (h-045/h-088 fixed); v1.12 12B = 94.20% higher-combined fallback
 - **v1.13:** **NO-GO** — do not publish ([`OUROBOROS_OPERATOR_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/OUROBOROS_OPERATOR_MAP.md))
 - **Shahid:** 12B when multimodal worker forges (unchanged)

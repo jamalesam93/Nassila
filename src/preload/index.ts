@@ -264,6 +264,9 @@ const api = {
   getAppAbout: (): Promise<{ name: string; version: string }> =>
     ipcRenderer.invoke('app:get-about'),
 
+  getQwenTemplate: (): Promise<{ path: string; content: string }> =>
+    ipcRenderer.invoke('app:qwen-template'),
+
   setMenuLocale: (locale: 'en' | 'ar'): Promise<void> =>
     ipcRenderer.invoke('app:set-menu-locale', locale),
 

@@ -7,7 +7,7 @@ export const VLLM_DEFAULT_URL = 'http://localhost:8000'
 export const LOCAL_LLM_PLACEHOLDER_KEY = 'local'
 export const CLOUD_LLM_PRESET_ID = 'cloud'
 
-export type SanadTier = '4b' | '12b'
+export type SanadTier = '9b'
 export type CloudProviderKind = 'openrouter' | 'openai' | 'unknown'
 
 /** Presets treated as on-device runners (short API key allowed). */
@@ -58,20 +58,17 @@ export function defaultBaseUrlForPreset(presetId: string): string {
   }
 }
 
-export function sanadTierFromModel(model: string): SanadTier {
-  return model === NASSILA_MODEL_ARTIFACTS.sanad12b ? '12b' : '4b'
+export function sanadTierFromModel(): SanadTier {
+  return '9b'
 }
 
-export function modelForSanadTier(tier: SanadTier): string {
-  return tier === '12b' ? NASSILA_MODEL_ARTIFACTS.sanad12b : NASSILA_MODEL_ARTIFACTS.sanad4b
+export function modelForSanadTier(): string {
+  return NASSILA_MODEL_ARTIFACTS.sanad9b
 }
 
+/** True only for the sole Sanad tier (9B FT-5). Retired 4B/12B/E4B ids are generic local models. */
 export function isNassilaSanadModel(model: string): boolean {
-  return (
-    model === NASSILA_MODEL_ARTIFACTS.sanad4b ||
-    model === NASSILA_MODEL_ARTIFACTS.sanad12b ||
-    model === NASSILA_MODEL_ARTIFACTS.sanadE4b
-  )
+  return model === NASSILA_MODEL_ARTIFACTS.sanad9b
 }
 
 export function allowsShortLlmKey(presetId: string, baseUrl: string): boolean {

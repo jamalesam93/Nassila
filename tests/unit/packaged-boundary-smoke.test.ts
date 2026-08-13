@@ -50,4 +50,14 @@ describe('packaged production boundaries', () => {
     expect(yml).toMatch(/node_modules\/canvas\/\*\*\/\*/)
     expect(yml).toMatch(/node_modules\/tesseract\.js\/\*\*\/\*/)
   })
+
+  it('bundles the Qwen3.5 no-thinking chat template', () => {
+    const path = join(root, 'resources/qwen3.5-no-thinking.jinja')
+    expect(existsSync(path)).toBe(true)
+    const content = readFileSync(path, 'utf8')
+    expect(content).toContain('{% set enable_thinking = false %}')
+    expect(content).toContain('<|im_start|>')
+    const yml = readFileSync(join(root, 'electron-builder.yml'), 'utf8')
+    expect(yml).toContain('qwen3.5-no-thinking.jinja')
+  })
 })

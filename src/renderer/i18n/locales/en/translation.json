@@ -130,12 +130,10 @@
         "openai": "Detected OpenAI"
       },
       "nassilaTierTitle": "Nassila Sanad models",
-      "nassilaTierHint": "Trained for cite-to-source grounding. Load the GGUF in your local runner, then pick a tier.",
+      "nassilaTierHint": "Trained for cite-to-source grounding. Load the GGUF in your local runner, then pick the Sanad 9B tier.",
       "tierLabel": "Model tier",
       "tier": {
-        "4b": "Default (4B S15)",
-        "12b": "Quality (12B v1.14)",
-        "e4b": "Legacy (E4B v1.12)"
+        "9b": "Sanad (9B FT-5)"
       },
       "showAdvanced": "Advanced endpoint…",
       "hideAdvanced": "Hide advanced",
@@ -151,7 +149,18 @@
       "testOk": "Connection OK.",
       "testFailed": "Connection failed",
       "privacy": "Grounding runs when you audit a manuscript. Text is sent only to the endpoint you configure — not to Nassila.",
-      "setupGuide": "Set up Sanad guide…"
+      "setupGuide": "Set up Sanad guide…",
+      "sanadTemplateCard": {
+        "title": "Qwen3.5 thinking template",
+        "intro": "Qwen3.5 Sanad models think by default and can emit thinking traces before the JSON. Nassila strips these automatically; for cleanest output, apply the bundled no-thinking template at the source.",
+        "llamaCliLabel": "llama.cpp — serve with:",
+        "ollamaLabel": "Ollama — Modelfile:",
+        "ollamaPasteHint": "paste the copied template here",
+        "copyTemplate": "Copy template",
+        "lmStudioHint": "LM Studio: paste the template as the model's custom chat template (per-model).",
+        "loading": "Loading template…",
+        "copyFailed": "Copy failed"
+      }
     },
     "storage": {
       "title": "Storage",
@@ -171,9 +180,7 @@
     "subtitle": "Sanad checks manuscript passages against source excerpts using a local model you run. For the full step-by-step setup, open the guide below.",
     "modelsTitle": "Download models",
     "models": {
-      "4b": "Default — nassila-sanad-4b (4B S15, Q6_K)",
-      "12b": "Quality — nassila-sanad-12b (12B v1.14, Q6_K)",
-      "e4b": "Legacy — nassila-sanad-e4b (E4B v1.12, Q6_K)"
+      "9b": "Sanad 9B — nassila-sanad-9b (9B FT-5, full-text)"
     },
     "runnersTitle": "Pick a runner",
     "recommended": "recommended",
@@ -688,9 +695,7 @@
     "llmEnabled": "Enable LLM grounding",
     "openSettings": "Settings…",
     "tier": {
-      "4b": "Default (4B S15)",
-      "12b": "Quality (12B v1.14)",
-      "e4b": "Legacy (E4B v1.12)"
+      "9b": "Sanad (9B FT-5)"
     },
     "tier2LimitNote": "Tier 2: excerpt-only grounding. Full-paper and table/figure evidence require Tier 3 (Masdar, Shahid).",
     "run": "Run grounding",
@@ -734,9 +739,7 @@
     "sanadBar": {
       "grounding": "Sanad grounding",
       "tier": {
-        "4b": "4B",
-        "12b": "12B",
-        "e4b": "E4B"
+        "9b": "9B"
       },
       "statusOn": "On",
       "statusOff": "Off",

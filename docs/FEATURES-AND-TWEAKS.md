@@ -1,12 +1,12 @@
 # Features & Tweaks — Nassila app
 
-**Status:** 2026-07-18. Companion to NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) and the [website docs](https://nassila-web.vercel.app/en/docs/sanad-setup) (now canonical). Scope is the **desktop app** ([Nassila](https://github.com/jamalesam93/Nassila)). Items are grouped by priority and each has an effort, a blast radius, and acceptance checks so they can be picked off independently.
+**Status:** 2026-08-13. Companion to NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) and the [website docs](https://nassila-web.vercel.app/en/docs/sanad-setup) (now canonical). Scope is the **desktop app** ([Nassila](https://github.com/jamalesam93/Nassila)). Items are grouped by priority and each has an effort, a blast radius, and acceptance checks so they can be picked off independently.
 
-> **Version streams:** App releases (**Nassila 1.2.x**) and Sanad checkpoint **SNN** (**S12** / **S14**) are independent — see NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) § App release train.
+> **Version streams:** App releases (**Nassila 1.8.0**) and Sanad checkpoints **SNN** (**S14** 12B / **FT-5** 9B) are independent — see NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) § App release train.
 
 > **Red line reminder (from the website docs spec):** no training methodology, corpus, QLoRA, eval scorecards, or NassilaT internals surface in the app. All copy must stay user-facing.
 
-> **Locked authority sequence:** **Phase 0 Trust reset** (before 1.2.2) → **1.2.2 Throughput** → **1.2.3 Quote chip** → **1.2.4 Raqim Repair** → **1.2.5 Masdar attach** → **1.2.6 Raqim Resolve** → **1.2.7 Projects + Help + onboarding** → **1.2.8 OCR O2 + a11y** → **1.2.9 Preflight + quality ledger** → **1.3.0 Sharh-lite**. In parallel, NassilaT curates field notes / Tier 3 data; **S15 is parked**.
+> **Locked authority sequence:** **Phase 0 Trust reset** (before 1.2.2) → **1.2.2 Throughput** → **1.2.3 Quote chip** → **1.2.4 Raqim Repair** → **1.2.5 Masdar attach** → **1.2.6 Raqim Resolve** → **1.2.7 Projects + Help + onboarding** → **1.2.8 OCR O2 + a11y** → **1.2.9 Preflight + quality ledger** → **1.3.0 Sharh-lite**. In parallel, NassilaT curates field notes / Tier 3 data; **S15 shipped**; Sanad moves to a **single 9B FT-5 tier** with **#17** (4B S15 and 12B S14 retired — abstract-era only).
 
 ### Phase 0-A — Trust reset (before 1.2.2)
 
@@ -266,6 +266,55 @@ These were identified in the cross-repo review and confirmed by the 2026-06-28 s
 
 ---
 
+### 16. Qwen3.5 thinking traces — app-native handling (Sanad grounding)
+
+**Problem.** The Qwen3.5 Sanad GGUFs (4B S15-class, 9B FT-5) embed a thinking chat template; with the default template in LM Studio / llama.cpp / Ollama the model emits ` thinking\n<reasoning>\n response\n\n<json>` text traces. Thinking-leak historically cut parse accuracy (75% vs 94% in eval), and today it forces users to configure a no-thinking template (CLI flag / LM Studio custom paste) just to use Passage grounding — LM Studio has no per-request control.
+
+**Design.** Make the app tolerant of thinking traces, no server config needed, and ship the at-source fix:
+
+- **A. Response stripper:** new `stripQwenThinkingTraces(raw)` in `src/engine/manuscript/grounding-json-repair.ts`, invoked as **first step** of `repairGroundingJsonText`: removes a leading `thinking\n … \n response\n\n` block (anchored to the ` response\n\n` marker line) plus a `<|start_thinking|>` variant as defense; **fires only when markers are present**, so clean output passes untouched. One code path fixes both 4B-class and 9B (same Qwen3.5 template family).
+- **B. Token budget:** `src/main/ipc-llm.ts` — add `max_tokens: 2048` for Sanad models (thinking burns token budget → mid-JSON truncation).
+- **C. Bundled no-thinking template + setup card:** ship `resources/qwen3.5-no-thinking.jinja` (byte-identical to the NassilaT box publish kit). In `LocalModelsSettings.tsx`, when a Qwen3.5 Sanad model is active, show a helper card: copy-template button (LM Studio per-model custom template), llama.cpp `--chat-template-file <bundled path>` line with reveal-path, Ollama Modelfile snippet.
+
+**Effort:** small–medium. New helper + pipeline step + request-builder field + one settings card. **Blast radius:** grounding parse path, LLM request builder, `LocalModelsSettings` (additive; shared by every runner).
+
+**Ship:** **1.8.0 Sanad 9B** (model-critical — 9B full-text ship depends on tolerant parsing; Shahid defers to 1.9.0). ✅ **Shipped 2026-08-13.**
+
+**Acceptance.**
+- [x] Thinking-wrapped JSON (with braces/quotes inside the reasoning) parses identically to clean JSON; clean output is byte-pass-through.
+- [x] Truncated-JSON case behaves as today (repair still fails gracefully, no crash).
+- [x] LM Studio + default-template 9B GGUF produces grounded verdicts with **no** user config (no-thinking template not applied).
+- [x] Bundled template file ships in the packaged build; reveal-path resolves under the install dir; copy-template button works.
+- [x] Unit tests in `tests/unit/grounding-json-repair.test.ts`: thinking-wrapped, `<|start_thinking|>` variant, clean passthrough, 4B-format trace.
+
+### 17. Sanad single tier — 4B/12B retired, 9B FT-5 default
+
+**Problem.** 4B (S15) and 12B (S14) are retired — both are abstract-only trains; the 9B FT-5 grounding model (`nassila-sanad-9b`, 6 quants Q2_K–Q8_0) is the sole Sanad tier (full-text, verdict-balanced train). The app registry, presets, setup modal, tier chips, and defaults still point at 4B/12B.
+
+**Design.** Registry + defaults rework (9B single tier; 4B/12B removed from presets/links/UI; E4B stays legacy):
+
+| File | Change |
+|---|---|
+| `src/shared/nassila-agent-tasks.ts` | drop `sanad4b` + `groundingE4bV1` alias; mark `sanad12b` deprecated; add `sanad9b: 'nassila-sanad-9b'`; task-map entry |
+| `src/renderer/utils/llm-config-utils.ts` | `SanadTier = '9b'`; `sanadTierFromModel` → `'9b'`; `modelForSanadTier` → sanad9b; `isNassilaSanadModel` = 9b (12b/E4b legacy) |
+| `src/renderer/settings/llm-presets.ts` | hints = [sanad9b] |
+| `src/shared/sanad-setup-links.ts` | `SANAD_HF_9B_URL`, `OLLAMA_HF_PULL_9B`, `SANAD_DEFAULT_MODEL_ID` = sanad9b; drop 4B/12B variants + `SANAD_QUALITY_MODEL_ID` |
+| `SanadSetupModal.tsx` | 4B/12B HF links → single 9B link — model displays as **Sanad 9B**, linking the HF repo where the user picks their quant (6 GGUFs Q2_K–Q8_0) (+ i18n key swap) |
+| `ManuscriptSanadBar.tsx:155`, `LocalModelsSettings.tsx` | single 9B chip (tier array `(['9b'])`) |
+| `manuscript-audit-store.ts:94`, `use-manuscript-audit-prefs-sync.ts:59` | default model = sanad9b |
+
+**Effort:** small–medium. **Blast radius:** shared registry constants, tier UI, defaults, tests. Stored user ids referencing the retired ids simply fall out of the Sanad registry (grounding still works — registry only drives UI/presets).
+
+**Ship:** **1.8.0 Sanad 9B** (with #16; Shahid defers to 1.9.0). ✅ **Shipped 2026-08-13.**
+
+**Acceptance.**
+- [x] Fresh install default selectable Sanad model = `nassila-sanad-9b`; tier chip shows 9B only.
+- [x] `sanad-setup-prompt.test.ts` / `sharh-lite-panel.test.tsx` / `manuscript-audit-contract.test.ts` updated green.
+- [x] EN + AR copy updated (no training/corpus wording); `sanadSetup.models.4b` / `.12b` retired.
+- [x] Doc-refresh batch in same PR: `README.md`, `BRAND.md`, `DESIGN.md`, `PRODUCT.md`, `USER_GUIDE.md`, `TRAINING.md`, `OUROBOROS.md`, `OUROBOROS_CONTEXT.md`, `Nassila-Ouroboros-Future.md`, `WEBPAGE_ROADMAP.md`, `AR_I18N_GLOSSARY.md` — Sanad references moved to sole `nassila-sanad-9b` (FT-5); 4B S15 / 12B S14 marked retired.
+
+---
+
 ## P2 — Polish / when loop IA work continues
 
 ### 9. Sharh-lite plain explanations
@@ -321,6 +370,7 @@ Do not pull these into a tweak batch:
 9. **1.2.8 OCR O2 + a11y** — offline/bundled language packs, golden fixtures, OCR controls/provenance/cache, loop-table keyboard navigation.
 10. **1.2.9 Preflight + quality ledger** — unresolved-identity gate, mapping coverage, accessibility pass, local diagnostic/quality-ledger export.
 11. **P1 #9–11 remainder** → **1.3.0 Sharh-lite**.
-12. **∥ NassilaT:** field-note curation / Tier 3 data; **S15 shipped** (Qwen 3.5 4B default) — quote verify on laptop remains.
+12. **∥ NassilaT:** field-note curation / Tier 3 data; **S15 shipped** (Qwen 3.5 4B default); Sanad moves to a **single 9B FT-5 tier** with **#17** (4B S15 / 12B S14 retired).
+13. **P1 #16 + #17 → 1.8.0 Sanad 9B** — sole-tier registry + Qwen3.5 thinking handling + bundled no-thinking template; **Shahid → 1.9.0** (`Nassila-Ouroboros-Future.md` §5).
 
 **Red-line check before each merge:** no training/corpus/eval content surfaces in app UI or copy (see top of file).

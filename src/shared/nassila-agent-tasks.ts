@@ -64,16 +64,14 @@ export const OUROBOROS_WORKERS: Record<
   }
 }
 
-/** Shipped or planned GGUF / HF repo basename (without quant suffix). Train checkpoint (v1.12 E4B ship, v1.10 12B) is on model cards only. */
+/** Shipped or planned GGUF / HF repo basename (without quant suffix). Train checkpoint (FT-5) is on the model card only. */
 export const NASSILA_MODEL_ARTIFACTS = {
-  /** Sanad default tier — Qwen 3.5 4B Q6_K (~3.3 GB). */
-  sanad4b: 'nassila-sanad-4b',
-  /** Sanad optional quality tier — Gemma 4 12B Q6_K. */
+  /** Sanad sole tier — Qwen 3.5 9B FT-5 Q6_K (~6.9 GB). 4B S15 / 12B S14 retired (abstract-era). */
+  sanad9b: 'nassila-sanad-9b',
+  /** @deprecated Retired (abstract-era). Kept for legacy preset recognition. */
   sanad12b: 'nassila-sanad-12b',
-  /** Legacy default tier — Gemma 4 E4B Q6_K (~5.8 GB). */
+  /** @deprecated Legacy tier — Gemma 4 E4B Q6_K (~5.8 GB). Kept for legacy constants. */
   sanadE4b: 'nassila-sanad-e4b',
-  /** @deprecated Use sanad4b. Kept for legacy presets. */
-  groundingE4bV1: 'nassila-sanad-4b',
   /** Future unified multi-task model. */
   agentE12bV1: 'nassila-agent-e12b-v1',
   /** Optional legacy webpage-only adapter name. */
@@ -82,8 +80,8 @@ export const NASSILA_MODEL_ARTIFACTS = {
 
 /** Tasks targeted by each artifact (documentation / presets; not enforced at runtime yet). */
 export const MODEL_ARTIFACT_TASKS: Record<string, NassilaAgentTaskId[]> = {
-  [NASSILA_MODEL_ARTIFACTS.sanad4b]: [NASSILA_AGENT_TASKS.l3_grounding],
-  // Deprecated alias NASSILA_MODEL_ARTIFACTS.groundingE4bV1 maps to 'nassila-sanad-4b' (same string), covered above.
+  [NASSILA_MODEL_ARTIFACTS.sanad9b]: [NASSILA_AGENT_TASKS.l3_grounding],
+  // Deprecated alias NASSILA_MODEL_ARTIFACTS.sanad12b maps to 'nassila-sanad-12b' (retired), covered below.
   [NASSILA_MODEL_ARTIFACTS.sanad12b]: [NASSILA_AGENT_TASKS.l3_grounding],
   [NASSILA_MODEL_ARTIFACTS.sanadE4b]: [NASSILA_AGENT_TASKS.l3_grounding],
   [NASSILA_MODEL_ARTIFACTS.agentE12bV1]: [

@@ -6,7 +6,7 @@ This repo (**Nassila**) owns the Electron app, citation engine, JSON repair guar
 
 **Agent entry:** [`OUROBOROS_CONTEXT.md`](./OUROBOROS_CONTEXT.md)
 
-**Current training arc:** S15 **GO** on Qwen 3.5 4B (default tier) and v1.14 **GO** on 12B (selected quality tier). Laptop smoke **PASS** (RTX 4060 8 GB). NassilaT successfully unparked S15 and adapted it to Qwen 3.5, converging at epoch 1.73 (loss 0.3464, token acc 91.90%). See NassilaT [`training/OUROBOROS_OPERATOR_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/OUROBOROS_OPERATOR_MAP.md) and [`outputs/LAPTOP_SMOKE_SIGNOFF.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/outputs/LAPTOP_SMOKE_SIGNOFF.md).
+**Current training arc:** 9B **FT-5 GO** — `nassila-sanad-9b` on Qwen 3.5 9B (QLoRA, full-text, verdict-balanced 2000-row train) — **sole Sanad tier**. S15 (4B) and S14 (12B) retired as abstract-era. Laptop smoke **PASS** (RTX 4060 8 GB). See NassilaT [`training/OUROBOROS_OPERATOR_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/OUROBOROS_OPERATOR_MAP.md) and [`outputs/LAPTOP_SMOKE_SIGNOFF.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/outputs/LAPTOP_SMOKE_SIGNOFF.md).
 
 ---
 

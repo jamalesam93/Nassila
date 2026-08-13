@@ -2,6 +2,27 @@
 
 All notable changes to **Nassila** are documented here.
 
+## [1.8.0] — 2026-08-13 · Sanad 9B
+
+Windows installer `Nassila Setup 1.8.0.exe`. **GitHub Release:** [v1.8.0](https://github.com/jamalesam93/Nassila/releases/tag/v1.8.0).
+
+### Added
+
+- **Qwen3.5 thinking handling** — `stripQwenThinkingTraces` as the first step of `repairGroundingJsonText` (`src/engine/manuscript/grounding-json-repair.ts`): removes a leading `thinking\n … \n response\n\n` block (anchored to the `response` marker line) plus a `<|start_thinking|>` defense variant. Fires only when markers are present, so clean output is byte-pass-through. One code path covers the 4B-class and 9B Qwen3.5 template family.
+- **Sanad token budget** — `max_tokens: 2048` is sent for `nassila-sanad-9b` grounding calls in `src/main/ipc-llm.ts` (thinking burns token budget → mid-JSON truncation).
+- **Bundled no-thinking template** — `resources/qwen3.5-no-thinking.jinja` (byte-identical to the NassilaT publish-kit template), packaged via `extraResources`, plus a Local Models helper card (`SanadQwenTemplateCard`) with copy-template (LM Studio), llama.cpp `--chat-template-file` line, and an Ollama Modelfile snippet. New `app:qwen-template` IPC (`ipc-handlers.ts`, policy + preload + validation tests).
+- **Sole-tier Sanad registry** — `sanad9b: 'nassila-sanad-9b'` in `src/shared/nassila-agent-tasks.ts`; `sanad4b` + `groundingE4bV1` dropped, `sanad12b` deprecated. `SanadTier = '9b'`, single 9B tier chip in `ManuscriptSanadBar` / `LocalModelsSettings`, `SanadSetupModal` single 9B HF link, `llm-presets` hints `[sanad9b]`, `SANAD_HF_9B_URL` / `OLLAMA_HF_PULL_9B`, defaults in `manuscript-audit-store` / `use-manuscript-audit-prefs-sync` → `nassila-sanad-9b`. Retired 4B/12B/E4B ids are no longer offered in the Sanad registry (hard-cut); stored ids fall back to generic local-model behavior while grounding still works.
+
+### Changed
+
+- **i18n (EN/AR)** — `sanadSetup.models.{4b,12b,e4b}` → `9b`; tier key groups (`settings.localModels.tier`, `sanad.tier`, `loop.sanadBar.tier`) → single `9b`; new `settings.localModels.sanadTemplateCard.*` keys.
+- **Docs** — Sanad model references moved to the sole `nassila-sanad-9b` (FT-5) tier across README, BRAND, DESIGN, PRODUCT, USER_GUIDE, TRAINING, OUROBOROS, OUROBOROS_CONTEXT, Nassila-Ouroboros-Future, WEBPAGE_ROADMAP, AR_I18N_GLOSSARY; 4B S15 / 12B S14 marked retired.
+
+### Tests
+
+- `grounding-json-repair.test.ts` — thinking-wrapped, `<|start_thinking|>` variant, clean passthrough, 4B-format trace, truncated-JSON graceful fail.
+- `sanad-setup-prompt.test.ts` / `sharh-lite-panel.test.tsx` / `manuscript-audit-contract.test.ts` updated to the sole 9B tier; `packaged-boundary-smoke.test.ts` asserts the bundled jinja ships.
+
 ## [1.7.0] — 2026-08-10 · Integrity Bundle
 
 ### Added

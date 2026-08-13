@@ -2,6 +2,7 @@ import { ipcMain, safeStorage, app } from 'electron'
 import { buildLlmChatCompletionsUrl } from '../engine/network/llm-url'
 import { readFile, writeFile } from 'fs/promises'
 import { join } from 'path'
+import { NASSILA_MODEL_ARTIFACTS } from '../shared/nassila-agent-tasks'
 
 type LlmConfig = {
   baseUrl: string
@@ -86,6 +87,7 @@ export async function executeLlmChat(
     throw new Error(error instanceof Error ? error.message : 'llm_url_not_allowed')
   }
 
+  const isSanadModel = config.model === NASSILA_MODEL_ARTIFACTS.sanad9b
   const response = await fetch(url, {
     method: 'POST',
     headers: {
@@ -95,7 +97,9 @@ export async function executeLlmChat(
     body: JSON.stringify({
       model: config.model,
       messages,
-      temperature: 0.2
+      temperature: 0.2,
+      // Qwen3.5 thinking burns token budget → mid-JSON truncation.
+      ...(isSanadModel ? { max_tokens: 2048 } : {})
     }),
     signal
   })

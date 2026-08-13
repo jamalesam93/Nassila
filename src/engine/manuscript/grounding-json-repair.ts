@@ -8,6 +8,10 @@ const OPTIONAL_KEY_RE = /("[\w-]+")\s*\?\s*:/g
 const TRAILING_COMMA_RE = /,\s*([\]}])/g
 const PREMATURE_ROOT_CLOSE_RE = /"\]\}\}\],\s*"overallVerdict"/g
 const UNCLOSED_RATIONALE_ARRAY_RE = /"\}\],\s*"overallVerdict"/g
+/** Qwen3.5 thinking template family: `thinking\n<reasoning>\n response\n\n<json>`. */
+const QWEN_THINKING_PREFIX_RE = /^\s*thinking\s*\n[\s\S]*?\n\s*response\s*\n\s*\n/
+/** Defense form for runners that emit the raw thinking tokens. */
+const QWEN_THINKING_TOKEN_RE = /<\|start_thinking\|>[\s\S]*?<\|end_thinking\|>\s*/g
 
 export function stripCodeFences(text: string): string {
   return text.replace(FENCE_RE, '').replace(/```/g, '')
@@ -40,10 +44,29 @@ export function fixOverallVerdictBraceErrors(text: string): string {
     .replace(UNCLOSED_RATIONALE_ARRAY_RE, '"]}], "overallVerdict"')
 }
 
+/**
+ * Strip a leading Qwen3.5 thinking trace before the JSON payload.
+ * Qwen3.5 Sanad GGUFs embed a thinking chat template; with default templates the
+ * model emits `thinking\n<reasoning>\n response\n\n<json>`. Fires only when the
+ * markers are present, so clean output passes through untouched. One code path
+ * covers both 4B-class and 9B (same template family).
+ */
+export function stripQwenThinkingTraces(text: string): string {
+  if (!text) return text
+  let out = text
+  const prefix = out.match(QWEN_THINKING_PREFIX_RE)
+  if (prefix) {
+    out = out.slice(prefix[0].length)
+  }
+  out = out.replace(QWEN_THINKING_TOKEN_RE, '')
+  return out.trim()
+}
+
 /** Apply the full repair pipeline. Always returns a string. */
 export function repairGroundingJsonText(raw: string): string {
   if (!raw) return raw
   let out = raw.trim()
+  out = stripQwenThinkingTraces(out)
   out = stripCodeFences(out)
   out = sliceOuterObject(out)
   out = removeOptionalKeyMarkers(out)

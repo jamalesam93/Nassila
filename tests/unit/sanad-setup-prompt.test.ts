@@ -1,10 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
-  OLLAMA_HF_PULL_4B,
-  OLLAMA_HF_PULL_E4B,
-  SANAD_HF_4B_URL,
-  SANAD_HF_E4B_URL,
-  SANAD_HF_12B_URL
+  OLLAMA_HF_PULL_9B,
+  SANAD_HF_9B_URL
 } from '../../src/shared/sanad-setup-links'
 import { shouldAutoOpenSanadSetup } from '../../src/renderer/utils/sanad-setup-prompt'
 
@@ -23,16 +20,13 @@ describe('shouldAutoOpenSanadSetup', () => {
 })
 
 describe('sanad-setup-links', () => {
-  it('exports canonical HF URLs', () => {
-    expect(SANAD_HF_4B_URL).toContain('nassila-sanad-4b')
-    expect(SANAD_HF_E4B_URL).toContain('nassila-sanad-e4b')
-    expect(SANAD_HF_12B_URL).toContain('nassila-sanad-12b')
+  it('exports the canonical 9B HF URL', () => {
+    expect(SANAD_HF_9B_URL).toContain('nassila-sanad-9b')
   })
 
-  it('exports Ollama HF pull command', () => {
-    expect(OLLAMA_HF_PULL_4B).toContain('huggingface.co/QinEmPeRoR93/nassila-sanad-4b')
-    expect(OLLAMA_HF_PULL_4B).toContain(':Q6_K')
-    expect(OLLAMA_HF_PULL_4B).toMatch(/^ollama pull /)
-    expect(OLLAMA_HF_PULL_E4B).toContain('huggingface.co/QinEmPeRoR93/nassila-sanad-e4b')
+  it('exports the Ollama HF pull command for the 9B model', () => {
+    expect(OLLAMA_HF_PULL_9B).toContain('huggingface.co/QinEmPeRoR93/nassila-sanad-9b')
+    expect(OLLAMA_HF_PULL_9B).toContain(':Q6_K')
+    expect(OLLAMA_HF_PULL_9B).toMatch(/^ollama pull /)
   })
 })

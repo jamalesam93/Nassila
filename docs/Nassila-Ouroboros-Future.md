@@ -4,7 +4,7 @@
 **Scope:** Nassila (app) · NassilaT (training) · nassila-web (docs)  
 **Sources reviewed:** `NassilaT/training/OUROBOROS_OPERATOR_MAP.md`, `Nassila/docs/FEATURES-AND-TWEAKS.md`, `STATE.md`, `PRODUCT.md`, `OUROBOROS_CONTEXT.md`, `CHANGELOG.md`, engine/renderer code, field notes, website release train
 
-**App baseline:** **1.4.0** (Raqim Statute) on **1.3.0 · Sharh-lite** train (2026-07-21). **Sanad checkpoints:** S12 (E4B) · S14 (12B). **S15:** parked (NassilaT).
+**App baseline:** **1.8.0** (Sanad 9B, 2026-08-13) — train 1.3.0 Sharh-lite → 1.4.0 Raqim Statute → 1.5.0 Raqim Web → 1.6.0 Maktab Loop → 1.7.0 Integrity Bundle → 1.8.0 Sanad 9B. **Sanad model:** 9B **FT-5** (sole tier); 4B **S15** / 12B **S14** retired (abstract-era only; E4B S12 legacy). Next cut: **1.9.0 Shahid** (Tier 3 multimodal, gated).
 
 ---
 
@@ -151,13 +151,15 @@ July field notes (`masdar-lite-jul13`) remain useful raw material (captured unde
 - Many `truncated` / echo heuristics — **re-ground after the new window** before treating as train labels.
 - Human adjudication **in progress:** **14/49** labeled (2026-07-18); not yet boost JSONL.
 
-**Still before S15+:** source-side paragraph/page chunking + locators (**1.6.0**); evaluate context quality separately from model quality; finish field-note labels → boost JSONL (never into frozen holdout).
+**Status (2026-08):** the S15+ gate is **partially resolved** — **9B FT-5** (`nassila-sanad-9b`) delivered on Qwen3.5-9B (QLoRA, 2000-row verdict-balanced full-text **v117** train) and is the **new default tier** (app registry switch per `FEATURES-AND-TWEAKS.md` #17); shipped FT-5 measured `false_supported` 0.046 vs the ≤0.01 gate (footer-residue class, fixed data-side in v118). **FT-6 first item (STOPPED by operator 2026-08-12, ready-to-run):** retrain on the footer-clean `l3_grounding_train_v118.jsonl` (~7h GPU) to close the gate. **Still before FT-6 (after the retrain):** source-side paragraph/page chunking + locators (**1.6.0** deferred); evaluate context quality separately from model quality; finish field-note labels → boost JSONL (never into frozen holdout).
 
 ### 3.5 App vs training prompt contract
 
-**Status:** **Shipped** for continued use — contract `sanad-grounding-v1`; Nassila ↔ NassilaT goldens byte-identical; S12/S14 single-seed production-prompt re-eval recorded (`PROMPT_CONTRACT_REEVAL.md`). **S15 shipped** on Qwen 3.5 4B (`nassila-sanad-4b`) — trained on the same 874-row v1.14 dataset; single-seed contrastive-v2 eval only, quote pending local verify.
+**Status:** **Shipped** for continued use — contract `sanad-grounding-v1`; Nassila ↔ NassilaT goldens byte-identical; S12/S14 single-seed production-prompt re-eval recorded (`PROMPT_CONTRACT_REEVAL.md`). **S15 shipped** on Qwen 3.5 4B (`nassila-sanad-4b`) — trained on the same 874-row v1.14 dataset; single-seed contrastive-v2 eval only, quote pending local verify. **FT-5 shipped** on Qwen 3.5 9B (`nassila-sanad-9b`) — full-text, verdict-balanced 2000-row train; sole Sanad tier (4B S15 / 12B S14 retired).
 
-**Residual:** optional multi-seed re-eval; investigate S14 quote bar miss on Ollama run; keep prompt version/hash on model cards and audit exports; train S15+ only on a measured model gap after §6.
+**Qwen 3.5 thinking note:** the GGUFs embed a thinking chat template; the app strips thinking traces natively and ships the no-thinking template (`FEATURES-AND-TWEAKS.md` #16).
+
+**Residual:** optional multi-seed re-eval; investigate S14 quote bar miss on Ollama run; keep prompt version/hash on model cards and audit exports; train FT-6 / S15+ only on a measured model gap after §6.
 
 ### 3.6 Arabic Sanad validation
 
@@ -276,10 +278,11 @@ Suggested versions and worker-themed codenames. **Not dates, not public promises
 | **1.4.0** | **Raqim Statute** | **رقيم تشريع** | Raqim | Legislation + gray-lit Resolve; parser hardening for legal refs |
 | **1.5.0** | **Raqim Web** | **رقيم ويب** | Raqim / Tasnif | Webpage & grey-web citations; dead links; host parsers |
 | **1.6.0** | **Maktab Loop** | **حلقة المخطوطة** | Maktab / Masdar | OCR fixtures; one-upload loop; source chunking polish | **Shipped 2026-08-05** |
-| **1.7.0** | **Integrity Bundle** | **حزمة النزاهة** | Loop / export | Preflight+; submission export; trust & packaged parity |
-| **1.8.0** | **Shahid** | **شاهد** | Shahid (+ Sanad) | Tier 3+ multimodal; model-assisted grey lit (confirm-before-apply) |
+| **1.7.0** | **Integrity Bundle** | **حزمة النزاهة** | Loop / export | Preflight+; submission export; trust & packaged parity | **Shipped 2026-08-10** |
+| **1.8.0** | **Sanad 9B** | **سند 9B** | Sanad | Sole-tier registry (9B FT-5; 4B/12B retired) + Qwen3.5 thinking handling + bundled no-thinking template card | **Shipped 2026-08-13** — app `FEATURES-AND-TWEAKS.md` #16/#17 |
+| **1.9.0** | **Shahid** | **شاهد** | Shahid (+ Raqim) | Tier 3+ multimodal; model-assisted grey lit (confirm-before-apply) — gated on Tier 3 full-text holdout |
 
-**Recommended cut order:** 1.4.0 → 1.5.0 → 1.6.0 → 1.7.0 → (NassilaT eval gate) → 1.8.0.
+**Recommended cut order:** 1.4.0 → 1.5.0 → 1.6.0 → 1.7.0 → **1.8.0 Sanad 9B** ✅ → (NassilaT eval gate) → 1.9.0 Shahid.
 
 #### 1.4.0 — Raqim Statute · رقيم تشريع
 
@@ -339,7 +342,22 @@ Trust and submission outputs — finish gaps that overlap 1.3.0 preflight but br
 | **Packaged parity** | Remaining renderer vs main-process registry paths; audit rate limiting under concurrency — ✅ shipped (registry/align OA + LLM all main-process; `DEFAULT_AUDIT_CONCURRENCY` semaphores + 429/503 retry). |
 | **CI** | Packaged smoke gates on release train — ✅ shipped (`package-windows` job with `probe:ocr` + `probe:ocr:golden`). |
 
-#### 1.8.0 — Shahid · شاهد
+#### 1.8.0 — Sanad 9B · سند 9B
+
+**Shipped 2026-08-13.** ✅ App `FEATURES-AND-TWEAKS.md` #16/#17 acceptance closed: `stripQwenThinkingTraces` in the repair pipeline, `max_tokens` for Sanad 9B, bundled `resources/qwen3.5-no-thinking.jinja` + in-app setup card (`app:qwen-template` IPC), sole-tier `nassila-sanad-9b` registry (4B/12B retired, hard-cut), single 9B chip, defaults/i18n, and the doc-refresh batch below.
+
+**Scope change (2026-08-13):** 1.8.0 became the **Sanad 9B model-critical cut** (was Shahid — moved to 1.9.0, gate unchanged). The app registry previously wired retired 4B/12B ids and had no native handling for the Qwen3.5 thinking template — both shipped before the 9B full-text model is the reliable default.
+
+| Area | Deliverable |
+|------|-------------|
+| **Thinking handling** | `stripQwenThinkingTraces` in the grounding repair pipeline + `max_tokens` for Sanad models — app `FEATURES-AND-TWEAKS.md` #16 |
+| **Sole-tier registry** | `sanad9b` artifact wiring; single 9B tier chip; preset/hints/setup links/defaults; i18n — app `FEATURES-AND-TWEAKS.md` #17 |
+| **No-thinking template** | Bundled `resources/qwen3.5-no-thinking.jinja` + in-app setup card (LM Studio paste / llama.cpp flag / Ollama snippet) — app `#16` |
+| **Doc refresh** | Model/version reference sweep across all app + NassilaT docs (README, OUROBOROS*, PRODUCT, BRAND, DESIGN, USER_GUIDE, TRAINING, operator map, HF docs) |
+
+**Gate:** none external — 9B FT-5 model + box kit already shipped on NassilaT (HF verify PASS).
+
+#### 1.9.0 — Shahid · شاهد
 
 **Gate:** Tier 3 full-text holdout (pilot → product gate) and separate retrieval vs grounding vs end-to-end eval — see §6.
 
@@ -347,7 +365,7 @@ Trust and submission outputs — finish gaps that overlap 1.3.0 preflight but br
 |------|-------------|
 | **Shahid** | Table/figure evidence path (today disabled) |
 | **Grey lit (model-assisted)** | Suggest CSL fields from page signals; platform typing — **user confirms before apply** |
-| **Sanad** | S15 **only if** §6 go/no-go after 1.4–1.7 measurements |
+| **Sanad** | FT-6 refinement only if §6 go/no-go shows a model gap |
 
 ---
 
@@ -355,17 +373,17 @@ Trust and submission outputs — finish gaps that overlap 1.3.0 preflight but br
 
 | Track | Status | Notes |
 |-------|--------|-------|
-| **Sanad S15+** | Parked | NassilaT; un-park when field notes + Tier 3 holdout exist |
+| **Sanad FT-6+** | Parked | NassilaT; 9B FT-5 shipped as default tier; refinement gated on product-scale body holdout |
 | **NassilaT field notes / Tier 3 data** | Active curation | Never surfaces training/eval copy in app UI |
 | **nassila-web** | Ongoing | Changelog sync; optional Sanad validation table on local-models |
 | **Website release train** | Empty until cut | `RELEASE_TRAIN: []` after 1.3.0 — repopulate when 1.4.0 is announced |
 
 ### Worker maturity (direction)
 
-| Worker | Today (1.3.0) | Target (via map above) |
-|--------|----------------|-------------------------|
-| **Raqim** | L1/L2, Resolve, partial EU legislation | 1.4–1.5: statute + web gray lit |
-| **Sanad** | L3; S12/S14 | Deeper Masdar text; S15 only if eval gap |
+| Worker | Today (1.7.0) | Target (via map above) |
+|--------|-----------------|-------------------------|
+| **Raqim** | L1/L2, Resolve, statute, web gray lit | 1.8: parity; grey-lit confirm-before-apply → 1.9 |
+| **Sanad** | L3; 9B FT-5 sole tier | Deeper Masdar text; FT-6 only if eval gap |
 | **Masdar** | OA PDF + attach | 1.6: auto cited-PDF ingest; chunking |
 | **Maktab** | pdf.js + OCR O2 | 1.6: fixtures, provenance |
 | **Sharh** | Sharh-lite deterministic | Richer templates; LLM facet only if warranted |
@@ -382,7 +400,7 @@ Trust and submission outputs — finish gaps that overlap 1.3.0 preflight but br
 | **Shahid full multimodal** | Shahid | **1.8.0** ships a bounded tables/figures slice; full multimodal grounding needs its own eval gate beyond Tier 3 |
 | **Institutional login webview** | Masdar / access | SEC-06, credentials, publisher policy — last resort after OA → attach → browser → proxy (§11) |
 | **Train every worker for naming symmetry** | Training | No user value until each facet passes an independent task gate |
-| **Cloud LLM as default** | Product | Local Sanad (S12/S14) remains primary — `PRODUCT.md` non-goal |
+| **Cloud LLM as default** | Product | Local Sanad (9B FT-5) remains primary — `PRODUCT.md` non-goal |
 | **Notification center** | UX | Rejected scope — lightweight toasts only (`FEATURES-AND-TWEAKS.md`) |
 | **Thesis generation / open drafting** | Product | Integrity workflow, not authoring — `OUROBOROS.md` / `PRODUCT.md` non-goal |
 | **Collaboration / cloud project sync** | Product | Needs durable project model, conflict rules, and privacy design beyond `.nassila` |
@@ -669,10 +687,10 @@ Before retaining an unqualified Arabic model claim:
 
 | Window | Focus |
 |--------|--------|
-| **Now (post-1.3.0)** | Cut public 1.3.0 when ready. No S15 Vast. Field-note curation (W3). Doc refresh. Start **1.4.0 Raqim Statute**. |
+| **Now (post-1.7.0)** | Shipped 1.4.0–1.7.0. Sanad default = **9B FT-5** (app registry `FEATURES-AND-TWEAKS.md` #17). Field-note curation (W3); FT-6 refinement gated on product-scale body holdout. |
 | **Next** | Tier 3 data plane: OA fetch pilot, schemas, body holdout draft (W4–W6). Ship **1.5** then **1.6** (chunking + OCR fixtures). |
 | **Then** | **1.7** Integrity Bundle. First Tier 3 trains only after holdout exists (W8; M01/Md01 only if deterministic fails). |
-| **Later** | Tier 3 product claim → **1.8 Shahid**. Optional S15 / merge research only if Tier 3 stable. Phase 6 merge stays non-shipping. |
+| **Later** | Tier 3 product claim → **1.9 Shahid**. Optional FT-6 / merge research only if Tier 3 stable. Phase 6 merge stays non-shipping. |
 
 ---
 
@@ -715,7 +733,7 @@ Cross-repo review notes. Items marked **shipped** were delivered in the 1.3.0 tr
 | Local-model setup | Yes | Web canonical + settings; keep USER_GUIDE synced |
 | Evidence transparency | Yes | Quote chips + Sharh-lite; denser provenance in 1.6–1.7 |
 | Bilingual UX | Yes | EN/AR parity; Sanad AR **unvalidated** (§3.6) |
-| Release positioning | Yes | Baseline **1.3.0**; website train empty until 1.4 announced |
+| Release positioning | Yes | Baseline **1.7.0**; website train synced at each cut |
 | Onboarding | Partial | Website good; in-app first-run still thin |
 | Documentation | Partial | Stub language / dead `POST_V114` links still need §8 pass |
 | Persistence | Partial | `.nassila` save/open live; dirty-close / recovery → 1.7 |
@@ -755,7 +773,7 @@ L6  Technical specs
 
 ### Naming rules
 
-1. **App:** current `package.json` version (**1.3.0** baseline) — never freeze headers at `1.1.x` / `1.2.1`.
+1. **App:** current `package.json` version (**1.7.0** baseline) — never freeze headers at older cuts.
 2. **Models:** **S12** / **S14** in mixed docs; `v1.12`/`v1.14` only in NassilaT archive walkthroughs.
 3. **Workers:** two columns everywhere — **Deterministic stage** (Live / Partial / Planned) vs **LLM facet** (Planned / M01 / etc.).
 
@@ -792,12 +810,17 @@ If Sanad validation metrics appear on the site, do not publish bare “accuracy.
 
 ## 9. Implementation matrix (current vs planned)
 
-**Baseline:** app **1.3.0** (2026-07-20). Models **S12** (E4B) · **S14** (12B).
+**Baseline:** app **1.7.0** (2026-08-10). Model **9B FT-5** (sole Sanad tier, Qwen 3.5 9B); 4B S15 / 12B S14 retired.
 
 ### Shipped
 
 | Release | Codename (EN) | Codename (AR) | Status |
 |---------|---------------|---------------|--------|
+| 1.8.0 | Sanad 9B | سند 9B | **Shipped** 2026-08-13 |
+| 1.7.0 | Integrity Bundle | حزمة النزاهة | **Shipped** 2026-08-10 |
+| 1.6.0 | Maktab Loop | حلقة المخطوطة | **Shipped** 2026-08-05 |
+| 1.5.0 | Raqim Web | رقيم ويب | **Shipped** 2026-07-29 |
+| 1.4.0 | Raqim Statute | رقيم تشريع | **Shipped** 2026-07-21 |
 | 1.3.0 | Sharh-lite | موجز شرح | **Shipped** 2026-07-20 (consolidates 1.2.2–1.2.9 train + EU ELI partial) |
 | 1.2.1 | Masdar UX | تفاعل مصدر | Shipped |
 | 1.2.0 | Masdar-lite | موجز مصدر | Shipped |
@@ -806,11 +829,7 @@ If Sanad validation metrics appear on the site, do not publish bare “accuracy.
 
 | Release | Codename (EN) | Codename (AR) | Status |
 |---------|---------------|---------------|--------|
-| 1.4.0 | Raqim Statute | رقيم تشريع | Planned — US/UK legislation patterns; parser hardening |
-| 1.5.0 | Raqim Web | رقيم ويب | Planned — webpage / grey-web cites |
-| 1.6.0 | Maktab Loop | حلقة المخطوطة | **Shipped 2026-08-05** |
-| 1.7.0 | Integrity Bundle | حزمة النزاهة | Planned — preflight+; submission export; trust parity |
-| 1.8.0 | Shahid | شاهد | Planned — Tier 3+ gate; tables/figures; confirm-before-apply grey lit |
+| 1.9.0 | Shahid | شاهد | Planned — Tier 3+ gate; tables/figures; confirm-before-apply grey lit |
 
 ### Long-term (see §5 · not versioned)
 
@@ -947,7 +966,7 @@ Nassila should spend the next cycles becoming more **trustworthy on gray literat
 2. **1.5.0 Raqim Web** — webpage / grey-web deterministic path.
 3. **1.6.0 Maktab Loop** — shipped 2026-08-05 (OCR fixtures, cache controls, deterministic Sharh summaries, Masdar attach verified, RTL acceptance).
 4. **1.7.0 Integrity Bundle** — preflight+; submission export; remaining packaged parity.
-5. **Tier 3 eval gate** (NassilaT) — then **1.8.0 Shahid** and S15 only if measurements show a model gap.
+5. **Tier 3 eval gate** (NassilaT) — then **1.9.0 Shahid**; FT-6 only if measurements show a model gap.
 
 **Long-term (§5):** merged GGUF, full Shahid multimodal, institutional webview, cloud-default LLM, collaboration sync, thesis generation, notification center, fuzzy auto-apply — unversioned until promoted.
 

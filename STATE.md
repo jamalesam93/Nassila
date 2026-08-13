@@ -1,6 +1,6 @@
 # Ouroboros loop state
 
-**Last updated:** 2026-08-05  
+**Last updated:** 2026-08-13  
 **Operator:** Nassila maintainer
 
 Read this at the start of every agent session. Update when focus, blockers, or ship gates change.
@@ -11,11 +11,13 @@ Read this at the start of every agent session. Update when focus, blockers, or s
 
 | Priority | Track | Status |
 |----------|-------|--------|
+| **P0** | **1.8.0 Sanad 9B** | **Shipped 2026-08-13** — sole-tier `nassila-sanad-9b` registry (4B/12B hard-cut) + Qwen3.5 thinking stripper + `max_tokens` + bundled no-thinking template + setup card (`FEATURES-AND-TWEAKS.md` #16/#17) |
+| **P0** | **1.7.0 Integrity Bundle** | **Shipped 2026-08-10** — structured DOCX loop ingest (heading side-channel); Preflight+ mapping breakdown; dirty-close guard |
 | **P0** | **1.6.0 Maktab Loop** | **Shipped 2026-08-05** — T1 golden fixtures; T2 cache controls + needsReview banner; T3 richer deterministic Sharh summaries; T4 Masdar attach verified + docs/test; T5 RTL acceptance + release cut |
 | **P1** | Infrastructure hygiene | Windows CI packaging job, dead-code cleanup, agent rule refresh |
-| **P1∥** | NassilaT S15 corpus | 49/49 labels exported; W4 100 DOI; body holdout contrastive v2 benchmarked; S15 is **shipped default** in app |
+| **P1∥** | NassilaT corpus | 49/49 labels exported; W4 100 DOI; Sanad = **9B FT-5 sole tier** in app (4B S15 / 12B S14 retired; registry switch per `FEATURES-AND-TWEAKS.md` #17) |
 
-**Latest app:** **1.6.0** (Maktab Loop) — shipped 2026-08-05.
+**Latest app:** **1.8.0** (Sanad 9B) — shipped 2026-08-13.
 
 ---
 
@@ -44,11 +46,11 @@ Read this at the start of every agent session. Update when focus, blockers, or s
 | Version bump + CHANGELOG + release notes | **PASS** |
 | GitHub **v1.5.0** tag + installer | **PASS** |
 
-**Locked train:** 1.4.0 Raqim Statute → 1.5.0 Raqim Web → **1.6.0 Maktab Loop** (shipped)
+**Locked train:** 1.4.0 Raqim Statute → 1.5.0 Raqim Web → **1.6.0 Maktab Loop** (shipped) → **1.7.0 Integrity Bundle** (shipped) → **1.8.0 Sanad 9B** (shipped)
 
-**Next map:** 1.7.0 Integrity Bundle → 1.8.0 Shahid (see `docs/Nassila-Ouroboros-Future.md` §5)
+**Next map:** 1.9.0 Shahid (Tier 3+ multimodal; gated on Tier 3 full-text holdout — see `docs/Nassila-Ouroboros-Future.md` §5)
 
-**Models:** Sanad **S15** (4B, default) / **S14** (12B, quality). S15 is the shipped default; model improvements depend on Tier 3 corpus.
+**Models:** Sanad **9B FT-5** (`nassila-sanad-9b`, sole tier). 4B S15 / 12B S14 retired (abstract-era); model improvements depend on Tier 3 corpus.
 
 ---
 
@@ -75,3 +77,4 @@ Read this at the start of every agent session. Update when focus, blockers, or s
 12. **1.7.0 planned — structured DOCX ingest for the loop** (Maktab Route C): replace `mammoth.extractRawText` with `convertToHtml` in `importManuscriptFromPath`; headings side-channel; no native deps / no IPC; bibliography `parseDocx` untouched. ✅ done (2026-08-10) — `src/engine/maktab/docx-extract.ts` (`extractStructuredDocx`, real Word heading levels as `HeadingNode[]` side-channel with offsets), fixture builder `tests/fixtures/maktab-docx-builder.ts` (jszip, in-memory OOXML), `tests/unit/docx-extract.test.ts` (6 tests); wired into `importManuscriptFromPath` with `manuscriptAudit.docxWarnings` review notice (EN/AR).
 13. **1.7.0 Preflight+ UI** — matched/ambiguous/unmatched mapping breakdown in SharhLitePanel (`sharhLite.mappingBreakdown`, EN/AR). ✅ done (2026-08-10).
 14. **1.7.0 Projects residual — dirty-close warning** — main-process close guard (`src/main/app-close-guard.ts`, channels `app:close-requested`/`app:confirm-close`, IPC policy entries), preload `onCloseRequested`/`confirmClose`, renderer `useDirtyCloseGuard` hook showing the existing ConfirmDialog when `sessionIsDirty()`, `project.closeDirtyConfirm` (EN/AR). ✅ done (2026-08-10) — `tests/unit/app-close-guard.test.ts` + `tests/unit/dirty-close-guard.test.tsx`.
+15. **1.8.0 Sanad 9B** — `stripQwenThinkingTraces` in `repairGroundingJsonText` + `max_tokens: 2048` for sanad9b (`ipc-llm.ts`) + bundled `resources/qwen3.5-no-thinking.jinja` (`app:qwen-template` IPC, policy row, `SanadQwenTemplateCard`) + sole-tier `nassila-sanad-9b` registry (4B/12B/E4B hard-cut; single 9B chip; defaults; i18n) + doc refresh + version 1.8.0. ✅ done (2026-08-13) — `FEATURES-AND-TWEAKS.md` #16/#17 acceptance closed.

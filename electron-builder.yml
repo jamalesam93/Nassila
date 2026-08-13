@@ -33,6 +33,9 @@ extraResources:
     to: app-icon.ico
   - from: build/icon.png
     to: app-icon.png
+  # Qwen3.5 no-thinking chat template for llama.cpp --chat-template-file.
+  - from: resources/qwen3.5-no-thinking.jinja
+    to: qwen3.5-no-thinking.jinja
 win:
   target:
     - target: nsis

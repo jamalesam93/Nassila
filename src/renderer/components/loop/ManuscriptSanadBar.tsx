@@ -26,9 +26,7 @@ import {
 
   presetLabelKey,
 
-  sanadTierFromModel,
-
-  type SanadTier
+  sanadTierFromModel
 
 } from '../../utils/llm-config-utils'
 
@@ -66,7 +64,7 @@ export default function ManuscriptSanadBar() {
 
 
 
-  const tier = sanadTierFromModel(llmModel)
+  const tier = sanadTierFromModel()
 
   const showNassilaTier = isLocalRunnerPreset(llmPresetId)
 
@@ -78,9 +76,9 @@ export default function ManuscriptSanadBar() {
 
 
 
-  const setTier = (next: SanadTier) => {
+  const setTier = () => {
 
-    setLlmModel(modelForSanadTier(next))
+    setLlmModel(modelForSanadTier())
 
     if (!llmBaseUrl.trim()) {
 
@@ -152,7 +150,7 @@ export default function ManuscriptSanadBar() {
 
             <div className="flex items-center gap-1">
 
-              {(['4b', '12b'] as const).map((id) => {
+              {(['9b'] as const).map((id) => {
 
                 const active = tier === id && isNassilaSanadModel(llmModel)
 
@@ -174,7 +172,7 @@ export default function ManuscriptSanadBar() {
 
                     }`}
 
-                    onClick={() => setTier(id)}
+                    onClick={() => setTier()}
 
                   >
 
