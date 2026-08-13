@@ -63,7 +63,7 @@ Full notes: [CHANGELOG.md](CHANGELOG.md) · [v1.8.0 release](https://github.com/
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 20.19+ (Node 22 LTS recommended)
 - npm 9+
 
 ### Install and run locally

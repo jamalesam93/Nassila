@@ -733,7 +733,7 @@ Cross-repo review notes. Items marked **shipped** were delivered in the 1.3.0 tr
 | Local-model setup | Yes | Web canonical + settings; keep USER_GUIDE synced |
 | Evidence transparency | Yes | Quote chips + Sharh-lite; denser provenance in 1.6–1.7 |
 | Bilingual UX | Yes | EN/AR parity; Sanad AR **unvalidated** (§3.6) |
-| Release positioning | Yes | Baseline **1.7.0**; website train synced at each cut |
+| Release positioning | Yes | Baseline **1.8.0**; website train synced at each cut |
 | Onboarding | Partial | Website good; in-app first-run still thin |
 | Documentation | Partial | Stub language / dead `POST_V114` links still need §8 pass |
 | Persistence | Partial | `.nassila` save/open live; dirty-close / recovery → 1.7 |
@@ -773,7 +773,7 @@ L6  Technical specs
 
 ### Naming rules
 
-1. **App:** current `package.json` version (**1.7.0** baseline) — never freeze headers at older cuts.
+1. **App:** current `package.json` version (**1.8.0** baseline) — never freeze headers at older cuts.
 2. **Models:** **S12** / **S14** in mixed docs; `v1.12`/`v1.14` only in NassilaT archive walkthroughs.
 3. **Workers:** two columns everywhere — **Deterministic stage** (Live / Partial / Planned) vs **LLM facet** (Planned / M01 / etc.).
 
@@ -810,7 +810,7 @@ If Sanad validation metrics appear on the site, do not publish bare “accuracy.
 
 ## 9. Implementation matrix (current vs planned)
 
-**Baseline:** app **1.7.0** (2026-08-10). Model **9B FT-5** (sole Sanad tier, Qwen 3.5 9B); 4B S15 / 12B S14 retired.
+**Baseline:** app **1.8.0** (2026-08-13). Model **9B FT-5** (sole Sanad tier, Qwen 3.5 9B); 4B S15 / 12B S14 retired.
 
 ### Shipped
 

@@ -75,7 +75,7 @@ Build output: `out/` (electron-vite), `dist/` (installers). Do not edit generate
 
 ## Dev environment
 
-**Prerequisites:** Node.js 18+, npm 9+
+**Prerequisites:** Node.js 20.19+ (Node 22 LTS recommended), npm 9+
 
 ```bash
 npm install

@@ -24,7 +24,7 @@ function createApiMock() {
     ]),
     loadManuscriptAuditPrefs: vi.fn().mockResolvedValue({ version: 1 }),
     saveManuscriptAuditPrefs: vi.fn().mockResolvedValue(undefined),
-    getAppAbout: vi.fn().mockResolvedValue({ name: 'Nassila', version: '1.6.0' })
+    getAppAbout: vi.fn().mockResolvedValue({ name: 'Nassila', version: '1.8.0' })
   }
 }
 

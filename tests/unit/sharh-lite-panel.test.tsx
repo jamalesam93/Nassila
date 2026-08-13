@@ -26,7 +26,7 @@ vi.mock('../../src/renderer/lib/notify', () => ({
 function createSampleReport(): AuditReport {
   return {
     auditId: 'audit-123',
-    appVersion: '1.6.0',
+    appVersion: '1.8.0',
     createdAt: Date.now(),
     manuscriptSourceFormat: 'docx',
     template: {
@@ -77,7 +77,7 @@ function createSampleReport(): AuditReport {
 describe('SharhLitePanel', () => {
   beforeEach(() => {
     window.api = {
-      getAppAbout: vi.fn().mockResolvedValue({ name: 'Nassila', version: '1.6.0' }),
+      getAppAbout: vi.fn().mockResolvedValue({ name: 'Nassila', version: '1.8.0' }),
       saveFileDialog: vi.fn().mockResolvedValue('test-export.json'),
       writeFile: vi.fn().mockResolvedValue(undefined)
     } as unknown as typeof window.api

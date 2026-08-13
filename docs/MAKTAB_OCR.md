@@ -145,8 +145,8 @@ The source-artifact extraction cache lives in `userData/source-artifacts`
 (`sourceArtifactCacheDirectory`), keyed **by PDF SHA-256 only**
 (`sha256.json`, `CACHE_VERSION` 1) via
 [`src/engine/manuscript/source-artifact-cache.ts`](../src/engine/manuscript/source-artifact-cache.ts).
-Per-page OCR cache (`sha256 + page + dpi + lang pack`) stays **deferred to
-1.7.0** — item 6 in the OCR backend list above describes that future key.
+Per-page OCR cache (`sha256 + page + dpi + lang pack`) stays **deferred**
+— item 6 in the OCR backend list above describes that future key.
 
 - **Engine** — `sourceArtifactCacheInfo(cacheDirectory)` → `{ count, bytes }`;
   `clearSourceArtifactCache(cacheDirectory)` → `{ clearedCount, freedBytes }`.
