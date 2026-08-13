@@ -21,7 +21,7 @@ Windows installer `Nassila Setup 1.8.0.exe`. **GitHub Release:** [v1.8.0](https:
 ### Tests
 
 - `grounding-json-repair.test.ts` — thinking-wrapped, `<|start_thinking|>` variant, clean passthrough, 4B-format trace, truncated-JSON graceful fail.
-- `sanad-setup-prompt.test.ts` / `sharh-lite-panel.test.tsx` / `manuscript-audit-contract.test.ts` updated to the sole 9B tier; `packaged-boundary-smoke.test.ts` asserts the bundled jinja ships.
+- `sanad-setup-prompt.test.ts` / `sharh-lite-panel.test.tsx` / `manuscript-audit-contract.test.ts` updated to the sole 9B tier. (`packaged-boundary-smoke.test.ts` earlier asserted the bundled jinja ships; that assertion was removed with the bundled template in 1.8.0.)
 
 ## [1.7.0] — 2026-08-10 · Integrity Bundle
 

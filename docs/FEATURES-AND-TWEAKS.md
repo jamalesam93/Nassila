@@ -274,7 +274,7 @@ These were identified in the cross-repo review and confirmed by the 2026-06-28 s
 
 - **A. Response stripper:** new `stripQwenThinkingTraces(raw)` in `src/engine/manuscript/grounding-json-repair.ts`, invoked as **first step** of `repairGroundingJsonText`: removes a leading `thinking\n … \n response\n\n` block (anchored to the ` response\n\n` marker line) plus a `<|start_thinking|>` variant as defense; **fires only when markers are present**, so clean output passes untouched. One code path fixes both 4B-class and 9B (same Qwen3.5 template family).
 - **B. Token budget:** `src/main/ipc-llm.ts` — add `max_tokens: 2048` for Sanad models (thinking burns token budget → mid-JSON truncation).
-- **C. Bundled no-thinking template + setup card:** ship `resources/qwen3.5-no-thinking.jinja` (byte-identical to the NassilaT box publish kit). In `LocalModelsSettings.tsx`, when a Qwen3.5 Sanad model is active, show a helper card: copy-template button (LM Studio per-model custom template), llama.cpp `--chat-template-file <bundled path>` line with reveal-path, Ollama Modelfile snippet.
+- **C. No-thinking template on the web:** the `--chat-template-file` template (byte-identical to the NassilaT box publish kit) lives in the [Sanad setup guide](https://nassila-web.vercel.app/en/docs/sanad-setup) (llama.cpp tab). In `LocalModelsSettings.tsx`, the **Custom** provider preset shows a **"Sanad setup guide"** link pointing there. (An earlier draft bundled the jinja via `extraResources` + an in-app `SanadQwenTemplateCard`; removed to keep the app surface precious and short.)
 
 **Effort:** small–medium. New helper + pipeline step + request-builder field + one settings card. **Blast radius:** grounding parse path, LLM request builder, `LocalModelsSettings` (additive; shared by every runner).
 
@@ -284,7 +284,7 @@ These were identified in the cross-repo review and confirmed by the 2026-06-28 s
 - [x] Thinking-wrapped JSON (with braces/quotes inside the reasoning) parses identically to clean JSON; clean output is byte-pass-through.
 - [x] Truncated-JSON case behaves as today (repair still fails gracefully, no crash).
 - [x] LM Studio + default-template 9B GGUF produces grounded verdicts with **no** user config (no-thinking template not applied).
-- [x] Bundled template file ships in the packaged build; reveal-path resolves under the install dir; copy-template button works.
+- [x] Custom preset in Local Models shows the Sanad setup guide link; the no-thinking template renders inline on the nassila-web llama.cpp tab (EN/AR), replacing the earlier bundled-card approach.
 - [x] Unit tests in `tests/unit/grounding-json-repair.test.ts`: thinking-wrapped, `<|start_thinking|>` variant, clean passthrough, 4B-format trace.
 
 ### 17. Sanad single tier — 4B/12B retired, 9B FT-5 default
@@ -371,6 +371,6 @@ Do not pull these into a tweak batch:
 10. **1.2.9 Preflight + quality ledger** — unresolved-identity gate, mapping coverage, accessibility pass, local diagnostic/quality-ledger export.
 11. **P1 #9–11 remainder** → **1.3.0 Sharh-lite**.
 12. **∥ NassilaT:** field-note curation / Tier 3 data; **S15 shipped** (Qwen 3.5 4B default); Sanad moves to a **single 9B FT-5 tier** with **#17** (4B S15 / 12B S14 retired).
-13. **P1 #16 + #17 → 1.8.0 Sanad 9B** — sole-tier registry + Qwen3.5 thinking handling + bundled no-thinking template; **Shahid → 1.9.0** (`Nassila-Ouroboros-Future.md` §5).
+13. **P1 #16 + #17 → 1.8.0 Sanad 9B** — sole-tier registry + Qwen3.5 thinking handling + no-thinking template on the web; **Shahid → 1.9.0** (`Nassila-Ouroboros-Future.md` §5).
 
 **Red-line check before each merge:** no training/corpus/eval content surfaces in app UI or copy (see top of file).

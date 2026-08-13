@@ -279,7 +279,7 @@ Suggested versions and worker-themed codenames. **Not dates, not public promises
 | **1.5.0** | **Raqim Web** | **رقيم ويب** | Raqim / Tasnif | Webpage & grey-web citations; dead links; host parsers |
 | **1.6.0** | **Maktab Loop** | **حلقة المخطوطة** | Maktab / Masdar | OCR fixtures; one-upload loop; source chunking polish | **Shipped 2026-08-05** |
 | **1.7.0** | **Integrity Bundle** | **حزمة النزاهة** | Loop / export | Preflight+; submission export; trust & packaged parity | **Shipped 2026-08-10** |
-| **1.8.0** | **Sanad 9B** | **سند 9B** | Sanad | Sole-tier registry (9B FT-5; 4B/12B retired) + Qwen3.5 thinking handling + bundled no-thinking template card | **Shipped 2026-08-13** — app `FEATURES-AND-TWEAKS.md` #16/#17 |
+| **1.8.0** | **Sanad 9B** | **سند 9B** | Sanad | Sole-tier registry (9B FT-5; 4B/12B retired) + Qwen3.5 thinking handling + no-thinking template on the web | **Shipped 2026-08-13** — app `FEATURES-AND-TWEAKS.md` #16/#17 |
 | **1.9.0** | **Shahid** | **شاهد** | Shahid (+ Raqim) | Tier 3+ multimodal; model-assisted grey lit (confirm-before-apply) — gated on Tier 3 full-text holdout |
 
 **Recommended cut order:** 1.4.0 → 1.5.0 → 1.6.0 → 1.7.0 → **1.8.0 Sanad 9B** ✅ → (NassilaT eval gate) → 1.9.0 Shahid.
@@ -344,7 +344,7 @@ Trust and submission outputs — finish gaps that overlap 1.3.0 preflight but br
 
 #### 1.8.0 — Sanad 9B · سند 9B
 
-**Shipped 2026-08-13.** ✅ App `FEATURES-AND-TWEAKS.md` #16/#17 acceptance closed: `stripQwenThinkingTraces` in the repair pipeline, `max_tokens` for Sanad 9B, bundled `resources/qwen3.5-no-thinking.jinja` + in-app setup card (`app:qwen-template` IPC), sole-tier `nassila-sanad-9b` registry (4B/12B retired, hard-cut), single 9B chip, defaults/i18n, and the doc-refresh batch below.
+**Shipped 2026-08-13.** ✅ App `FEATURES-AND-TWEAKS.md` #16/#17 acceptance closed: `stripQwenThinkingTraces` in the repair pipeline, `max_tokens` for Sanad 9B, no-thinking template inline on the nassila-web Sanad setup guide (llama.cpp tab) with the Custom preset linking there, sole-tier `nassila-sanad-9b` registry (4B/12B retired, hard-cut), single 9B chip, defaults/i18n, and the doc-refresh batch below.
 
 **Scope change (2026-08-13):** 1.8.0 became the **Sanad 9B model-critical cut** (was Shahid — moved to 1.9.0, gate unchanged). The app registry previously wired retired 4B/12B ids and had no native handling for the Qwen3.5 thinking template — both shipped before the 9B full-text model is the reliable default.
 
@@ -352,7 +352,7 @@ Trust and submission outputs — finish gaps that overlap 1.3.0 preflight but br
 |------|-------------|
 | **Thinking handling** | `stripQwenThinkingTraces` in the grounding repair pipeline + `max_tokens` for Sanad models — app `FEATURES-AND-TWEAKS.md` #16 |
 | **Sole-tier registry** | `sanad9b` artifact wiring; single 9B tier chip; preset/hints/setup links/defaults; i18n — app `FEATURES-AND-TWEAKS.md` #17 |
-| **No-thinking template** | Bundled `resources/qwen3.5-no-thinking.jinja` + in-app setup card (LM Studio paste / llama.cpp flag / Ollama snippet) — app `#16` |
+| **No-thinking template** | No-thinking template inline on the nassila-web Sanad setup guide (llama.cpp tab); Custom preset in the app links there — app `#16` |
 | **Doc refresh** | Model/version reference sweep across all app + NassilaT docs (README, OUROBOROS*, PRODUCT, BRAND, DESIGN, USER_GUIDE, TRAINING, operator map, HF docs) |
 
 **Gate:** none external — 9B FT-5 model + box kit already shipped on NassilaT (HF verify PASS).
