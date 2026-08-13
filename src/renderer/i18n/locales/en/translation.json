@@ -130,7 +130,6 @@
         "openai": "Detected OpenAI"
       },
       "nassilaTierTitle": "Nassila Sanad models",
-      "nassilaTierHint": "Trained for cite-to-source grounding. Load the GGUF in your local runner, then pick the Sanad 9B tier.",
       "tierLabel": "Model tier",
       "tier": {
         "9b": "Sanad (9B FT-5)"
@@ -152,14 +151,10 @@
       "setupGuide": "Set up Sanad guide…",
       "sanadTemplateCard": {
         "title": "Qwen3.5 thinking template",
-        "intro": "Qwen3.5 Sanad models think by default and can emit thinking traces before the JSON. Nassila strips these automatically; for cleanest output, apply the bundled no-thinking template at the source.",
-        "llamaCliLabel": "llama.cpp — serve with:",
-        "ollamaLabel": "Ollama — Modelfile:",
-        "ollamaPasteHint": "paste the copied template here",
         "copyTemplate": "Copy template",
-        "lmStudioHint": "LM Studio: paste the template as the model's custom chat template (per-model).",
         "loading": "Loading template…",
-        "copyFailed": "Copy failed"
+        "copyFailed": "Copy failed",
+        "guide": "Guide"
       }
     },
     "storage": {
@@ -177,7 +172,7 @@
   },
   "sanadSetup": {
     "title": "Set up Sanad",
-    "subtitle": "Sanad checks manuscript passages against source excerpts using a local model you run. For the full step-by-step setup, open the guide below.",
+    "subtitle": "Checks manuscript passages against source excerpts using a local model you run. Full guide below.",
     "modelsTitle": "Download models",
     "models": {
       "9b": "Sanad 9B — nassila-sanad-9b (9B FT-5, full-text)"

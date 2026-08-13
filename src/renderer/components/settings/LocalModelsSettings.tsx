@@ -456,8 +456,6 @@ export default function LocalModelsSettings() {
 
           <p className="text-xs font-medium text-foreground">{t('settings.localModels.nassilaTierTitle')}</p>
 
-          <p className="mt-0.5 text-[11px] text-muted-foreground">{t('settings.localModels.nassilaTierHint')}</p>
-
           <div className="mt-2 flex flex-wrap gap-2">
 
             {(['9b'] as const).map((id) => {
