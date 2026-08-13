@@ -11,24 +11,24 @@ Import or paste your bibliography, fix common errors, verify rows against Crossr
 
 | | |
 |---|---|
-| **Download (Windows)** | [**v1.7.0**](https://github.com/jamalesam93/Nassila/releases/tag/v1.7.0) · [Latest release](https://github.com/jamalesam93/Nassila/releases/latest) |
+| **Download (Windows)** | [**v1.8.0**](https://github.com/jamalesam93/Nassila/releases/tag/v1.8.0) · [Latest release](https://github.com/jamalesam93/Nassila/releases/latest) |
 | **Sanad model (HF)** | [`nassila-sanad-9b`](https://huggingface.co/QinEmPeRoR93/nassila-sanad-9b) — setup on the [website](https://nassila-web.vercel.app/en/docs/manuscript) |
 | **Website & docs** | [nassila-web.vercel.app](https://nassila-web.vercel.app) — [How-to](https://nassila-web.vercel.app/en/docs/how-to) · [User guide](https://nassila-web.vercel.app/en/docs/user-guide) · [Changelog](https://nassila-web.vercel.app/en/changelog) |
 | **Documentation (repo)** | [How-to guide](docs/HOW_TO_GUIDE.md) · [User guide](docs/USER_GUIDE.md) · [Brand](docs/BRAND.md) · [Changelog](CHANGELOG.md) |
 | **License** | [MIT](LICENSE) |
 
-> End users: install from **Releases** ([**v1.7.0**](https://github.com/jamalesam93/Nassila/releases/tag/v1.7.0)) or visit the [**website**](https://nassila-web.vercel.app). Developers: clone this repo and see [Getting started](#getting-started).
+> End users: install from **Releases** ([**v1.8.0**](https://github.com/jamalesam93/Nassila/releases/tag/v1.8.0)) or visit the [**website**](https://nassila-web.vercel.app). Developers: clone this repo and see [Getting started](#getting-started).
 
 The name **Nassila** is coined, inspired by the idea of a **sanad** (سند): a clear chain from what you write to where it came from.
 
-## What's new in v1.7.0
+## What's new in v1.8.0 — Sanad 9B
 
-- **Structured DOCX import** — manuscript DOCX now imports with real Word structure preserved: paragraph blocks plus a heading side-channel (Heading1–6) for smarter segmentation. Bibliography `parseDocx` is untouched.
-- **Dirty-close warning** — closing the window with unsaved work asks for confirmation before you lose the session.
-- **Preflight+ mapping breakdown** — Sharh-lite now shows matched / ambiguous / unmatched citation counts alongside the coverage percentage.
-- **Trust & packaging hardening** — audit rate limiting under concurrency, mid-LLM cancel via `AbortSignal`, and packaged smoke gates on release trains.
+- **Sole-tier Sanad registry** — `nassila-sanad-9b` (9B FT-5) is the only Sanad tier: single 9B tier chip, setup modal / presets / hints / defaults all point at the 9B model. 4B S15 / 12B S14 / E4B retired (abstract-era); stored retired model ids fall back to generic local-model behavior while grounding still works.
+- **Qwen3.5 thinking handling** — `stripQwenThinkingTraces` runs first in the grounding JSON repair pipeline, so thinking-wrapped model output (with braces/quotes inside the reasoning) parses identically to clean JSON, and clean output passes through byte-identical.
+- **Token budget** — `max_tokens: 2048` on Sanad 9B grounding calls prevents mid-JSON truncation from thinking traces.
+- **Bundled no-thinking template** — ships `resources/qwen3.5-no-thinking.jinja` (llama.cpp `--chat-template-file`) with an in-app helper card in Local Models settings: copy-template (LM Studio), llama.cpp command line, and an Ollama Modelfile snippet.
 
-Full notes: [CHANGELOG.md](CHANGELOG.md) · [v1.7.0 release](https://github.com/jamalesam93/Nassila/releases/tag/v1.7.0).
+Full notes: [CHANGELOG.md](CHANGELOG.md) · [v1.8.0 release](https://github.com/jamalesam93/Nassila/releases/tag/v1.8.0).
 
 ## Who is this for?
 
