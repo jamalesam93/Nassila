@@ -149,13 +149,7 @@
       "testFailed": "Connection failed",
       "privacy": "Grounding runs when you audit a manuscript. Text is sent only to the endpoint you configure — not to Nassila.",
       "setupGuide": "Set up Sanad guide…",
-      "sanadTemplateCard": {
-        "title": "Qwen3.5 thinking template",
-        "copyTemplate": "Copy template",
-        "loading": "Loading template…",
-        "copyFailed": "Copy failed",
-        "guide": "Guide"
-      }
+      "sanadCustomGuide": "Sanad setup guide…"
     },
     "storage": {
       "title": "Storage",

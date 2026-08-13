@@ -54,7 +54,6 @@ export const IPC_POLICY: readonly IpcPolicyEntry[] = [
   { channel: 'theme:get-system', direction: 'renderer-to-main', handler: 'ipc-handlers.ts', networkScope: 'none', input: 'none', notes: 'no renderer input' },
   { channel: 'theme:set-native', direction: 'renderer-to-main', handler: 'ipc-handlers.ts', networkScope: 'none', input: 'sanitized', notes: 'validateThemeMode enum check' },
   { channel: 'app:get-about', direction: 'renderer-to-main', handler: 'ipc-handlers.ts', networkScope: 'none', input: 'none', notes: 'no renderer input' },
-  { channel: 'app:qwen-template', direction: 'renderer-to-main', handler: 'ipc-handlers.ts', networkScope: 'none', input: 'none', notes: 'no renderer input; reads pinned bundled qwen3.5-no-thinking.jinja (dev vs resourcesPath)' },
   { channel: 'app:set-menu-locale', direction: 'renderer-to-main', handler: 'ipc-handlers.ts', networkScope: 'none', input: 'sanitized', notes: 'locale coerced to en|ar enum' },
   { channel: 'app:confirm-close', direction: 'renderer-to-main', handler: 'app-close-guard.ts', networkScope: 'none', input: 'none', notes: 'renderer confirms window close after dirty check; calls win.close again (SEC-01 no renderer input)' },
 

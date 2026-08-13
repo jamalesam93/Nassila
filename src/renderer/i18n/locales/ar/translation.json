@@ -149,13 +149,7 @@
       "testFailed": "فشل الاتصال",
       "privacy": "يعمل التوثيق عند تدقيق المخطوطة. يُرسل النص فقط إلى عنوان الخادم الذي تضبطه — وليس إلى ناسيلا.",
       "setupGuide": "دليل إعداد سند…",
-      "sanadTemplateCard": {
-        "title": "قالب تفكير Qwen3.5",
-        "copyTemplate": "نسخ القالب",
-        "loading": "جارٍ تحميل القالب…",
-        "copyFailed": "فشل النسخ",
-        "guide": "الدليل"
-      }
+      "sanadCustomGuide": "دليل إعداد سند…"
     },
     "storage": {
       "title": "التخزين",

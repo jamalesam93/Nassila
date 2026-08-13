@@ -284,13 +284,6 @@ export function registerIpcHandlers(): void {
     return { name: app.getName(), version: app.getVersion() }
   })
 
-  ipcMain.handle('app:qwen-template', async () => {
-    const resourcesDir = app.isPackaged ? process.resourcesPath : join(app.getAppPath(), 'resources')
-    const path = join(resourcesDir, 'qwen3.5-no-thinking.jinja')
-    const content = await readFile(path, 'utf-8')
-    return { path, content }
-  })
-
   ipcMain.handle('app:set-menu-locale', (event, locale: unknown) => {
     const win = BrowserWindow.fromWebContents(event.sender)
     if (!win) return

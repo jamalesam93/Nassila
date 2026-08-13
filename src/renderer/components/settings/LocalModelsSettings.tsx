@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next'
 
 import { findPresetByBaseUrl } from '../../settings/llm-presets'
 
+import { sanadSetupDocsUrl } from '../../../shared/sanad-setup-links'
+
 import { Button } from '../ui/button'
 
 import { useManuscriptAuditStore } from '../../stores/manuscript-audit-store'
@@ -15,8 +17,6 @@ import { patchSanadSetupPrefs, useSanadSetupPrompt } from '../../hooks/use-sanad
 import { pushToast } from '../../lib/notify'
 
 import { useShellStore } from '../../stores/shell-store'
-
-import SanadQwenTemplateCard from './SanadQwenTemplateCard'
 
 import {
 
@@ -54,7 +54,7 @@ import {
 
 export default function LocalModelsSettings() {
 
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   useManuscriptAuditPrefsSync({ loadOnMount: true, saveEnabled: true })
 
@@ -500,7 +500,16 @@ export default function LocalModelsSettings() {
 
       ) : null}
 
-      {isNassilaSanadModel(llmModel) && llmPresetId !== 'lmstudio' ? <SanadQwenTemplateCard /> : null}
+      {llmPresetId === 'custom' ? (
+        <a
+          href={sanadSetupDocsUrl(i18n.language)}
+          target="_blank"
+          rel="noreferrer"
+          className="text-xs font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          {t('settings.localModels.sanadCustomGuide')} ↗
+        </a>
+      ) : null}
 
       <label className="block">
 
