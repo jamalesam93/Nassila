@@ -1,6 +1,6 @@
 # Ouroboros loop state
 
-**Last updated:** 2026-08-13  
+**Last updated:** 2026-08-21  
 **Operator:** Nassila maintainer
 
 Read this at the start of every agent session. Update when focus, blockers, or ship gates change.
@@ -15,7 +15,7 @@ Read this at the start of every agent session. Update when focus, blockers, or s
 | **P0** | **1.7.0 Integrity Bundle** | **Shipped 2026-08-10** — structured DOCX loop ingest (heading side-channel); Preflight+ mapping breakdown; dirty-close guard |
 | **P0** | **1.6.0 Maktab Loop** | **Shipped 2026-08-05** — T1 golden fixtures; T2 cache controls + needsReview banner; T3 richer deterministic Sharh summaries; T4 Masdar attach verified + docs/test; T5 RTL acceptance + release cut |
 | **P1** | Infrastructure hygiene | Windows CI packaging job, dead-code cleanup, agent rule refresh |
-| **P1∥** | NassilaT corpus | 49/49 labels exported; W4 100 DOI; Sanad = **9B FT-5 sole tier** in app (4B S15 / 12B S14 retired; registry switch per `FEATURES-AND-TWEAKS.md` #17) |
+| **P1∥** | NassilaT corpus | 49/49 labels exported; W4 100 DOI; Sanad Hub = **9B FT-6** (`nassila-sanad-9b` v119) sole published tier; docs/UI labels updated to FT-6 |
 
 **Latest app:** **1.8.0** (Sanad 9B) — shipped 2026-08-13.
 
@@ -48,16 +48,17 @@ Read this at the start of every agent session. Update when focus, blockers, or s
 
 **Locked train:** 1.4.0 Raqim Statute → 1.5.0 Raqim Web → **1.6.0 Maktab Loop** (shipped) → **1.7.0 Integrity Bundle** (shipped) → **1.8.0 Sanad 9B** (shipped)
 
-**Next map:** 1.9.0 Shahid (Tier 3+ multimodal; gated on Tier 3 full-text holdout — see `docs/Nassila-Ouroboros-Future.md` §5)
+**Next map:** 1.10.0 Masdar Papers → 2.0.0 MaktabOCR + Shahid (Tier 3 + multimodal gate) → 2.1.0 Sanad Arabic (FT-7). Sanad **FT-6** is Hub-only (no 1.9.0 installer) — see `docs/Nassila-Ouroboros-Future.md` §5
 
-**Models:** Sanad **9B FT-5** (`nassila-sanad-9b`, sole tier). 4B S15 / 12B S14 retired (abstract-era); model improvements depend on Tier 3 corpus.
+**Models:** Sanad **9B FT-6** (`nassila-sanad-9b`, sole published GGUF/unquant; v119). FT-5 (v117) superseded on Hub. 4B S15 / 12B S14 retired.
 
 ---
 
 ## Blockers
 
 - **Tier 3 full-text grounding:** blocked on body holdout PDF extract + freeze + quote ≥98% e2e. Abstract-only grounding is the current shipped limit.
-- **Vision/LLM Arabic OCR:** deferred; DOCX is the supported Arabic ingest path.
+- **Vision/LLM Arabic OCR:** deferred to **2.0.0**; DOCX is the supported Arabic ingest path today.
+- **Arabic Sanad grounding:** unvalidated — zero Arabic-script rows in Sanad training JSONL; UI AR ≠ model AR. **FT-7** targets **2.1.0** (see `Nassila-Ouroboros-Future.md` §3.6).
 
 ---
 

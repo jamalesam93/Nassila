@@ -39,7 +39,7 @@ function createSampleReport(): AuditReport {
       runner: 'lmstudio',
       presetId: 'nassila-sanad-9b',
       modelId: 'nassila-sanad-9b',
-      checkpoint: 'FT-5',
+      checkpoint: 'FT-6',
       usedFallback: false,
       tier: '9b'
     },

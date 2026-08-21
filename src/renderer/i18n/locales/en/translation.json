@@ -132,7 +132,7 @@
       "nassilaTierTitle": "Nassila Sanad models",
       "tierLabel": "Model tier",
       "tier": {
-        "9b": "Sanad (9B FT-5)"
+        "9b": "Sanad (9B FT-6)"
       },
       "showAdvanced": "Advanced endpoint…",
       "hideAdvanced": "Hide advanced",
@@ -169,7 +169,7 @@
     "subtitle": "Checks manuscript passages against source excerpts using a local model you run. Full guide below.",
     "modelsTitle": "Download models",
     "models": {
-      "9b": "Sanad 9B — nassila-sanad-9b (9B FT-5, full-text)"
+      "9b": "Sanad 9B — nassila-sanad-9b (9B FT-6, full-text)"
     },
     "runnersTitle": "Pick a runner",
     "recommended": "recommended",
@@ -684,7 +684,7 @@
     "llmEnabled": "Enable LLM grounding",
     "openSettings": "Settings…",
     "tier": {
-      "9b": "Sanad (9B FT-5)"
+      "9b": "Sanad (9B FT-6)"
     },
     "tier2LimitNote": "Tier 2: excerpt-only grounding. Full-paper and table/figure evidence require Tier 3 (Masdar, Shahid).",
     "run": "Run grounding",

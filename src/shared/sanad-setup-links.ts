@@ -7,7 +7,7 @@ export function sanadSetupDocsUrl(locale: string): string {
   return `${NASSILA_WEB_BASE}/${lang}/docs/sanad-setup`
 }
 
-/** Hugging Face GGUF repo (public) — sole Sanad tier, 9B FT-5, 6 quants Q2_K–Q8_0. */
+/** Hugging Face GGUF repo (public) — sole Sanad tier, 9B FT-6, 6 default + 6 MTP quants. */
 export const SANAD_HF_9B_URL = 'https://huggingface.co/QinEmPeRoR93/nassila-sanad-9b'
 /** @deprecated Retired (abstract-era). Kept for legacy constants. */
 export const SANAD_HF_E4B_URL = 'https://huggingface.co/QinEmPeRoR93/nassila-sanad-e4b'

@@ -6,7 +6,7 @@ This repo (**Nassila**) owns the Electron app, citation engine, JSON repair guar
 
 **Agent entry:** [`OUROBOROS_CONTEXT.md`](./OUROBOROS_CONTEXT.md)
 
-**Current training arc:** 9B **FT-5 GO** — `nassila-sanad-9b` on Qwen 3.5 9B (QLoRA, full-text, verdict-balanced 2000-row train) — **sole Sanad tier**. S15 (4B) and S14 (12B) retired as abstract-era. Laptop smoke **PASS** (RTX 4060 8 GB). See NassilaT [`training/OUROBOROS_OPERATOR_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/OUROBOROS_OPERATOR_MAP.md) and [`outputs/LAPTOP_SMOKE_SIGNOFF.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/outputs/LAPTOP_SMOKE_SIGNOFF.md).
+**Current training arc:** 9B **FT-6 SHIPPED** (2026-08-21) — `nassila-sanad-9b` on Qwen 3.5 9B (QLoRA, **v119** train `l3_grounding_train_v119.jsonl`) — **sole Sanad tier** on Hugging Face (6 default + 6 MTP GGUF quants; unquant + v119-lora). **FT-5 (v117) superseded** as published GGUF. S15 (4B) and S14 (12B) retired as abstract-era. See NassilaT [`training/OUROBOROS_OPERATOR_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/OUROBOROS_OPERATOR_MAP.md) and [`reports/ft6_vast/grounding_multi_seed_summary.json`](https://github.com/jamalesam93/NassilaT/blob/main/training/reports/ft6_vast/grounding_multi_seed_summary.json).
 
 ---
 

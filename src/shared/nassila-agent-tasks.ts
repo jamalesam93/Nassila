@@ -64,9 +64,9 @@ export const OUROBOROS_WORKERS: Record<
   }
 }
 
-/** Shipped or planned GGUF / HF repo basename (without quant suffix). Train checkpoint (FT-5) is on the model card only. */
+/** Shipped or planned GGUF / HF repo basename (without quant suffix). Train checkpoint (FT-6) is on the model card only. */
 export const NASSILA_MODEL_ARTIFACTS = {
-  /** Sanad sole tier — Qwen 3.5 9B FT-5 Q6_K (~6.9 GB). 4B S15 / 12B S14 retired (abstract-era). */
+  /** Sanad sole tier — Qwen 3.5 9B FT-6 (v119). 4B S15 / 12B S14 retired (abstract-era). */
   sanad9b: 'nassila-sanad-9b',
   /** @deprecated Retired (abstract-era). Kept for legacy preset recognition. */
   sanad12b: 'nassila-sanad-12b',

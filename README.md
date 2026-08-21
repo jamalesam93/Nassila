@@ -12,7 +12,7 @@ Import or paste your bibliography, fix common errors, verify rows against Crossr
 | | |
 |---|---|
 | **Download (Windows)** | [**v1.8.0**](https://github.com/jamalesam93/Nassila/releases/tag/v1.8.0) · [Latest release](https://github.com/jamalesam93/Nassila/releases/latest) |
-| **Sanad model (HF)** | [`nassila-sanad-9b`](https://huggingface.co/QinEmPeRoR93/nassila-sanad-9b) — setup on the [website](https://nassila-web.vercel.app/en/docs/manuscript) |
+| **Sanad model (HF)** | [`nassila-sanad-9b`](https://huggingface.co/QinEmPeRoR93/nassila-sanad-9b) (**FT-6** / v119 — sole tier; 6 default + 6 MTP GGUFs) — setup on the [website](https://nassila-web.vercel.app/en/docs/manuscript) |
 | **Website & docs** | [nassila-web.vercel.app](https://nassila-web.vercel.app) — [How-to](https://nassila-web.vercel.app/en/docs/how-to) · [User guide](https://nassila-web.vercel.app/en/docs/user-guide) · [Changelog](https://nassila-web.vercel.app/en/changelog) |
 | **Documentation (repo)** | [How-to guide](docs/HOW_TO_GUIDE.md) · [User guide](docs/USER_GUIDE.md) · [Brand](docs/BRAND.md) · [Changelog](CHANGELOG.md) |
 | **License** | [MIT](LICENSE) |
@@ -23,10 +23,12 @@ The name **Nassila** is coined, inspired by the idea of a **sanad** (سند): a 
 
 ## What's new in v1.8.0 — Sanad 9B
 
-- **Sole-tier Sanad registry** — `nassila-sanad-9b` (9B FT-5) is the only Sanad tier: single 9B tier chip, setup modal / presets / hints / defaults all point at the 9B model. 4B S15 / 12B S14 / E4B retired (abstract-era); stored retired model ids fall back to generic local-model behavior while grounding still works.
+- **Sole-tier Sanad registry** — `nassila-sanad-9b` is the only Sanad tier: single 9B tier chip, setup modal / presets / hints / defaults all point at the 9B model. 4B S15 / 12B S14 / E4B retired (abstract-era); stored retired model ids fall back to generic local-model behavior while grounding still works.
 - **Qwen3.5 thinking handling** — `stripQwenThinkingTraces` runs first in the grounding JSON repair pipeline, so thinking-wrapped model output (with braces/quotes inside the reasoning) parses identically to clean JSON, and clean output passes through byte-identical.
 - **Token budget** — `max_tokens: 2048` on Sanad 9B grounding calls prevents mid-JSON truncation from thinking traces.
 - **No-thinking template on the web** — the `--chat-template-file` template for llama.cpp users lives in the [Sanad setup guide](https://nassila-web.vercel.app/en/docs/sanad-setup); the Custom provider preset links there.
+
+**Sanad weights (Hub, independent of app installers):** **FT-6** (v119) is the published sole tier on [`nassila-sanad-9b`](https://huggingface.co/QinEmPeRoR93/nassila-sanad-9b) as of 2026-08-21 — download the GGUF into LM Studio / llama.cpp; no new installer required. Next **app** cut is **1.10.0 Masdar Papers**.
 
 Full notes: [CHANGELOG.md](CHANGELOG.md) · [v1.8.0 release](https://github.com/jamalesam93/Nassila/releases/tag/v1.8.0).
 

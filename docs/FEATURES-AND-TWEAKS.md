@@ -2,11 +2,11 @@
 
 **Status:** 2026-08-13. Companion to NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) and the [website docs](https://nassila-web.vercel.app/en/docs/sanad-setup) (now canonical). Scope is the **desktop app** ([Nassila](https://github.com/jamalesam93/Nassila)). Items are grouped by priority and each has an effort, a blast radius, and acceptance checks so they can be picked off independently.
 
-> **Version streams:** App releases (**Nassila 1.8.0**) and Sanad checkpoints **SNN** (**S14** 12B / **FT-5** 9B) are independent — see NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) § App release train.
+> **Version streams:** App releases (**Nassila 1.8.0**) and Sanad checkpoints **SNN** / **FT-N** (**S14** 12B / **FT-6** 9B on Hub) are independent — see NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) § App release train.
 
 > **Red line reminder (from the website docs spec):** no training methodology, corpus, QLoRA, eval scorecards, or NassilaT internals surface in the app. All copy must stay user-facing.
 
-> **Locked authority sequence:** **Phase 0 Trust reset** (before 1.2.2) → **1.2.2 Throughput** → **1.2.3 Quote chip** → **1.2.4 Raqim Repair** → **1.2.5 Masdar attach** → **1.2.6 Raqim Resolve** → **1.2.7 Projects + Help + onboarding** → **1.2.8 OCR O2 + a11y** → **1.2.9 Preflight + quality ledger** → **1.3.0 Sharh-lite**. In parallel, NassilaT curates field notes / Tier 3 data; **S15 shipped**; Sanad moves to a **single 9B FT-5 tier** with **#17** (4B S15 and 12B S14 retired — abstract-era only).
+> **Locked authority sequence:** **Phase 0 Trust reset** (before 1.2.2) → **1.2.2 Throughput** → **1.2.3 Quote chip** → **1.2.4 Raqim Repair** → **1.2.5 Masdar attach** → **1.2.6 Raqim Resolve** → **1.2.7 Projects + Help + onboarding** → **1.2.8 OCR O2 + a11y** → **1.2.9 Preflight + quality ledger** → **1.3.0 Sharh-lite**. In parallel, NassilaT curates field notes / Tier 3 data; **S15 shipped**; Sanad **9B FT-6** is the published Hub sole tier (**#17** retired 4B/12B).
 
 ### Phase 0-A — Trust reset (before 1.2.2)
 
@@ -278,7 +278,7 @@ These were identified in the cross-repo review and confirmed by the 2026-06-28 s
 
 **Effort:** small–medium. New helper + pipeline step + request-builder field + one settings card. **Blast radius:** grounding parse path, LLM request builder, `LocalModelsSettings` (additive; shared by every runner).
 
-**Ship:** **1.8.0 Sanad 9B** (model-critical — 9B full-text ship depends on tolerant parsing; Shahid defers to 1.9.0). ✅ **Shipped 2026-08-13.**
+**Ship:** **1.8.0 Sanad 9B** (model-critical — 9B full-text ship depends on tolerant parsing). ✅ **Shipped 2026-08-13.**
 
 **Acceptance.**
 - [x] Thinking-wrapped JSON (with braces/quotes inside the reasoning) parses identically to clean JSON; clean output is byte-pass-through.
@@ -287,9 +287,9 @@ These were identified in the cross-repo review and confirmed by the 2026-06-28 s
 - [x] Custom preset in Local Models shows the Sanad setup guide link; the no-thinking template renders inline on the nassila-web llama.cpp tab (EN/AR), replacing the earlier bundled-card approach.
 - [x] Unit tests in `tests/unit/grounding-json-repair.test.ts`: thinking-wrapped, `<|start_thinking|>` variant, clean passthrough, 4B-format trace.
 
-### 17. Sanad single tier — 4B/12B retired, 9B FT-5 default
+### 17. Sanad single tier — 4B/12B retired, 9B FT-6 on Hub
 
-**Problem.** 4B (S15) and 12B (S14) are retired — both are abstract-only trains; the 9B FT-5 grounding model (`nassila-sanad-9b`, 6 quants Q2_K–Q8_0) is the sole Sanad tier (full-text, verdict-balanced train). The app registry, presets, setup modal, tier chips, and defaults still point at 4B/12B.
+**Problem.** 4B (S15) and 12B (S14) are retired — both are abstract-only trains; the 9B grounding model (`nassila-sanad-9b`, 6 default + 6 MTP quants) is the sole Sanad tier. **Hub weights are FT-6 (v119)** as of 2026-08-21.
 
 **Design.** Registry + defaults rework (9B single tier; 4B/12B removed from presets/links/UI; E4B stays legacy):
 
@@ -305,13 +305,62 @@ These were identified in the cross-repo review and confirmed by the 2026-06-28 s
 
 **Effort:** small–medium. **Blast radius:** shared registry constants, tier UI, defaults, tests. Stored user ids referencing the retired ids simply fall out of the Sanad registry (grounding still works — registry only drives UI/presets).
 
-**Ship:** **1.8.0 Sanad 9B** (with #16; Shahid defers to 1.9.0). ✅ **Shipped 2026-08-13.**
+**Ship:** **1.8.0 Sanad 9B** (with #16). ✅ **Shipped 2026-08-13.**
 
 **Acceptance.**
 - [x] Fresh install default selectable Sanad model = `nassila-sanad-9b`; tier chip shows 9B only.
 - [x] `sanad-setup-prompt.test.ts` / `sharh-lite-panel.test.tsx` / `manuscript-audit-contract.test.ts` updated green.
 - [x] EN + AR copy updated (no training/corpus wording); `sanadSetup.models.4b` / `.12b` retired.
 - [x] Doc-refresh batch in same PR: `README.md`, `BRAND.md`, `DESIGN.md`, `PRODUCT.md`, `USER_GUIDE.md`, `TRAINING.md`, `OUROBOROS.md`, `OUROBOROS_CONTEXT.md`, `Nassila-Ouroboros-Future.md`, `WEBPAGE_ROADMAP.md`, `AR_I18N_GLOSSARY.md` — Sanad references moved to sole `nassila-sanad-9b` (FT-5); 4B S15 / 12B S14 marked retired.
+
+### 18. Wayback availability-gated archive links
+
+**Problem.** Every URL row shows an unconditional `[Wayback ↗]` link (`OutputPanel.tsx`); `RaqimResolvePanel` also hand-rolls archive URLs and can pass a `doi.org` URL instead of the page URL. Users click through to empty archive searches when no snapshot exists.
+
+**Design.**
+
+- **Delete** the unconditional Wayback link from every URL row in `OutputPanel.tsx`.
+- **Keep** the "Wayback archive ↗" button in `RaqimResolvePanel` but **gate** it: on panel open, main process queries the Wayback availability API (`archive.org/wayback/available?url=…` via `fetchWithPolicy` — production CSP requires main, like other registry IPC).
+- **New IPC** `registry:checkWaybackAvailability` in `ipc-registry.ts` + preload + `ipc-policy.ts` inventory + validation test.
+- **Reuse/fix** `buildWaybackUrl()` in `webpage-metadata.ts` (or equivalent) — single canonical helper; fix DOI-as-target bug in Resolve.
+- If a snapshot exists → render button linking **directly to the snapshot** (`web.archive.org/web/<timestamp>/<url>`); if not → **do not render** the button ("show nothing").
+- New `queryWaybackSnapshot()` in `webpage-metadata.ts`; update its tests + new availability tests (mocked fetch).
+
+**Effort:** small–medium. **Blast radius:** `OutputPanel`, `RaqimResolvePanel`, main registry IPC, preload, i18n (remove hardcoded `[Wayback ↗]` English).
+
+**Ship:** **1.10.0 Masdar Papers**
+
+**Acceptance.**
+- [ ] No unconditional Wayback link on bibliography URL rows.
+- [ ] Resolve panel shows archive button only when availability API returns a snapshot; link goes to snapshot URL, not `web/*/`.
+- [ ] Availability check runs in main process; IPC registered in policy inventory with validation test.
+- [ ] `buildWaybackUrl` is the single URL builder (no third copy); DOI rows use page URL for archive lookup when URL field is present.
+- [ ] EN + AR strings for archive affordance (Arabic wording per glossary approval).
+
+### 19. Papers dedupe + folder-scan PDF attach
+
+**Problem.** Duplicate bibliography entries (same paper under different keys) inflate audit work and split cite sites. Attaching PDFs one-by-one per finding is slow when the user has a folder of source PDFs.
+
+**Design.**
+
+- **Dedupe:** new pure `dedupeBibEntries()` in `mapping.ts` — merge by normalized DOI, else normalized title **+ year**; title-only matches → **ambiguous** (not auto-merged); emits number→canonicalKey aliases so ranges/numbers still map. Applied in `prepareAudit` (`audit-runner.ts`) for both manuscript-References and bibliography-library sources.
+- **Folder scan:** new IPC `papers:scanFolder` — main-process folder dialog, recursive `*.pdf` scan under chosen root only (SEC-01 allow-list, no renderer-supplied paths, count/size caps); registered in `ipc-handlers.ts`, preload, `ipc-policy.ts`, with validation tests.
+- **Matcher:** `src/engine/papers/match.ts` — per PDF, DOI from first-page text (pdf.js) + filename heuristics, title from first page; match to findings by DOI exact → title normalized → unmatched/ambiguous.
+- **UI:** "Attach papers…" button in Sources panel header (`LoopSourcesPanel`) → folder picker → scan + match → review list (matched ✓ / unmatched / ambiguous) → confirm → existing `attachSourcePdf` per matched bibKey → re-audit. **Attach review restricted to mapped findings** (unmapped keys re-audit nothing).
+- **Contract:** extend `bibKeyFilter` to `string[]` in `manuscript-audit-contract.ts` (+ sanitizer with per-item and array length caps + tests) so one run re-grounds only attached refs.
+- Per-finding "Attach PDF" in `LoopAuditDetail` stays.
+
+**Effort:** medium. **Blast radius:** `mapping.ts`, `audit-runner.ts`, new `papers/` engine module, IPC, loop Sources UI, audit contract.
+
+**Ship:** **1.10.0 Masdar Papers**
+
+**Acceptance.**
+- [ ] Same paper under `[3]` and `[18]` (same DOI or title+year) → 1 finding after dedupe; citeSites from both numbers preserved via aliases.
+- [ ] Title-only match without year → ambiguous bucket, not silent merge.
+- [ ] Folder scan returns matched/unmatched/ambiguous review list; confirm attaches only matched **mapped** bibKeys.
+- [ ] Re-audit with `bibKeyFilter: string[]` re-grounds only selected refs; existing findings for other keys preserved.
+- [ ] IPC + contract changes have matching validation tests.
+- [ ] EN + AR strings (Arabic wording per glossary approval).
 
 ---
 
@@ -370,7 +419,10 @@ Do not pull these into a tweak batch:
 9. **1.2.8 OCR O2 + a11y** — offline/bundled language packs, golden fixtures, OCR controls/provenance/cache, loop-table keyboard navigation.
 10. **1.2.9 Preflight + quality ledger** — unresolved-identity gate, mapping coverage, accessibility pass, local diagnostic/quality-ledger export.
 11. **P1 #9–11 remainder** → **1.3.0 Sharh-lite**.
-12. **∥ NassilaT:** field-note curation / Tier 3 data; **S15 shipped** (Qwen 3.5 4B default); Sanad moves to a **single 9B FT-5 tier** with **#17** (4B S15 / 12B S14 retired).
-13. **P1 #16 + #17 → 1.8.0 Sanad 9B** — sole-tier registry + Qwen3.5 thinking handling + no-thinking template on the web; **Shahid → 1.9.0** (`Nassila-Ouroboros-Future.md` §5).
+12. **∥ NassilaT:** field-note curation / Tier 3 data; **S15 shipped** (Qwen 3.5 4B); **#17** sole 9B tier (4B/12B retired); **FT-6 Hub ship 2026-08-21**.
+13. **P1 #16 + #17 → 1.8.0 Sanad 9B** — sole-tier registry + Qwen3.5 thinking handling + no-thinking template on the web. ✅ **Shipped 2026-08-13.**
+14. **P1 #18 + #19 → 1.10.0 Masdar Papers** — Wayback availability gating + papers dedupe/folder attach (`Nassila-Ouroboros-Future.md` §5).
+15. **∥ NassilaT:** **FT-6** Hub **SHIPPED 2026-08-21** (no 1.9.0 installer); next app cut **1.10.0**; **FT-7 Arabic** → **2.1.0**.
+16. **2.0.0 MaktabOCR + Shahid** — Arabic/vision OCR + tables/figures (Tier 3 + multimodal gate).
 
 **Red-line check before each merge:** no training/corpus/eval content surfaces in app UI or copy (see top of file).

@@ -82,7 +82,7 @@ Seven workers map to stages in the loop. Maturity varies; honest gaps only — n
 | **Tasnif** | تصنيف | Risk | Dedupe, predatory, issue triage | Live — feeds loop + Raqim filters |
 | **Sharh** | شرح | Explain | Issue and mismatch explanations | Partial — deterministic copy |
 
-**Settings** holds the LM Studio slot: `nassila-sanad-9b` (**FT-5**, sole Sanad tier; 4B S15 / 12B S14 retired as abstract-era). Run laptop smoke ([`LAPTOP_SMOKE_TEST.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/LAPTOP_SMOKE_TEST.md)) on downloaded GGUFs before treating release as verified.
+**Settings** holds the LM Studio slot: `nassila-sanad-9b` (**FT-6**, sole Sanad tier; 4B S15 / 12B S14 retired as abstract-era). Run laptop smoke ([`LAPTOP_SMOKE_TEST.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/LAPTOP_SMOKE_TEST.md)) on downloaded GGUFs before treating release as verified.
 
 ## Transitional UI (v1 reform scaffold)
 
@@ -134,7 +134,7 @@ The shipping app may still expose a **seven-item worker nav** from the first Our
 ## Success criteria (product direction)
 
 - Docs and future UI treat **Ouroboros loop** as primary IA; worker nav is secondary or advanced.
-- Sanad wired to `nassila-sanad-9b` (FT-5) with Tier 2b guardrails (invalid quotes never show as pass).
+- Sanad wired to `nassila-sanad-9b` (FT-6 on Hub) with Tier 2b guardrails (invalid quotes never show as pass).
 - Raqim + Tasnif remain usable for bibliography-only users during transition.
 - Copy distinguishes live deterministic Maktab/Masdar-lite (including local-PDF attach) from planned LLM facets; Tier 3 adds the full evaluated manuscript/source pipeline.
 - RTL parity; no AI-template UI tells per `DESIGN.md`.

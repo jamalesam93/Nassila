@@ -66,7 +66,7 @@ export function modelForSanadTier(): string {
   return NASSILA_MODEL_ARTIFACTS.sanad9b
 }
 
-/** True only for the sole Sanad tier (9B FT-5). Retired 4B/12B/E4B ids are generic local models. */
+/** True only for the sole Sanad tier (9B FT-6). Retired 4B/12B/E4B ids are generic local models. */
 export function isNassilaSanadModel(model: string): boolean {
   return model === NASSILA_MODEL_ARTIFACTS.sanad9b
 }

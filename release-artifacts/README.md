@@ -18,7 +18,7 @@ Built on this machine for [GitHub Releases](https://github.com/jamalesam93/Nassi
 | **1.1.1** | **Bibliography-first** | `Nassila Setup 1.1.1.exe` | [v1.1.1-RELEASE_NOTES.md](./v1.1.1-RELEASE_NOTES.md) |
 | **1.1.0** | **Sanad** | `Nassila Setup 1.1.0.exe` | [v1.1.0-RELEASE_NOTES.md](./v1.1.0-RELEASE_NOTES.md) |
 
-**Planned (see NassilaT [`OUROBOROS_OPERATOR_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/OUROBOROS_OPERATOR_MAP.md) § App release train):** (Tier 3 eval gate) → 1.9.0 **Shahid**; ∥ NassilaT field-note/Tier 3 data curation; 9B FT-5 is the sole tier (S15/S14 retired)
+**Planned (see [`docs/Nassila-Ouroboros-Future.md`](../docs/Nassila-Ouroboros-Future.md) §5):** 1.10.0 **Masdar Papers** → 2.0.0 **MaktabOCR + Shahid** (gated) → 2.1.0 **Sanad Arabic (FT-7)**. Sanad **FT-6** is Hub-only (no 1.9.0 installer); sole published Hub tier (S15/S14 retired)
 
 **Latest:** use **1.8.0**. Older installers are for release history.
 

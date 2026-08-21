@@ -73,7 +73,7 @@ Match-and-refuse — if you are about to ship these, rewrite:
 | Verdict chip | `supported` / `weak` / `contradicted` / `not_in_source` / `insufficient_evidence` — color + label i18n |
 | Pipeline gap | One sentence + “planned” in context of the loop; no standalone stub app chrome |
 | Empty state | Actionable (upload manuscript, import bibliography, connect LM Studio) |
-| Settings LM slot | `nassila-sanad-9b` (FT-5, sole Sanad tier) |
+| Settings LM slot | `nassila-sanad-9b` (FT-6, sole Sanad tier) |
 
 ## Motion
 
