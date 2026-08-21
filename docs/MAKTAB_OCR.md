@@ -169,9 +169,12 @@ Per-page OCR cache (`sha256 + page + dpi + lang pack`) stays **deferred**
 
 | Version | Maktab / OCR deliverable |
 |---------|--------------------------|
-| **1.2.0 / O1** | Tesseract.js backend (EN/AR/FR) in main-process IPC; Masdar-lite reuses `extractFromPdf` for OA PDF bytes |
-| **1.2.8 / O2** | Offline/bundled language-pack policy, golden fixtures, provenance/cache UX, scan fallback, Enhanced OCR control, hardware smoke |
-| **Tier 3** | Maktab LLM `doc_extract` facet + full-text eval corpus |
+| **1.2.0 / O1** | Tesseract.js backend (eng/fra) in main-process IPC; Masdar-lite reuses `extractFromPdf` for OA PDF bytes |
+| **1.2.8 / O2** | Offline/bundled eng/fra language-pack policy, golden fixtures, provenance/cache UX, scan fallback, Enhanced OCR control, hardware smoke |
+| **1.3.1** | Arabic Tesseract **deferred** — `ara` pack removed; Arabic PDFs prefer DOCX |
+| **1.6.0** | OCR golden fixtures + CI probe; cache controls; needsReview banner |
+| **2.0.0** | **MaktabOCR + Shahid** — Arabic/vision OCR (replaces deferred Tesseract `ara`) + table/figure evidence path (gated on Tier 3 + multimodal eval) |
+| **Tier 3** | Maktab LLM `doc_extract` facet + full-text eval corpus (M01 — only if deterministic baseline fails) |
 
 ---
 

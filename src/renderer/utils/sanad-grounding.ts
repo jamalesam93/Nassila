@@ -1,10 +1,12 @@
 import {
   buildGroundingLlmMessages,
+  downgradeInvalidSupportedClaims,
   GROUNDING_EXCERPT_MAX_CHARS,
   GROUNDING_PASSAGE_MAX_CHARS,
   parseGroundingJson,
   passageVerdictFromGroundingClaims,
-  truncateForGrounding
+  truncateForGrounding,
+  withQuoteValidationState
 } from '../../engine/manuscript/grounding-llm'
 import type { ClaimGroundingRow, LayerVerdict } from '../../engine/manuscript/types'
 import { scorePassageAgainstSource } from '../../engine/relevance/deterministic'
@@ -80,6 +82,16 @@ export function layerVerdictI18nKey(verdict: LayerVerdict): string {
   }
 }
 
+export function applySanadClaimGuardrails(
+  claims: ClaimGroundingRow[],
+  sourceExcerpt: string
+): ClaimGroundingRow[] {
+  return withQuoteValidationState(
+    downgradeInvalidSupportedClaims(claims, sourceExcerpt),
+    sourceExcerpt
+  )
+}
+
 export async function runSanadGrounding(params: {
   passage: string
   sourceExcerpt: string
@@ -116,8 +128,9 @@ export async function runSanadGrounding(params: {
         continue
       }
 
+      const claims = applySanadClaimGuardrails(parsed.data.claims, cappedExcerpt)
       const scored = scorePassageAgainstSource(passage, sourceExcerpt)
-      let verdict = passageVerdictFromGroundingClaims(parsed.data.claims, scored.bucket, cappedExcerpt)
+      let verdict = passageVerdictFromGroundingClaims(claims, scored.bucket, cappedExcerpt)
 
       const warnings: string[] = []
       if (parsed.repaired) warnings.push('repaired')
@@ -143,7 +156,7 @@ export async function runSanadGrounding(params: {
 
       return {
         kind: 'ok',
-        claims: parsed.data.claims,
+        claims,
         verdict,
         raw: content,
         repaired: parsed.repaired ?? false,
