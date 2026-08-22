@@ -2,6 +2,47 @@
 
 Guidance for coding agents working on this repository. End-user documentation lives in [README.md](README.md), [docs/USER_GUIDE.md](docs/USER_GUIDE.md), and [docs/HOW_TO_GUIDE.md](docs/HOW_TO_GUIDE.md).
 
+## Nassila workspace (3 repos)
+
+Agents often open **one** folder. Treat these as one product surface:
+
+| Repo | Local path | Role |
+|------|------------|------|
+| **Nassila** (this repo) | `E:\Cursor Projects\Nassila` | Electron app (engine + UI) |
+| **NassilaT** | `E:\Cursor Projects\NassilaT` | Sanad training, eval, Hub publish |
+| **nassila-web** | `E:\Cursor Projects\nassila-web` | Public site + docs (EN/AR) |
+
+Cursor users may open all three via a multi-root workspace; other IDEs usually open a single repo — use the table above to reach sibling folders.
+
+### Session start — read `codebase.txt`
+
+Before non-trivial work, load context from **all three** Repomix snapshots (grep/search; do not read whole files unless needed):
+
+| Repo | Snapshot |
+|------|----------|
+| Nassila | `Nassila/codebase.txt` |
+| NassilaT | `NassilaT/codebase.txt` |
+| nassila-web | `nassila-web/codebase.txt` |
+
+- **Read-only:** never edit `codebase.txt`; change source files and regenerate the snapshot when stale.
+- **Critical contract work** (schemas, Sanad JSON, IPC, release train): read **this repo's** snapshot at minimum; prefer all three.
+
+### Cross-repo documentation sync
+
+When the user asks to **update docs**, **announce a release**, or change **user-visible product facts** (version, codename, Sanad tier, workers, roadmap), update **every affected layer** in the same pass — not just this repo.
+
+| Topic | Canonical (start here) | Also update |
+|-------|----------------------|-------------|
+| Shipped app version / changelog | `CHANGELOG.md` | `README.md`, `nassila-web/content/changelog/{en,ar}.md` ([SOP](https://github.com/jamalesam93/nassila-web/blob/main/docs/CHANGELOG_SYNC_SOP.md)) |
+| Release train / roadmap | `docs/Nassila-Ouroboros-Future.md` §5 | `STATE.md`, `docs/FEATURES-AND-TWEAKS.md`, `NassilaT/training/OUROBOROS_OPERATOR_MAP.md`, `nassila-web/lib/release-train.ts`, `nassila-web/content/docs/{en,ar}/roadmap.mdx` |
+| Sanad model tier / Hub | `NassilaT/training/OUROBOROS_OPERATOR_MAP.md` | UI i18n + `llm-presets`, `docs/TRAINING.md`, nassila-web sanad/local-models docs, `NassilaT/training/hf_readmes/` |
+| User-facing how-to | `docs/HOW_TO_GUIDE.md`, `docs/USER_GUIDE.md` | Matching `nassila-web/content/docs/{en,ar}/*.mdx` |
+| Operator / agent brief | `docs/OUROBOROS_CONTEXT.md` | `AGENTS.md`, `NassilaT/training/AGENTS.md` |
+
+**Rules:** EN + AR parity where both ship; strip training internals on nassila-web (eval scores, SEC-* ids); same version/codename/FT labels everywhere; if only one repo changed, list what still needs syncing in the others.
+
+**Regenerate `codebase.txt`** (Repomix) after large structural changes. Snapshots are gitignored — do not commit them.
+
 ## Project summary
 
 **Nassila** is an Electron desktop app (Windows-first) for bibliography quality: import or paste references, validate offline, autocorrect common issues, verify against Crossref / PubMed / OpenAlex (L1 resolve + L2 metadata compare), flag predatory journals, deduplicate, and export via CSL/citeproc.
@@ -117,6 +158,7 @@ Other: `build:mac`, `build:linux`, `build:unpack`, `preview`.
 - **UI craft:** follow `DESIGN.md` Impeccable discipline; product workstation, not AI SaaS chrome.
 - Run `npm test`, `npm run lint`, and `npm run typecheck` before considering work done.
 - **Ouroboros engineering loop:** [`LOOP.md`](LOOP.md), [`STATE.md`](STATE.md), [`docs/MAKTAB_OCR.md`](docs/MAKTAB_OCR.md) — read at session start for pipeline/OCR work.
+- **Cross-repo docs:** see § Nassila workspace — doc updates default to all three repos unless the user scopes the task.
 - Add or update unit tests for engine behavior you change; **new IPC handlers** need matching validation tests under `tests/unit/` (see `docs/SECURITY-FIX-PLAN.md` preload inventory).
 - Do **not** commit secrets (`.env`, API keys), large model weights, or `out/` / `dist/` artifacts.
 - Do not duplicate README marketing copy here; link to user docs for product behavior.

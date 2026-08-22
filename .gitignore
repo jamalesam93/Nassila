@@ -27,3 +27,9 @@ Nassila-Ouroboros.code-workspace
 
 # TypeScript incremental build cache (machine-specific)
 *.tsbuildinfo
+
+# Private manuscript PDFs (acceptance-set only; never commit / never train)
+docs/pdf/
+
+# Generated codebase dump (Repomix) — regenerate locally, keep out of git
+codebase.txt
