@@ -46,7 +46,7 @@ Full notes: [CHANGELOG.md](CHANGELOG.md) · [v1.10.0 release](https://github.com
 4. **Verify references** — one action: resolve each row to Crossref, PubMed, or OpenAlex (**L1**), then compare your metadata to the canonical record (**L2**), with safe auto-patches when registries agree (up to **200** prioritized rows per run)  
 5. **Predatory journal scan** — match journal titles against bundled and updatable predatory/pseudo-journal lists  
 6. **Deduplicate** and **export** — formatted bibliography in APA, IEEE, Vancouver, Chicago, Harvard, MLA, Nature (bundled), or any style from the [Zotero CSL repository](https://github.com/citation-style-language/styles)  
-7. **Manuscript loop (Ouroboros)** — upload or paste a manuscript, verify cited references (L1/L2), fetch open-access source text where available, and optional **Sanad** passage grounding (L3) — [manuscript guide](https://nassila-web.vercel.app/en/docs/manuscript)
+7. **Manuscript loop (Ouroboros)** — upload or paste a manuscript, verify cited references (L1/L2) with duplicate entries merged, fetch open-access source text, attach source PDFs individually or by scanning a whole folder (matched references re-audited only), and optional **Sanad** passage grounding (L3) — [manuscript guide](https://nassila-web.vercel.app/en/docs/manuscript)
 
 **Privacy:** list editing and validation work offline. Registry verification, DOI lookup, predatory-list sync, and manuscript source fetch use the network only when you run those actions.
 
@@ -58,7 +58,7 @@ Full notes: [CHANGELOG.md](CHANGELOG.md) · [v1.10.0 release](https://github.com
 | Resolution | DOI, ISBN, PMID, URL → Crossref, PubMed, Open Library |
 | Verification | Unified L1+L2 registry check (main-process IPC in packaged app), up to 200 rows per run |
 | Integrity | Predatory/suspicious journal flags, duplicate groups with merge |
-| Manuscript | Ouroboros loop: L1/L2 verify, OA source fetch, per-source PDF attach + single-ref re-audit, optional Sanad L3 ([HF model](https://huggingface.co/QinEmPeRoR93/nassila-sanad-9b)) |
+| Manuscript | Ouroboros loop: L1/L2 verify + bibliography dedupe, OA source fetch, per-source PDF attach or folder-scan attach with review, targeted re-audit, optional Sanad L3 ([HF model](https://huggingface.co/QinEmPeRoR93/nassila-sanad-9b)) |
 | Output | CSL formatting, undo/redo, dark/light mode, EN/AR UI |
 
 ## Getting started
