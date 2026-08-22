@@ -4,7 +4,7 @@
 **Scope:** Nassila (app) · NassilaT (training) · nassila-web (docs)  
 **Sources reviewed:** `NassilaT/training/OUROBOROS_OPERATOR_MAP.md`, `Nassila/docs/FEATURES-AND-TWEAKS.md`, `STATE.md`, `PRODUCT.md`, `OUROBOROS_CONTEXT.md`, `CHANGELOG.md`, engine/renderer code, field notes, website release train
 
-**App baseline:** **1.8.0** (Sanad 9B, 2026-08-13). **Sanad model (Hub):** 9B **FT-6** (sole published tier, v119, 2026-08-21) — Hub/GGUF only, **no 1.9.0 installer**. Next **app** cut: **1.10.0 Masdar Papers**. **Shahid** stays in **2.0.0** (Tier 3 multimodal gate).
+**App baseline:** **1.10.0** (Masdar Papers, 2026-08-22). **Sanad model (Hub):** 9B **FT-6** (sole published tier, v119, 2026-08-21) — Hub/GGUF only, **no 1.9.0 installer**. **Shahid** stays in **2.0.0** (Tier 3 multimodal gate).
 
 ---
 
@@ -280,10 +280,10 @@ Suggested versions and worker-themed codenames. **Not dates, not public promises
 | **1.6.0** | **Maktab Loop** | **حلقة المخطوطة** | Maktab / Masdar | OCR fixtures; one-upload loop; source chunking polish | **Shipped 2026-08-05** |
 | **1.7.0** | **Integrity Bundle** | **حزمة النزاهة** | Loop / export | Preflight+; submission export; trust & packaged parity | **Shipped 2026-08-10** |
 | **1.8.0** | **Sanad 9B** | **سند 9B** | Sanad | Sole-tier registry (9B; 4B/12B retired) + Qwen3.5 thinking handling + no-thinking template on the web | **Shipped 2026-08-13** — app `FEATURES-AND-TWEAKS.md` #16/#17 |
-| **1.10.0** | **Masdar Papers** | **أوراق مصدر** | Masdar / Raqim | Wayback availability gate; bibliography dedupe; folder-scan PDF attach |
+| **1.10.0** | **Masdar Papers** | **أوراق مصدر** | Masdar / Raqim | Wayback availability gate; bibliography dedupe; folder-scan PDF attach | **Shipped 2026-08-22** — app `FEATURES-AND-TWEAKS.md` #18/#19/#20 |
 | **2.0.0** | **MaktabOCR + Shahid** | **مكتب OCR + شاهد** | Maktab / Shahid | Arabic/vision OCR + table/figure evidence — gated on Tier 3 + multimodal |
 
-**Recommended cut order:** 1.4.0 → 1.5.0 → 1.6.0 → 1.7.0 → **1.8.0 Sanad 9B** ✅ → (**FT-6 Hub-only**, no 1.9.0 installer) → **1.10.0** Masdar Papers → (Tier 3 gate) → **2.0.0** MaktabOCR + Shahid.
+**Recommended cut order:** 1.4.0 → 1.5.0 → 1.6.0 → 1.7.0 → **1.8.0 Sanad 9B** ✅ → (**FT-6 Hub-only**, no 1.9.0 installer) → **1.10.0 Masdar Papers** ✅ → (Tier 3 gate) → **2.0.0** MaktabOCR + Shahid.
 
 #### 1.4.0 — Raqim Statute · رقيم تشريع
 
@@ -364,6 +364,8 @@ Trust and submission outputs — finish gaps that overlap 1.3.0 preflight but br
 
 #### 1.10.0 — Masdar Papers · أوراق مصدر
 
+**Shipped 2026-08-22** — installer `Nassila Setup 1.10.0.exe`; app `FEATURES-AND-TWEAKS.md` #18/#19/#20 acceptance closed.
+
 | Area | Deliverable |
 |------|-------------|
 | **Wayback** | Archive button only when a snapshot exists |
@@ -393,7 +395,7 @@ Trust and submission outputs — finish gaps that overlap 1.3.0 preflight but br
 
 ### Worker maturity (direction)
 
-| Worker | Today (1.8.0) | Target (via map above) |
+| Worker | Today (1.10.0) | Target (via map above) |
 |--------|-----------------|-------------------------|
 | **Raqim** | L1/L2, Resolve, statute, web gray lit | Wayback gate → **1.10** |
 | **Sanad** | L3; 9B FT-6 on Hub | FT-7 Arabic **2.1** |
@@ -700,7 +702,7 @@ Before retaining an unqualified Arabic model claim:
 
 | Window | Focus |
 |--------|--------|
-| **Now (post-1.8.0)** | Shipped 1.4.0–1.8.0. Hub Sanad = **9B FT-6** (2026-08-21, no 1.9.0 installer). Next app cut: **1.10.0** Masdar Papers. |
+| **Now (post-1.10.0)** | Shipped 1.4.0–1.10.0. Hub Sanad = **9B FT-6** (2026-08-21, no 1.9.0 installer). Latest app cut: **1.10.0** Masdar Papers. |
 | **Next** | Tier 3 data plane: OA fetch pilot, schemas, body holdout draft (W4–W6). Ship **1.5** then **1.6** (chunking + OCR fixtures). |
 | **Then** | **1.7** Integrity Bundle. First Tier 3 trains only after holdout exists (W8; M01/Md01 only if deterministic fails). |
 | **Later** | Tier 3 product claim → **2.0 Shahid** (+ MaktabOCR). Phase 6 merge stays non-shipping. |
@@ -842,7 +844,7 @@ If Sanad validation metrics appear on the site, do not publish bare “accuracy.
 
 | Release | Codename (EN) | Codename (AR) | Status |
 |---------|---------------|---------------|--------|
-| 1.10.0 | Masdar Papers | أوراق مصدر | Planned — Wayback gate; bib dedupe; folder PDF attach |
+| 1.10.0 | Masdar Papers | أوراق مصدر | **Shipped** 2026-08-22 — Wayback gate; bib dedupe; folder PDF attach |
 | 2.0.0 | MaktabOCR + Shahid | مكتب OCR + شاهد | Planned — Tier 3 + multimodal gate |
 | 2.1.0 | Sanad Arabic | سند عربي | Planned — FT-7 |
 

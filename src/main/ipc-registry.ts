@@ -88,4 +88,13 @@ export function registerRegistryIpcHandlers(): void {
     const { resolveWebpageMetadata } = await import('../engine/resolver/webpage-metadata')
     return resolveWebpageMetadata(rawUrl.trim())
   })
+
+  /** Wayback snapshot availability — availability API needs network; keep in main. */
+  ipcMain.handle('registry:checkWaybackAvailability', async (_event, rawUrl: unknown) => {
+    if (typeof rawUrl !== 'string' || !rawUrl.trim()) {
+      return null
+    }
+    const { queryWaybackSnapshot } = await import('../engine/resolver/webpage-metadata')
+    return queryWaybackSnapshot(rawUrl.trim())
+  })
 }

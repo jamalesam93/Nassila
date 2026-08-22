@@ -166,7 +166,14 @@ export interface AuditRunProvenance {
   generatedAt: string
   appVersion: string
   promptContractVersion: string
-  bibKeyFilter?: string
+  bibKeyFilter?: string[]
+}
+
+export interface AuditReportDedupe {
+  /** Duplicate bibliography entries collapsed onto canonical keys. */
+  mergedPairs: number
+  /** Same-title entries kept separate pending human review. */
+  ambiguousCount: number
 }
 
 export interface AuditReport {
@@ -187,5 +194,7 @@ export interface AuditReport {
   networkStatus: NetworkStatus
   /** Prior report runs retained when a single source is re-audited in place. */
   priorRuns?: AuditRunProvenance[]
+  /** Bibliography dedupe outcome (#19); present only when it did work. */
+  bibliographyDedupe?: AuditReportDedupe
 }
 

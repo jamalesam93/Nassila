@@ -34,6 +34,8 @@ import {
   mapInTextToBibliography,
   selectMappedBibliographyEntries,
   summarizeCitationMappings,
+  applyDedupeAliases,
+  dedupeBibEntries,
   type BibEntry,
   type CitationMapping
 } from './mapping'
@@ -283,12 +285,24 @@ async function prepareAudit(request: ManuscriptAuditStartRequest, appVersion: st
     ? { entries: bibEntriesFromCitationLibrary(request.libraryCitations) }
     : await buildBibEntriesFromReferencesText(segmented.referencesText!)
   const mappings = mapInTextToBibliography(inText.citations, bibliography.entries)
+  // #19: collapse duplicate bibliography entries; numeric cite sites stay intact
+  // because mapping ran on the original keys and aliases rewrite them afterwards.
+  const dedupe = dedupeBibEntries(bibliography.entries)
+  applyDedupeAliases(mappings, dedupe.aliases)
   // Phase 0-C: only mapped bibliography entries can enter L3.
-  const mappedEntries = selectMappedBibliographyEntries(bibliography.entries, mappings)
-  const entries = request.bibKeyFilter
-    ? mappedEntries.filter((entry) => entry.key === request.bibKeyFilter)
+  const mappedEntries = selectMappedBibliographyEntries(dedupe.entries, mappings)
+  const filterKeys = request.bibKeyFilter
+  const entries = filterKeys?.length
+    ? mappedEntries.filter((entry) => filterKeys.includes(entry.key))
     : mappedEntries
   const citationMapping = summarizeCitationMappings(mappings)
+  const bibliographyDedupe =
+    Object.keys(dedupe.aliases).length > 0 || dedupe.ambiguousGroups.length > 0
+      ? {
+          mergedPairs: Object.keys(dedupe.aliases).length,
+          ambiguousCount: dedupe.ambiguousGroups.length
+        }
+      : undefined
   const selectedTemplate = request.template.templates.find((template) => template.id === request.template.selectedId)
 
   const shell: Omit<AuditReport, 'findings' | 'generatedAt'> = {
@@ -313,7 +327,8 @@ async function prepareAudit(request: ManuscriptAuditStartRequest, appVersion: st
     appVersion,
     promptContractVersion: GROUNDING_PROMPT_CONTRACT_VERSION,
     networkStatus: request.networkStatus,
-    priorRuns: request.priorRuns
+    priorRuns: request.priorRuns,
+    ...(bibliographyDedupe ? { bibliographyDedupe } : {})
   }
 
   return {

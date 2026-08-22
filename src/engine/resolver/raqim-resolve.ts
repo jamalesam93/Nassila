@@ -126,7 +126,7 @@ export function rankRaqimCandidate(
   const mismatchReasons: string[] = []
   const candidate = raw.item
   const titleScore = textSimilarity(queryItem.title, candidate.title)
-  let confidence = raw.exact ? 0.82 : titleScore * 0.62
+  let confidence = raw.exact ? 0.82 : Math.min(0.8, 0.24 + titleScore * 0.58)
 
   if (titleScore >= 0.75) matchedFields.push('title')
   else if (queryItem.title && candidate.title) mismatchReasons.push('title')
@@ -419,16 +419,6 @@ async function resolveHostUrl(rawUrl: string): Promise<RawCandidate[]> {
     }]
   }
 
-  const greyWeb = buildGreyWebPageItem(rawUrl)
-  if (greyWeb) {
-    return [{
-      provider: 'grey_web',
-      kind: 'scholarly_report',
-      exact: true,
-      item: greyWeb
-    }]
-  }
-
   return []
 }
 
@@ -458,8 +448,17 @@ export async function lookupRaqimCandidates(request: RaqimLookupRequest): Promis
     } catch {
       raw = []
     }
-    if (raw.length === 0 && !isLegalCatalogueUrl(lookup.value)) {
-      raw = await titleRegistryCandidates(request.item, request.item.title ?? lookup.value)
+    if (!isLegalCatalogueUrl(lookup.value)) {
+      // Registry title search always runs for URL rows — recognized-host results
+      // merge with it instead of suppressing it (a paper landing page must still
+      // resolve against Crossref/OpenAlex/PubMed/DataCite).
+      raw = [...raw, ...(await titleRegistryCandidates(request.item, request.item.title ?? lookup.value))]
+    }
+    if (raw.length === 0) {
+      const greyWeb = buildGreyWebPageItem(lookup.value)
+      if (greyWeb) {
+        raw = [{ provider: 'grey_web', kind: 'scholarly_report', exact: true, item: greyWeb }]
+      }
     }
   } else if (lookup.kind === 'title') {
     raw = []

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { CslItem } from '../../engine/types'
 import type {
@@ -25,8 +25,40 @@ export default function RaqimResolvePanel({ item }: RaqimResolvePanelProps) {
   const [busy, setBusy] = useState(false)
   const [searched, setSearched] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const keyDirtyRef = useRef(false)
   const networkStatus = useCitationStore((state) => state.networkStatus)
   const selectedStyleId = useCitationStore((state) => state.selectedStyleId)
+
+  const fieldForKey = (lookupKind: RaqimLookupKind): string => {
+    switch (lookupKind) {
+      case 'doi':
+        return item.DOI ?? ''
+      case 'pmid':
+        return item.PMID ?? ''
+      case 'pmcid':
+        return item.PMCID ?? ''
+      case 'url':
+        return item.URL ?? ''
+      default:
+        return item.title ?? ''
+    }
+  }
+
+  const bestIdentifier = (): { kind: RaqimLookupKind; value: string } | null => {
+    // Mirrors the engine fallback chain (raqim-resolve.ts lookupRaqimCandidates):
+    // DOI → PMID → PMCID → URL → title.
+    const chain: RaqimLookupKind[] = ['doi', 'pmid', 'pmcid', 'url', 'title']
+    for (const lookupKind of chain) {
+      const value = fieldForKey(lookupKind).trim()
+      if (value) return { kind: lookupKind, value }
+    }
+    return null
+  }
+
+  const syncKey = (lookupKind: RaqimLookupKind) => {
+    setKind(lookupKind)
+    if (!keyDirtyRef.current) setKey(fieldForKey(lookupKind))
+  }
 
   const lookup = async (manual: boolean) => {
     if (!window.api?.lookupRaqimCandidates || networkStatus !== 'online') return
@@ -71,7 +103,29 @@ export default function RaqimResolvePanel({ item }: RaqimResolvePanelProps) {
   }
 
   const webpageUrl = item.URL ?? (item.DOI ? `https://doi.org/${item.DOI}` : undefined)
-  const waybackUrl = webpageUrl ? `https://web.archive.org/web/*/${webpageUrl}` : undefined
+  // Archive lookups always target the page URL — never a doi.org fallback (#18).
+  const archiveTargetUrl = item.URL?.trim() || undefined
+  const [waybackSnapshot, setWaybackSnapshot] = useState<{ timestamp: string; url: string } | null>(
+    null
+  )
+
+  const checkWayback = async () => {
+    if (!archiveTargetUrl || !window.api?.checkWaybackAvailability || networkStatus !== 'online') {
+      setWaybackSnapshot(null)
+      return
+    }
+    try {
+      setWaybackSnapshot((await window.api.checkWaybackAvailability(archiveTargetUrl)) ?? null)
+    } catch {
+      setWaybackSnapshot(null)
+    }
+  }
+
+  const toggleOpen = () => {
+    const next = !open
+    setOpen(next)
+    if (next) void checkWayback()
+  }
 
   const fetchWebpageMeta = async () => {
     if (!webpageUrl || !window.api?.resolveWebpageMetadata || networkStatus !== 'online') return
@@ -105,7 +159,7 @@ export default function RaqimResolvePanel({ item }: RaqimResolvePanelProps) {
         <button
           type="button"
           className="rounded border border-input bg-background px-2 py-1 text-xs font-medium text-foreground hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          onClick={() => setOpen((value) => !value)}
+          onClick={toggleOpen}
           aria-expanded={open}
         >
           {open ? t('raqimResolve.close') : t('raqimResolve.open')}
@@ -115,6 +169,12 @@ export default function RaqimResolvePanel({ item }: RaqimResolvePanelProps) {
           className="rounded border border-input bg-background px-2 py-1 text-xs text-foreground hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
           disabled={networkStatus !== 'online' || busy}
           onClick={() => {
+            const best = bestIdentifier()
+            if (best) {
+              setKind(best.kind)
+              setKey(best.value)
+              keyDirtyRef.current = false
+            }
             setOpen(true)
             void lookup(false)
           }}
@@ -138,9 +198,9 @@ export default function RaqimResolvePanel({ item }: RaqimResolvePanelProps) {
         >
           {t('raqimResolve.autocorrectRow')}
         </button>
-        {waybackUrl && (
+        {waybackSnapshot && (
           <a
-            href={waybackUrl}
+            href={waybackSnapshot.url}
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center rounded border border-input bg-background px-2 py-1 text-xs text-foreground hover:bg-accent"
@@ -159,7 +219,7 @@ export default function RaqimResolvePanel({ item }: RaqimResolvePanelProps) {
             <select
               className="rounded border border-input bg-background px-2 py-1 text-xs text-foreground"
               value={kind}
-              onChange={(event) => setKind(event.target.value as RaqimLookupKind)}
+              onChange={(event) => syncKey(event.target.value as RaqimLookupKind)}
               aria-label={t('raqimResolve.keyType')}
             >
               {LOOKUP_KINDS.map((lookupKind) => (
@@ -171,7 +231,10 @@ export default function RaqimResolvePanel({ item }: RaqimResolvePanelProps) {
             <input
               className="min-w-0 flex-1 rounded border border-input bg-background px-2 py-1 text-xs text-foreground placeholder:text-muted-foreground"
               value={key}
-              onChange={(event) => setKey(event.target.value)}
+              onChange={(event) => {
+                keyDirtyRef.current = true
+                setKey(event.target.value)
+              }}
               placeholder={t('raqimResolve.keyPlaceholder')}
               dir={kind === 'title' ? undefined : 'ltr'}
             />

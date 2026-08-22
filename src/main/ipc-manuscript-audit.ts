@@ -43,6 +43,21 @@ function provenanceDirectory(): string {
 }
 
 /** Newest-first persisted prior runs (bounded), for cross-session L2 context. */
+
+/** Legacy provenance holds a single-string filter; current shape is string[]. */
+function normalizePersistedBibKeyFilter(raw: unknown): { bibKeyFilter?: string[] } {
+  if (typeof raw === 'string' && raw.length > 0) return { bibKeyFilter: [raw] }
+  if (
+    Array.isArray(raw) &&
+    raw.length > 0 &&
+    raw.length <= 50 &&
+    raw.every((key) => typeof key === 'string')
+  ) {
+    return { bibKeyFilter: raw as string[] }
+  }
+  return {}
+}
+
 function readPersistedProvenance(): AuditRunProvenance[] {
   const dir = provenanceDirectory()
   if (!existsSync(dir)) return []
@@ -62,11 +77,10 @@ function readPersistedProvenance(): AuditRunProvenance[] {
         generatedAt,
         appVersion,
         promptContractVersion,
-        ...(typeof bibKeyFilter === 'string' ? { bibKeyFilter } : {}),
+        ...normalizePersistedBibKeyFilter(bibKeyFilter),
         file,
         mtime: statSync(file).mtimeMs
-      })
-    } catch {
+      })    } catch {
       // skip malformed provenance files
     }
   }
@@ -77,14 +91,14 @@ function readPersistedProvenance(): AuditRunProvenance[] {
       generatedAt: run.generatedAt,
       appVersion: run.appVersion,
       promptContractVersion: run.promptContractVersion,
-      ...(run.bibKeyFilter !== undefined ? { bibKeyFilter: run.bibKeyFilter } : {})
+      ...normalizePersistedBibKeyFilter(run.bibKeyFilter)
     }))
 }
 
 function persistProvenance(
   runId: string,
   report: AuditReport,
-  bibKeyFilter?: string
+  bibKeyFilter?: string[]
 ): void {
   try {
     const dir = provenanceDirectory()

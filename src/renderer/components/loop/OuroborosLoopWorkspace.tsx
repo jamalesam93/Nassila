@@ -47,9 +47,9 @@ export default function OuroborosLoopWorkspace() {
     void runAudit(raw)
   }, [raw, runAudit, running])
 
-  const handleReaudit = useCallback((bibKey: string) => {
-    if (!raw.trim() || running) return
-    void runAudit(raw, { bibKeyFilter: bibKey })
+  const handleReaudit = useCallback((bibKeys: string[]) => {
+    if (!raw.trim() || running || bibKeys.length === 0) return
+    void runAudit(raw, { bibKeyFilter: bibKeys })
   }, [raw, runAudit, running])
 
   return (

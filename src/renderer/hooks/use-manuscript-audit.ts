@@ -37,7 +37,7 @@ export function useManuscriptAudit() {
   }, [clearAuditProgress, consumeAuditProgress, setStep])
 
   const runAudit = useCallback(
-    async (rawText: string, options: { bibKeyFilter?: string } = {}) => {
+    async (rawText: string, options: { bibKeyFilter?: string[] } = {}) => {
       const previousRunId = runIdRef.current
       if (previousRunId) {
         runIdRef.current = null

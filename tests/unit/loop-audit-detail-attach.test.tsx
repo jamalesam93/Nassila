@@ -106,7 +106,7 @@ describe('LoopAuditDetail source attach', () => {
     })
     expect(window.api.attachSourcePdf).toHaveBeenCalledWith('C:\\papers\\smith2020.pdf')
     expect(useOuroborosLoopStore.getState().sourceArtifactsByBibKey.Smith2020).toEqual(artifact)
-    expect(onReaudit).toHaveBeenCalledWith('Smith2020')
+    expect(onReaudit).toHaveBeenCalledWith(['Smith2020'])
   })
 
   it('cancelling the file dialog does not attach or re-audit', async () => {

@@ -201,6 +201,14 @@ const api = {
   attachSourcePdf: (filePath: string): Promise<SourceArtifact> =>
     ipcRenderer.invoke(SOURCE_ARTIFACT_ATTACH_CHANNEL, filePath),
 
+  scanPapersFolder: (): Promise<{
+    root: string | null
+    files: { path: string; name: string; sizeBytes: number }[]
+  }> => ipcRenderer.invoke('papers:scanFolder'),
+
+  identifyPaperPdf: (filePath: string): Promise<{ doi?: string; title?: string }> =>
+    ipcRenderer.invoke('papers:identify', filePath),
+
   extractionCacheInfo: (): Promise<{ count: number; bytes: number }> =>
     ipcRenderer.invoke('maktab:extractionCacheInfo'),
 
@@ -279,7 +287,12 @@ const api = {
   },
 
   resolveWebpageMetadata: (rawUrl: string): Promise<unknown> =>
-    ipcRenderer.invoke('registry:resolveWebpageMetadata', rawUrl)
+    ipcRenderer.invoke('registry:resolveWebpageMetadata', rawUrl),
+
+  checkWaybackAvailability: (
+    rawUrl: string
+  ): Promise<{ timestamp: string; url: string } | null> =>
+    ipcRenderer.invoke('registry:checkWaybackAvailability', rawUrl)
 }
 
 contextBridge.exposeInMainWorld('api', api)

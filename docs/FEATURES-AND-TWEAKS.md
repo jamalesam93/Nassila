@@ -2,7 +2,7 @@
 
 **Status:** 2026-08-13. Companion to NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) and the [website docs](https://nassila-web.vercel.app/en/docs/sanad-setup) (now canonical). Scope is the **desktop app** ([Nassila](https://github.com/jamalesam93/Nassila)). Items are grouped by priority and each has an effort, a blast radius, and acceptance checks so they can be picked off independently.
 
-> **Version streams:** App releases (**Nassila 1.8.0**) and Sanad checkpoints **SNN** / **FT-N** (**S14** 12B / **FT-6** 9B on Hub) are independent — see NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) § App release train.
+> **Version streams:** App releases (**Nassila 1.10.0**) and Sanad checkpoints **SNN** / **FT-N** (**S14** 12B / **FT-6** 9B on Hub) are independent — see NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) § App release train.
 
 > **Red line reminder (from the website docs spec):** no training methodology, corpus, QLoRA, eval scorecards, or NassilaT internals surface in the app. All copy must stay user-facing.
 
@@ -331,11 +331,13 @@ These were identified in the cross-repo review and confirmed by the 2026-06-28 s
 **Ship:** **1.10.0 Masdar Papers**
 
 **Acceptance.**
-- [ ] No unconditional Wayback link on bibliography URL rows.
-- [ ] Resolve panel shows archive button only when availability API returns a snapshot; link goes to snapshot URL, not `web/*/`.
-- [ ] Availability check runs in main process; IPC registered in policy inventory with validation test.
-- [ ] `buildWaybackUrl` is the single URL builder (no third copy); DOI rows use page URL for archive lookup when URL field is present.
-- [ ] EN + AR strings for archive affordance (Arabic wording per glossary approval).
+- [x] No unconditional Wayback link on bibliography URL rows.
+- [x] Resolve panel shows archive button only when availability API returns a snapshot; link goes to snapshot URL, not `web/*/`.
+- [x] Availability check runs in main process; IPC registered in policy inventory with validation test (`registry:checkWaybackAvailability`, `tests/unit/ipc-policy.test.ts` self-scan).
+- [x] `buildWaybackUrl` is the single URL builder (no third copy); DOI rows use page URL for archive lookup when URL field is present.
+- [x] EN + AR strings for archive affordance (existing `raqimResolve.waybackArchive` key reused — no new copy needed).
+
+✅ **Implemented 2026-08-22** — `queryWaybackSnapshot` in `webpage-metadata.ts`; panel gating covered in `tests/unit/raqim-resolve-panel.test.tsx`; API tests in `tests/unit/webpage-metadata.test.ts`.
 
 ### 19. Papers dedupe + folder-scan PDF attach
 
@@ -355,12 +357,36 @@ These were identified in the cross-repo review and confirmed by the 2026-06-28 s
 **Ship:** **1.10.0 Masdar Papers**
 
 **Acceptance.**
-- [ ] Same paper under `[3]` and `[18]` (same DOI or title+year) → 1 finding after dedupe; citeSites from both numbers preserved via aliases.
-- [ ] Title-only match without year → ambiguous bucket, not silent merge.
-- [ ] Folder scan returns matched/unmatched/ambiguous review list; confirm attaches only matched **mapped** bibKeys.
-- [ ] Re-audit with `bibKeyFilter: string[]` re-grounds only selected refs; existing findings for other keys preserved.
-- [ ] IPC + contract changes have matching validation tests.
-- [ ] EN + AR strings (Arabic wording per glossary approval).
+- [x] Same paper under `[3]` and `[18]` (same DOI or title+year) → 1 finding after dedupe; citeSites from both numbers preserved via aliases.
+- [x] Title-only match without year → ambiguous bucket, not silent merge.
+- [x] Folder scan returns matched/unmatched/ambiguous review list; confirm attaches only matched **mapped** bibKeys.
+- [x] Re-audit with `bibKeyFilter: string[]` re-grounds only selected refs; existing findings for other keys preserved (legacy single-string filters normalize to `[string]`).
+- [x] IPC + contract changes have matching validation tests (`papers-scan-match.test.ts`, `manuscript-audit-contract.test.ts`, `ipc-policy.test.ts`).
+- [x] EN + AR strings added (`loop.attachPapers*`, `loop.papers*`, `sharhLite.dedupeSummary`) — Arabic wording pending glossary review.
+
+✅ **Implemented 2026-08-22** — `dedupeBibEntries`/`applyDedupeAliases` in `mapping.ts`, wired in `prepareAudit`; `papers:scanFolder` + `papers:identify` in `ipc-handlers.ts`; `engine/papers/{scan,match}.ts`; LoopSourcesPanel review flow.
+
+### 20. Raqim Resolve: URL/title lookup fixes
+
+**Problem.** Two shipped defects made Resolve appear to work "only with DOI": (a) any URL row short-circuited to a grey-web catalogue stub because the stub's fallthrough always produced a candidate, so the registry title fallback never ran — paper landing pages returned a junk "webpage — /path" card at 0.82 confidence; (b) non-exact title candidates scored `0.62 × similarity` against the 0.42 threshold, requiring ≥0.68 token overlap just to appear — correct papers with subtitle/punctuation variants were silently dropped. Additionally the panel auto-copied only the title into the key box and Verify-row searched identifiers invisibly to the user.
+
+**Design.**
+- Remove `buildGreyWebPageItem` from `resolveHostUrl`; recognized hosts keep their exact candidates. The URL branch always runs `titleRegistryCandidates` when a usable title exists (legislation URLs excepted), and the grey-web stub becomes a last resort appended only when nothing matched.
+- Non-exact base → `min(0.8, 0.24 + 0.58 × similarity)`; threshold stays `RAQIM_CANDIDATE_THRESHOLD = 0.42`; bonuses/penalties unchanged; exact DOI/PMID paths unaffected.
+- Panel prefill parity: kind switch copies the row's matching field into the key box unless the user edited it; Verify-row syncs kind+key via the engine's DOI→PMID→PMCID→URL→title chain.
+
+**Effort:** small–medium. **Blast radius:** `raqim-resolve.ts`, `RaqimResolvePanel.tsx`, tests.
+
+**Ship:** **1.10.0 Masdar Papers**
+
+**Acceptance.**
+- [x] Paper landing-page URL + real title → registry candidates returned; no grey stub present.
+- [x] URL-only row with no matches anywhere → grey stub still returned (1.5.0 parity).
+- [x] ~0.55+ similarity titles clear the threshold; ≤~0.3 garbage stays filtered; non-exact base capped at 0.8 before bonuses.
+- [x] Kind-switch prefill per field; dirty input never clobbered; verify-sync shows the identifier actually searched.
+- [x] Tests: `tests/unit/raqim-url-title-fallback.test.ts` + `tests/unit/raqim-resolve-panel.test.tsx`.
+
+✅ **Implemented 2026-08-22.**
 
 ---
 
@@ -421,7 +447,7 @@ Do not pull these into a tweak batch:
 11. **P1 #9–11 remainder** → **1.3.0 Sharh-lite**.
 12. **∥ NassilaT:** field-note curation / Tier 3 data; **S15 shipped** (Qwen 3.5 4B); **#17** sole 9B tier (4B/12B retired); **FT-6 Hub ship 2026-08-21**.
 13. **P1 #16 + #17 → 1.8.0 Sanad 9B** — sole-tier registry + Qwen3.5 thinking handling + no-thinking template on the web. ✅ **Shipped 2026-08-13.**
-14. **P1 #18 + #19 → 1.10.0 Masdar Papers** — Wayback availability gating + papers dedupe/folder attach (`Nassila-Ouroboros-Future.md` §5).
+14. **P1 #18 + #19 + #20 → 1.10.0 Masdar Papers** — Wayback availability gating + papers dedupe/folder attach + Raqim Resolve URL/title fixes (`Nassila-Ouroboros-Future.md` §5). ✅ **Shipped 2026-08-22** — installer `Nassila Setup 1.10.0.exe`.
 15. **∥ NassilaT:** **FT-6** Hub **SHIPPED 2026-08-21** (no 1.9.0 installer); next app cut **1.10.0**; **FT-7 Arabic** → **2.1.0**.
 16. **2.0.0 MaktabOCR + Shahid** — Arabic/vision OCR + tables/figures (Tier 3 + multimodal gate).
 

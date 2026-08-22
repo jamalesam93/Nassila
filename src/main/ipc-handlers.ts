@@ -3,7 +3,7 @@ import { buildAppMenu } from './app-menu'
 import type { MainMenuLocale } from './menu-i18n'
 import { readFile, writeFile } from 'fs/promises'
 import { homedir } from 'os'
-import { join, resolve } from 'path'
+import { basename, join, resolve } from 'path'
 import { existsSync, mkdirSync } from 'fs'
 import { registerOaIpcHandlers } from './ipc-oa'
 import { registerMaktabIpcHandlers } from './ipc-maktab'
@@ -23,6 +23,9 @@ import {
   sourceArtifactCacheInfo
 } from '../engine/manuscript/source-artifact-cache'
 import { SOURCE_ARTIFACT_ATTACH_CHANNEL } from '../shared/source-artifact'
+import { listPaperFiles } from '../engine/papers/scan'
+import { extractPaperIdentity } from '../engine/papers/match'
+import { MAX_PAPERS_FILE_BYTES } from '../shared/papers-limits'
 
 const NASSILA_DIR = join(homedir(), '.nassila')
 const LEGACY_DIR = join(homedir(), '.citations-style')
@@ -211,6 +214,36 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(SOURCE_ARTIFACT_ATTACH_CHANNEL, async (_event, filePath: unknown) => {
     const allowedPath = assertAllowedPath(filePath, readablePaths, 'read')
     return attachSourcePdf(allowedPath, sourceArtifactCacheDirectory(app.getPath('userData')))
+  })
+
+  // ── Masdar Papers (#19): folder scan + identity signals ─────────────────
+  ipcMain.handle('papers:scanFolder', async () => {
+    const result = await dialog.showOpenDialog({
+      properties: ['openDirectory'],
+      title: 'Attach papers folder'
+    })
+    if (result.canceled || result.filePaths.length === 0) {
+      return { root: null, files: [] }
+    }
+    const root = result.filePaths[0]
+    allowReadablePaths([root])
+    const files = listPaperFiles(root)
+    // Scanned PDFs become attachable through the existing SEC-01 guard.
+    allowReadablePaths(files.map((file) => file.path))
+    return { root, files }
+  })
+
+  ipcMain.handle('papers:identify', async (_event, filePath: unknown) => {
+    const allowedPath = assertAllowedPath(filePath, readablePaths, 'read')
+    const fileName = basename(allowedPath)
+    const buffer = await readFile(allowedPath)
+    if (buffer.byteLength > MAX_PAPERS_FILE_BYTES) {
+      throw new Error('PDF exceeds the papers size cap')
+    }
+    return extractPaperIdentity(
+      buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength),
+      fileName
+    )
   })
 
   ipcMain.handle('maktab:extractionCacheInfo', async () => {

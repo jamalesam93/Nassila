@@ -1,6 +1,6 @@
 # Ouroboros loop state
 
-**Last updated:** 2026-08-21  
+**Last updated:** 2026-08-22  
 **Operator:** Nassila maintainer
 
 Read this at the start of every agent session. Update when focus, blockers, or ship gates change.
@@ -11,13 +11,30 @@ Read this at the start of every agent session. Update when focus, blockers, or s
 
 | Priority | Track | Status |
 |----------|-------|--------|
+| **P0** | **1.10.0 Masdar Papers** | **Shipped 2026-08-22** — installer `Nassila Setup 1.10.0.exe`; `FEATURES-AND-TWEAKS.md` #18/#19/#20: Wayback availability gating; papers dedupe + folder-scan attach; Raqim Resolve URL/title fixes + panel prefill parity; `bibKeyFilter` → `string[]` |
 | **P0** | **1.8.0 Sanad 9B** | **Shipped 2026-08-13** — sole-tier `nassila-sanad-9b` registry (4B/12B hard-cut) + Qwen3.5 thinking stripper + `max_tokens` + no-thinking template on the web guide + Custom-preset guide link (`FEATURES-AND-TWEAKS.md` #16/#17) |
 | **P0** | **1.7.0 Integrity Bundle** | **Shipped 2026-08-10** — structured DOCX loop ingest (heading side-channel); Preflight+ mapping breakdown; dirty-close guard |
 | **P0** | **1.6.0 Maktab Loop** | **Shipped 2026-08-05** — T1 golden fixtures; T2 cache controls + needsReview banner; T3 richer deterministic Sharh summaries; T4 Masdar attach verified + docs/test; T5 RTL acceptance + release cut |
 | **P1** | Infrastructure hygiene | Windows CI packaging job, dead-code cleanup, agent rule refresh |
 | **P1∥** | NassilaT corpus | 49/49 labels exported; W4 100 DOI; Sanad Hub = **9B FT-6** (`nassila-sanad-9b` v119) sole published tier; docs/UI labels updated to FT-6 |
 
-**Latest app:** **1.8.0** (Sanad 9B) — shipped 2026-08-13.
+**Latest app:** **1.10.0** (Masdar Papers) — shipped 2026-08-22.
+
+---
+
+## 1.10.0 ship notes (2026-08-22)
+
+| Step | Status |
+|------|--------|
+| Track C (#20) Resolve fixes: grey-web de-suppression + confidence rebalance + panel prefill parity | **PASS** |
+| Track A (#18) Wayback availability gating: `queryWaybackSnapshot` + IPC + gated UI + DOI-target fix | **PASS** |
+| Track B (#19) Papers dedupe + folder-scan attach + `bibKeyFilter` string[] contract | **PASS** |
+| Tests/lint/typecheck gates (107 files, 528 tests) | **PASS** |
+| Version bump + CHANGELOG + STATE/future-map/web-train syncs | **PASS** |
+
+**Locked train:** 1.4.0 Raqim Statute → 1.5.0 Raqim Web → **1.6.0 Maktab Loop** (shipped) → **1.7.0 Integrity Bundle** (shipped) → **1.8.0 Sanad 9B** (shipped) → (**FT-6 Hub-only**, no 1.9.0 installer) → **1.10.0 Masdar Papers** (shipped)
+
+**Next map:** 2.0.0 MaktabOCR + Shahid (Tier 3 + multimodal gate) → 2.1.0 Sanad Arabic (FT-7) — see `docs/Nassila-Ouroboros-Future.md` §5
 
 ---
 
@@ -79,3 +96,4 @@ Read this at the start of every agent session. Update when focus, blockers, or s
 13. **1.7.0 Preflight+ UI** — matched/ambiguous/unmatched mapping breakdown in SharhLitePanel (`sharhLite.mappingBreakdown`, EN/AR). ✅ done (2026-08-10).
 14. **1.7.0 Projects residual — dirty-close warning** — main-process close guard (`src/main/app-close-guard.ts`, channels `app:close-requested`/`app:confirm-close`, IPC policy entries), preload `onCloseRequested`/`confirmClose`, renderer `useDirtyCloseGuard` hook showing the existing ConfirmDialog when `sessionIsDirty()`, `project.closeDirtyConfirm` (EN/AR). ✅ done (2026-08-10) — `tests/unit/app-close-guard.test.ts` + `tests/unit/dirty-close-guard.test.tsx`.
 15. **1.8.0 Sanad 9B** — `stripQwenThinkingTraces` in `repairGroundingJsonText` + `max_tokens: 2048` for sanad9b (`ipc-llm.ts`) + no-thinking template inline on the nassila-web Sanad setup guide (llama.cpp tab) with the Custom preset linking there (initial bundled `resources/qwen3.5-no-thinking.jinja` + `SanadQwenTemplateCard` + `app:qwen-template` IPC removed in favor of the website) + sole-tier `nassila-sanad-9b` registry (4B/12B/E4B hard-cut; single 9B chip; defaults; i18n) + doc refresh + version 1.8.0. ✅ done (2026-08-13) — `FEATURES-AND-TWEAKS.md` #16/#17 acceptance closed.
+16. **1.10.0 Masdar Papers** — #18 Wayback availability gating (`queryWaybackSnapshot` in webpage-metadata; `registry:checkWaybackAvailability` IPC; unconditional `[Wayback ↗]` deleted from OutputPanel; Resolve panel gated with direct snapshot links; DOI-as-target fixed); #19 papers dedupe (`dedupeBibEntries` + aliases in prepareAudit, `bibliographyDedupe` on report, conditional Sharh-lite line EN/AR) + folder-scan attach (`papers:scanFolder`/`papers:identify` IPC with SEC-01 pinning + caps in `shared/papers-limits.ts`, `engine/papers/match.ts` first-page DOI/title matcher, LoopSourcesPanel review flow, multi-key targeted re-audit via `bibKeyFilter: string[]` with legacy normalization); #20 Resolve fixes (grey-web de-suppression, confidence rebalance, panel prefill parity). ✅ done (2026-08-22) — tests/lint/typecheck green; installer `Nassila Setup 1.10.0.exe` cut same day.

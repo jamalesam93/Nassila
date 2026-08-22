@@ -761,6 +761,15 @@
     "pipelineGap": "جلب المصادر المفتوحة وإرفاق PDF المحلي متاحان (مصدر).",
     "unpaywallHint": "أضف بريد Unpaywall مرة واحدة من الإعدادات → عام لتفعيل جلب النص الكامل المفتوح لمعرّفات DOI.",
     "unpaywallConfigure": "فتح الإعدادات",
+    "attachPapers": "إرفاق أوراق…",
+    "attachPapersBusy": "جارٍ فحص المجلد ومطابقة ملفات PDF…",
+    "papersHint": "تُرفق الملفات المطابقة بمراجعها ويُعاد تدقيق تلك الإدخالات فقط.",
+    "papersBucket.matched": "مُطابَق",
+    "papersBucket.ambiguous": "غامض — راجِع يدوياً",
+    "papersBucket.unmatched": "غير مُطابَق",
+    "papersConfirm": "إرفاق {{count}} وإعادة التدقيق",
+    "papersCancel": "إلغاء",
+    "papersNoneFound": "لا ملفات PDF مطابقة لمراجعك.",
     "statusFindings": "{{count}} مصادر مُدقَّقة",
     "sourcesEmpty": "شغّل التدقيق لملء المصادر المقتبسة وأحكام سند.",
     "auditInProgressTitle": "التدقيق جارٍ",
@@ -890,6 +899,7 @@
     "diagnosticExported": "حُفظت حزمة التشخيص",
     "mappingCoverage": "تغطية ربط الاقتباسات: {{percent}}٪",
     "mappingBreakdown": "مُطابق {{matched}} · غامض {{ambiguous}} · غير مُطابق {{unmatched}}",
+    "dedupeSummary": "مراجع مكررة مُدمجة: {{merged}} · أزواج غامضة أُبقيت منفصلة: {{ambiguous}}",
     "exportSubmissionBundle": "تصدير حزمة نزاهة التسليم…",
     "submissionBundleExported": "حُفظت حزمة نزاهة التسليم"
   }

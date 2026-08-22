@@ -330,15 +330,6 @@ export default function OutputPanel() {
                           >
                             {item.URL}
                           </a>
-                          <a
-                            href={`https://web.archive.org/web/*/${item.URL}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="shrink-0 text-[10px] font-medium text-muted-foreground hover:text-foreground underline underline-offset-2"
-                            title={t('raqimResolve.waybackArchive')}
-                          >
-                            [Wayback ↗]
-                          </a>
                         </p>
                       )}
                       {item.DOI && (

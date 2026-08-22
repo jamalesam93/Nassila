@@ -28,6 +28,8 @@ export interface SharhLiteSummary {
   passageBuckets: { low: number; medium: number; high: number }
   claimBreakdownByFinding: FindingClaimBreakdown[]
   sourceCoverageLimitations: string[]
+  /** Present only when bibliography dedupe actually did work (#19). */
+  bibliographyDedupe?: { mergedPairs: number; ambiguousCount: number }
   nextActions: string[]
 }
 
@@ -166,6 +168,7 @@ export function buildSharhLiteSummary(report: AuditReport): SharhLiteSummary {
     passageBuckets: buildPassageBuckets(findings),
     claimBreakdownByFinding,
     sourceCoverageLimitations,
+    ...(report.bibliographyDedupe ? { bibliographyDedupe: report.bibliographyDedupe } : {}),
     nextActions
   }
 }

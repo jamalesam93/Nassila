@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest'
 import { buildGreyWebPageItem, classifyWebpageHost } from '../../src/engine/resolver/webpage-hosts'
-import { lookupRaqimCandidates } from '../../src/engine/resolver/raqim-resolve'
 
 describe('classifyWebpageHost', () => {
   it('classifies government hosts', () => {
@@ -33,14 +32,5 @@ describe('buildGreyWebPageItem', () => {
   })
 })
 
-describe('lookupRaqimCandidates grey web', () => {
-  it('resolves grey-web URLs deterministically', async () => {
-    const results = await lookupRaqimCandidates({
-      item: { id: 'w1', type: 'webpage', title: 'WHO fact sheet' },
-      key: 'https://www.who.int/news-room/fact-sheets',
-      kind: 'url'
-    })
-    expect(results[0]?.provider).toBe('grey_web')
-    expect(results[0]?.item.type).toBe('webpage')
-  })
-})
+// Grey-web lookup ordering lives in raqim-url-title-fallback.test.ts (#20):
+// the stub is a last resort and never suppresses registry title search.

@@ -45,6 +45,8 @@ export const IPC_POLICY: readonly IpcPolicyEntry[] = [
   { channel: 'fs:read-file-binary', direction: 'renderer-to-main', handler: 'ipc-handlers.ts', networkScope: 'none', input: 'sanitized', notes: 'assertAllowedPath on readablePaths allowlist (SEC-01)' },
   { channel: 'fs:write-file', direction: 'renderer-to-main', handler: 'ipc-handlers.ts', networkScope: 'none', input: 'sanitized', notes: 'assertAllowedPath on writablePaths; content type check (SEC-01)' },
   { channel: 'sourceArtifact:attach', direction: 'renderer-to-main', handler: 'ipc-handlers.ts', networkScope: 'none', input: 'sanitized', notes: 'assertAllowedPath then attachSourcePdf (SEC-01)' },
+  { channel: 'papers:scanFolder', direction: 'renderer-to-main', handler: 'ipc-handlers.ts', networkScope: 'none', input: 'none', notes: 'main-process folder dialog; recursive *.pdf walk with count/size caps; results pinned via allowReadablePaths (SEC-01, no renderer paths)' },
+  { channel: 'papers:identify', direction: 'renderer-to-main', handler: 'ipc-handlers.ts', networkScope: 'none', input: 'sanitized', notes: 'assertAllowedPath on scanned file; first-page DOI/title signals only (SEC-01)' },
 
   // ── Presets / settings / theme / app ──────────────────────────────────────
   { channel: 'presets:load', direction: 'renderer-to-main', handler: 'ipc-handlers.ts', networkScope: 'none', input: 'none', notes: 'no renderer input' },
@@ -70,6 +72,7 @@ export const IPC_POLICY: readonly IpcPolicyEntry[] = [
   { channel: 'registry:resolveManuscriptItem', direction: 'renderer-to-main', handler: 'ipc-registry.ts', networkScope: 'registry', input: 'sanitized', notes: 'sanitizeCslItem gate; registry resolve' },
   { channel: 'registry:alignManuscriptMetadata', direction: 'renderer-to-main', handler: 'ipc-registry.ts', networkScope: 'registry', input: 'sanitized', notes: 'sanitizeCslItem ×2 + sanitizeRegistrySource' },
   { channel: 'registry:resolveWebpageMetadata', direction: 'renderer-to-main', handler: 'ipc-registry.ts', networkScope: 'oa_fetch', input: 'sanitized', notes: 'URL policy check; webpage metadata fetch' },
+  { channel: 'registry:checkWaybackAvailability', direction: 'renderer-to-main', handler: 'ipc-registry.ts', networkScope: 'oa_fetch', input: 'sanitized', notes: 'trimmed-string gate; Wayback availability API query' },
 
   // ── Open access / URL fetch (main-process only) ───────────────────────────
   { channel: 'oa:unpaywall', direction: 'renderer-to-main', handler: 'ipc-oa.ts', networkScope: 'oa_fetch', input: 'sanitized', notes: 'DOI validation + Unpaywall API (SEC-04)' },

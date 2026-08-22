@@ -30,7 +30,7 @@ function coverageLabelKey(coverage: L3Coverage): string {
 
 interface LoopAuditDetailProps {
   finding: CitationFinding | null
-  onReaudit: (bibKey: string) => void
+  onReaudit: (bibKeys: string[]) => void
 }
 
 export default function LoopAuditDetail({ finding, onReaudit }: LoopAuditDetailProps) {
@@ -92,7 +92,7 @@ export default function LoopAuditDetail({ finding, onReaudit }: LoopAuditDetailP
       if (!path) return
       const attached = await window.api.attachSourcePdf(path)
       attachSourcePdf(finding.bibKey, attached)
-      onReaudit(finding.bibKey)
+      onReaudit([finding.bibKey])
     } catch (error) {
       pushToast('error', error instanceof Error ? error.message : String(error))
     } finally {

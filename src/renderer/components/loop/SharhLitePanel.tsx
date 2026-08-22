@@ -124,6 +124,16 @@ export default function SharhLitePanel({ report }: Props) {
             })}
           </p>
         ) : null}
+        {summary.bibliographyDedupe &&
+        (summary.bibliographyDedupe.mergedPairs > 0 ||
+          summary.bibliographyDedupe.ambiguousCount > 0) ? (
+          <p className="text-xs text-muted-foreground">
+            {t('sharhLite.dedupeSummary', {
+              merged: summary.bibliographyDedupe.mergedPairs,
+              ambiguous: summary.bibliographyDedupe.ambiguousCount
+            })}
+          </p>
+        ) : null}
       </div>
 
       <div className="mt-3 space-y-1">

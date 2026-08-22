@@ -11,26 +11,26 @@ Import or paste your bibliography, fix common errors, verify rows against Crossr
 
 | | |
 |---|---|
-| **Download (Windows)** | [**v1.8.0**](https://github.com/jamalesam93/Nassila/releases/tag/v1.8.0) · [Latest release](https://github.com/jamalesam93/Nassila/releases/latest) |
+| **Download (Windows)** | [**v1.10.0**](https://github.com/jamalesam93/Nassila/releases/tag/v1.10.0) · [Latest release](https://github.com/jamalesam93/Nassila/releases/latest) |
 | **Sanad model (HF)** | [`nassila-sanad-9b`](https://huggingface.co/QinEmPeRoR93/nassila-sanad-9b) (**FT-6** / v119 — sole tier; 6 default + 6 MTP GGUFs) — setup on the [website](https://nassila-web.vercel.app/en/docs/manuscript) |
 | **Website & docs** | [nassila-web.vercel.app](https://nassila-web.vercel.app) — [How-to](https://nassila-web.vercel.app/en/docs/how-to) · [User guide](https://nassila-web.vercel.app/en/docs/user-guide) · [Changelog](https://nassila-web.vercel.app/en/changelog) |
 | **Documentation (repo)** | [How-to guide](docs/HOW_TO_GUIDE.md) · [User guide](docs/USER_GUIDE.md) · [Brand](docs/BRAND.md) · [Changelog](CHANGELOG.md) |
 | **License** | [MIT](LICENSE) |
 
-> End users: install from **Releases** ([**v1.8.0**](https://github.com/jamalesam93/Nassila/releases/tag/v1.8.0)) or visit the [**website**](https://nassila-web.vercel.app). Developers: clone this repo and see [Getting started](#getting-started).
+> End users: install from **Releases** ([**v1.10.0**](https://github.com/jamalesam93/Nassila/releases/tag/v1.10.0)) or visit the [**website**](https://nassila-web.vercel.app). Developers: clone this repo and see [Getting started](#getting-started).
 
 The name **Nassila** is coined, inspired by the idea of a **sanad** (سند): a clear chain from what you write to where it came from.
 
-## What's new in v1.8.0 — Sanad 9B
+## What's new in v1.10.0 — Masdar Papers
 
-- **Sole-tier Sanad registry** — `nassila-sanad-9b` is the only Sanad tier: single 9B tier chip, setup modal / presets / hints / defaults all point at the 9B model. 4B S15 / 12B S14 / E4B retired (abstract-era); stored retired model ids fall back to generic local-model behavior while grounding still works.
-- **Qwen3.5 thinking handling** — `stripQwenThinkingTraces` runs first in the grounding JSON repair pipeline, so thinking-wrapped model output (with braces/quotes inside the reasoning) parses identically to clean JSON, and clean output passes through byte-identical.
-- **Token budget** — `max_tokens: 2048` on Sanad 9B grounding calls prevents mid-JSON truncation from thinking traces.
-- **No-thinking template on the web** — the `--chat-template-file` template for llama.cpp users lives in the [Sanad setup guide](https://nassila-web.vercel.app/en/docs/sanad-setup); the Custom provider preset links there.
+- **Raqim Resolve fixed for titles and URLs** — Resolve no longer works "only with DOI": paper landing pages now search Crossref / PubMed / OpenAlex / DataCite instead of returning a placeholder card, and title matches with moderate similarity surface again. The panel auto-copies the row's DOI/PMID/URL/title into the search box as you switch kinds, and Verify shows exactly what it searched.
+- **Bibliography dedupe** — duplicate entries (same DOI, or same title + year) collapse into one audit finding; cite sites from both numbers stay attached. Title-only look-alikes are flagged ambiguous instead of silently merged.
+- **Attach papers by folder** — point the Manuscript loop at a folder of source PDFs; Nassila scans it (≤200 files, 50 MB each), matches each PDF to your references by first-page DOI/title, and after your confirmation attaches and re-audits only the matched references.
+- **Honest Wayback links** — the unconditional `[Wayback ↗]` on every URL row is gone; the archive link appears only when a snapshot actually exists and goes straight to it.
 
-**Sanad weights (Hub, independent of app installers):** **FT-6** (v119) is the published sole tier on [`nassila-sanad-9b`](https://huggingface.co/QinEmPeRoR93/nassila-sanad-9b) as of 2026-08-21 — download the GGUF into LM Studio / llama.cpp; no new installer required. Next **app** cut is **1.10.0 Masdar Papers**.
+**Sanad weights (Hub, independent of app installers):** **FT-6** (v119) is the published sole tier on [`nassila-sanad-9b`](https://huggingface.co/QinEmPeRoR93/nassila-sanad-9b) as of 2026-08-21 — download the GGUF into LM Studio / llama.cpp.
 
-Full notes: [CHANGELOG.md](CHANGELOG.md) · [v1.8.0 release](https://github.com/jamalesam93/Nassila/releases/tag/v1.8.0).
+Full notes: [CHANGELOG.md](CHANGELOG.md) · [v1.10.0 release](https://github.com/jamalesam93/Nassila/releases/tag/v1.10.0).
 
 ## Who is this for?
 

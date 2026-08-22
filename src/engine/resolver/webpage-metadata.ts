@@ -1,6 +1,7 @@
 import type { CslItem } from '../types'
 import { classifyWebpageHost, type WebpageHostProfile } from './webpage-hosts'
 import { fetchUrlMetadata } from './url'
+import { fetchWithPolicy, readJsonResponse, tryValidateExternalUrl } from '../network/http'
 
 export interface WebpageHealthResult {
   url: string
@@ -19,13 +20,48 @@ export interface WebpageResolutionResult {
   health: WebpageHealthResult
 }
 
-/** Construct a canonical Wayback Machine snapshot lookup URL for dead or broken links. */
-export function buildWaybackUrl(rawUrl: string): string {
+/** Normalize a raw citation URL into an http(s) page target for archive lookups. */
+function canonicalPageUrl(rawUrl: string): string {
   let clean = rawUrl.trim()
   if (!/^https?:\/\//i.test(clean)) {
     clean = `https://${clean}`
   }
-  return `https://web.archive.org/web/*/${clean}`
+  return clean
+}
+
+/** Construct a canonical Wayback Machine snapshot lookup URL for dead or broken links. */
+export function buildWaybackUrl(rawUrl: string): string {
+  return `https://web.archive.org/web/*/${canonicalPageUrl(rawUrl)}`
+}
+
+export interface WaybackSnapshot {
+  timestamp: string
+  url: string
+}
+
+const WAYBACK_AVAILABILITY_ENDPOINT = 'https://archive.org/wayback/available'
+
+/**
+ * Query the Wayback availability API for the closest snapshot of a page.
+ * Returns null when no snapshot exists or the lookup fails — callers show nothing.
+ */
+export async function queryWaybackSnapshot(rawUrl: string): Promise<WaybackSnapshot | null> {
+  try {
+    const target = tryValidateExternalUrl(canonicalPageUrl(rawUrl))
+    if (!target) return null
+    const response = await fetchWithPolicy(
+      `${WAYBACK_AVAILABILITY_ENDPOINT}?url=${encodeURIComponent(target.toString())}`
+    )
+    if (!response.ok) return null
+    const data = await readJsonResponse<{
+      archived_snapshots?: { closest?: { available?: boolean; url?: string; timestamp?: string } }
+    }>(response)
+    const closest = data.archived_snapshots?.closest
+    if (!closest?.available || !closest.url || !closest.timestamp) return null
+    return { timestamp: closest.timestamp, url: closest.url }
+  } catch {
+    return null
+  }
 }
 
 /** Extract host profile, webpage metadata, and archive links for a target URL citation. */

@@ -36,7 +36,8 @@ export interface ManuscriptAuditStartRequest {
   }
   unpaywallEmail: string
   sourceArtifactsByBibKey?: Record<string, SourceArtifact>
-  bibKeyFilter?: string
+  /** Keys whose refs re-ground this run; empty/absent = full audit (#19). */
+  bibKeyFilter?: string[]
   priorRuns?: AuditRunProvenance[]
 }
 
@@ -46,16 +47,37 @@ export type ManuscriptAuditProgressEvent =
       kind: 'started'
       total: number
       shell: Omit<AuditReport, 'findings' | 'generatedAt'>
-      bibKeyFilter?: string
+      bibKeyFilter?: string[]
     }
   | { runId: string; kind: 'item-stage'; index: number; bibKey: string; stage: ManuscriptAuditItemStage }
   | { runId: string; kind: 'finding'; index: number; finding: CitationFinding; processed: number; total: number }
-  | { runId: string; kind: 'completed'; report: AuditReport; bibKeyFilter?: string }
+  | { runId: string; kind: 'completed'; report: AuditReport; bibKeyFilter?: string[] }
   | { runId: string; kind: 'cancelled' }
   | { runId: string; kind: 'failed'; message: string; partialReport?: AuditReport }
 
 const MAX_MANUSCRIPT_CHARS = 20_000_000
 const MAX_LIBRARY_ITEMS = 2_000
+const MAX_BIB_KEY_FILTER_KEYS = 50
+const MAX_BIB_KEY_FILTER_LENGTH = 500
+
+/**
+ * Normalizes the targeted re-audit filter. Accepts the current string[] shape
+ * and upgrades the legacy single-string filter so older saved sessions keep
+ * working (#19). Returns null for invalid input.
+ */
+export function normalizeBibKeyFilter(raw: unknown): string[] | null | undefined {
+  if (raw === undefined) return undefined
+  const list = Array.isArray(raw) ? raw : [raw]
+  if (list.length === 0 || list.length > MAX_BIB_KEY_FILTER_KEYS) return null
+  const keys: string[] = []
+  for (const item of list) {
+    if (typeof item !== 'string' || item.length === 0 || item.length > MAX_BIB_KEY_FILTER_LENGTH) {
+      return null
+    }
+    keys.push(item)
+  }
+  return keys
+}
 
 export interface AuditTrailExportRequest {
   runId: string
@@ -95,17 +117,18 @@ export function sanitizeManuscriptAuditStartRequest(raw: unknown): ManuscriptAud
     (!isRecord(value.sourceArtifactsByBibKey) ||
       !Object.values(value.sourceArtifactsByBibKey).every(isSourceArtifact))
   ) return null
-  if (
-    value.bibKeyFilter !== undefined &&
-    (typeof value.bibKeyFilter !== 'string' || value.bibKeyFilter.length === 0 || value.bibKeyFilter.length > 500)
-  ) return null
+  const bibKeyFilter = normalizeBibKeyFilter(value.bibKeyFilter)
+  if (bibKeyFilter === null) return null
   if (
     value.priorRuns !== undefined &&
     (!Array.isArray(value.priorRuns) ||
       value.priorRuns.length > 100 ||
       !value.priorRuns.every(isAuditRunProvenance))
   ) return null
-  return value as ManuscriptAuditStartRequest
+  return {
+    ...(value as ManuscriptAuditStartRequest),
+    ...(bibKeyFilter !== undefined ? { bibKeyFilter } : {})
+  }
 }
 
 function isCslItem(value: unknown): value is CslItem {
@@ -152,7 +175,9 @@ function isAuditRunProvenance(value: unknown): value is AuditRunProvenance {
     typeof value.generatedAt === 'string' &&
     typeof value.appVersion === 'string' &&
     typeof value.promptContractVersion === 'string' &&
-    (value.bibKeyFilter === undefined || typeof value.bibKeyFilter === 'string')
+    (value.bibKeyFilter === undefined ||
+      typeof value.bibKeyFilter === 'string' || // legacy persisted trails
+      (Array.isArray(value.bibKeyFilter) && value.bibKeyFilter.every((key) => typeof key === 'string')))
   )
 }
 

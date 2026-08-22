@@ -1,17 +1,36 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { AuditReport } from '../../../engine/manuscript/types'
+import {
+  matchPaperIdentity,
+  targetsFromItems,
+  type PaperMatch
+} from '../../../engine/papers/match'
+import { MAX_PAPERS_SCAN_FILES } from '../../../shared/papers-limits'
 import { useManuscriptAuditStore, type AuditStep } from '../../stores/manuscript-audit-store'
 import { useOuroborosLoopStore } from '../../stores/ouroboros-loop-store'
 import { useShellStore } from '../../stores/shell-store'
 import LoopAuditDetail from './LoopAuditDetail'
 import SharhLitePanel from './SharhLitePanel'
 
+interface PaperCandidate {
+  path: string
+  name: string
+  sizeBytes: number
+}
+
+type AttachPapersPhase = 'idle' | 'scanning' | 'review'
+
+interface AttachPapersReview {
+  matches: (PaperMatch & { candidate: PaperCandidate })[]
+}
+
 interface LoopSourcesPanelProps {
   report: AuditReport | null
   running: boolean
   step: AuditStep
   auditProgress: { processed: number; total: number } | null
-  onReaudit: (bibKey: string) => void
+  onReaudit: (bibKeys: string[]) => void
 }
 
 function statusDotClass(status: string): string {
@@ -44,6 +63,66 @@ export default function LoopSourcesPanel({
   const findings = report?.findings ?? []
   const selectedFinding = findings.find((f) => f.bibKey === selectedBibKey) ?? null
 
+  const [papersPhase, setPapersPhase] = useState<AttachPapersPhase>('idle')
+  const [papersReview, setPapersReview] = useState<AttachPapersReview | null>(null)
+  const attachSourcePdf = useOuroborosLoopStore((s) => s.attachSourcePdf)
+
+  const startAttachPapers = async () => {
+    if (!window.api?.scanPapersFolder || !report || running) return
+    setPapersPhase('scanning')
+    try {
+      const scan = await window.api.scanPapersFolder()
+      if (!scan.root || scan.files.length === 0) {
+        setPapersPhase('idle')
+        return
+      }
+      const targets = targetsFromItems(
+        findings.map((f) => ({ bibKey: f.bibKey, item: f.resolvedItem }))
+      )
+      const files = scan.files.slice(0, MAX_PAPERS_SCAN_FILES)
+      const matches: AttachPapersReview['matches'] = []
+      for (const candidate of files) {
+        try {
+          const signals = await window.api.identifyPaperPdf(candidate.path)
+          const match = matchPaperIdentity({ ...signals, fileName: candidate.name }, targets)
+          matches.push({ ...match, candidate })
+        } catch {
+          matches.push({
+            bibKeys: [],
+            kind: 'unmatched',
+            matchedBy: null,
+            candidate
+          })
+        }
+      }
+      setPapersReview({ matches })
+      setPapersPhase('review')
+    } catch {
+      setPapersPhase('idle')
+    }
+  }
+
+  const confirmAttachPapers = async () => {
+    if (!papersReview) return
+    const matched = papersReview.matches.filter((m) => m.kind === 'matched' && m.bibKeys[0])
+    for (const match of matched) {
+      try {
+        const artifact = await window.api?.attachSourcePdf(match.candidate.path)
+        if (artifact) attachSourcePdf(match.bibKeys[0], artifact)
+      } catch {
+        // Skip failed attaches; the review list can be re-run.
+      }
+    }
+    setPapersPhase('idle')
+    setPapersReview(null)
+    onReaudit(matched.map((m) => m.bibKeys[0]))
+  }
+
+  const cancelAttachPapers = () => {
+    setPapersPhase('idle')
+    setPapersReview(null)
+  }
+
   return (
     <section className="flex min-h-0 flex-1 flex-col overflow-hidden">
       <div className="shrink-0 border-b border-border px-4 py-2">
@@ -61,6 +140,75 @@ export default function LoopSourcesPanel({
               {t('loop.unpaywallConfigure')}
             </button>
           </p>
+        ) : null}
+        {report && !running ? (
+          papersPhase === 'idle' ? (
+            <button
+              type="button"
+              className="mt-2 rounded border border-input bg-background px-2 py-1 text-xs font-medium text-foreground hover:bg-accent"
+              onClick={() => void startAttachPapers()}
+            >
+              {t('loop.attachPapers')}
+            </button>
+          ) : null
+        ) : null}
+        {papersPhase === 'scanning' ? (
+          <p className="mt-2 text-xs text-muted-foreground">{t('loop.attachPapersBusy')}</p>
+        ) : null}
+        {papersPhase === 'review' && papersReview ? (
+          <div className="mt-2 space-y-1.5 border-s-2 border-border ps-3">
+            <p className="text-xs text-muted-foreground">{t('loop.papersHint')}</p>
+            {(['matched', 'ambiguous', 'unmatched'] as const).map((bucket) => {
+              const rows = papersReview.matches.filter((m) => m.kind === bucket)
+              if (rows.length === 0) return null
+              return (
+                <div key={bucket}>
+                  <p className="text-[11px] font-semibold">{t(`loop.papersBucket.${bucket}`)}</p>
+                  <ul className="mt-0.5 space-y-0.5">
+                    {rows.map((row) => (
+                      <li key={row.candidate.path} className="truncate text-xs text-muted-foreground">
+                        <span className="font-mono">{row.candidate.name}</span>
+                        {row.bibKeys.length > 0 ? (
+                          <span> → {row.bibKeys.join(', ')}</span>
+                        ) : null}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )
+            })}
+            {papersReview.matches.some((m) => m.kind === 'matched') ? (
+              <div className="flex gap-1.5 pt-1">
+                <button
+                  type="button"
+                  className="rounded bg-primary px-2 py-1 text-xs font-medium text-primary-foreground hover:opacity-90"
+                  onClick={() => void confirmAttachPapers()}
+                >
+                  {t('loop.papersConfirm', {
+                    count: papersReview.matches.filter((m) => m.kind === 'matched').length
+                  })}
+                </button>
+                <button
+                  type="button"
+                  className="rounded border border-input bg-background px-2 py-1 text-xs text-foreground hover:bg-accent"
+                  onClick={cancelAttachPapers}
+                >
+                  {t('loop.papersCancel')}
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-1.5 pt-1">
+                <p className="text-xs text-muted-foreground">{t('loop.papersNoneFound')}</p>
+                <button
+                  type="button"
+                  className="rounded border border-input bg-background px-2 py-1 text-xs text-foreground hover:bg-accent"
+                  onClick={cancelAttachPapers}
+                >
+                  {t('loop.papersCancel')}
+                </button>
+              </div>
+            )}
+          </div>
         ) : null}
       </div>
 

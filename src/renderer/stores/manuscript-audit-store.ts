@@ -28,7 +28,7 @@ interface ManuscriptAuditState {
     elapsedMs: number
   } | null
   activeRunId: string | null
-  activeBibKeyFilter: string | null
+  activeBibKeyFilter: string[] | null
   auditItemStages: Record<string, ManuscriptAuditItemStage>
   auditFindingSlots: Array<CitationFinding | undefined>
   userActionsByBibKey: Record<string, UserAction>

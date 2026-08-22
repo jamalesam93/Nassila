@@ -761,6 +761,15 @@
     "pipelineGap": "Open-access source fetch and local PDF attach are live (Masdar).",
     "unpaywallHint": "Add your Unpaywall email once in Settings → General to unlock OA full-text fetch for DOIs.",
     "unpaywallConfigure": "Open Settings",
+    "attachPapers": "Attach papers…",
+    "attachPapersBusy": "Scanning folder and matching PDFs…",
+    "papersHint": "Matched PDFs attach to their reference and re-audit only those entries.",
+    "papersBucket.matched": "Matched",
+    "papersBucket.ambiguous": "Ambiguous — review manually",
+    "papersBucket.unmatched": "Unmatched",
+    "papersConfirm": "Attach {{count}} & re-audit",
+    "papersCancel": "Cancel",
+    "papersNoneFound": "No PDFs matched your references.",
     "statusFindings": "{{count}} sources audited",
     "sourcesEmpty": "Run an audit to populate cited sources and Sanad verdicts.",
     "auditInProgressTitle": "Audit in progress",
@@ -890,6 +899,7 @@
     "diagnosticExported": "Diagnostic bundle saved",
     "mappingCoverage": "Citation mapping coverage: {{percent}}%",
   "mappingBreakdown": "Matched {{matched}} · ambiguous {{ambiguous}} · unmatched {{unmatched}}",
+    "dedupeSummary": "Duplicate references merged: {{merged}} · ambiguous pairs kept separate: {{ambiguous}}",
     "exportSubmissionBundle": "Export submission integrity bundle…",
     "submissionBundleExported": "Submission integrity bundle saved"
   }

@@ -2,6 +2,35 @@
 
 All notable changes to **Nassila** are documented here.
 
+## [1.10.0] — 2026-08-22 · Masdar Papers
+
+Windows installer `Nassila Setup 1.10.0.exe`. **GitHub Release:** [v1.10.0](https://github.com/jamalesam93/Nassila/releases/tag/v1.10.0).
+
+FT-6 shipped Hub-only on 2026-08-21 — **no 1.9.0 installer**; this is the next app cut.
+
+### Added
+
+- **Papers dedupe (#19)** — `dedupeBibEntries` in `src/engine/manuscript/mapping.ts`: bibliography entries merge by normalized DOI, else normalized title + year; title-only look-alikes are reported ambiguous, never silently merged. Number→canonicalKey aliases keep numeric cite sites (`[3]`, `[18]`) intact after a merge. Applied in `prepareAudit` for both manuscript-References and bibliography-library sources; outcome surfaces as `bibliographyDedupe` on the audit report and one conditional line in Sharh-lite (EN/AR).
+- **Folder-scan PDF attach (#19)** — `papers:scanFolder` + `papers:identify` IPC (main-process directory dialog, recursive `*.pdf` walk under the chosen root only with count/size caps from `src/shared/papers-limits.ts`, SEC-01 allow-list pinning); first-page DOI/title signals via pdf.js (`src/engine/papers/match.ts`) plus filename heuristics; "Attach papers…" review flow in `LoopSourcesPanel` (matched / ambiguous / unmatched buckets) that attaches only matched mapped refs via the existing content-addressed cache and re-audits exactly those keys.
+- **Targeted re-audit for multiple refs (#19)** — `bibKeyFilter` widened to `string[]` across the audit contract/IPC/prior-runs/renderer with per-item and array caps; legacy persisted single-string filters normalize to `[string]` so older sessions keep working.
+
+### Changed
+
+- **Raqim Resolve: URL rows search registries again (#20)** — the grey-web catalogue stub no longer suppresses resolution: recognized-host results merge with an always-on registry title search, and the stub appears only as a last resort when nothing else matched (`src/engine/resolver/raqim-resolve.ts`). Previously any paper landing page returned only a junk grey-web card.
+- **Raqim Resolve: non-exact confidence rebalance (#20)** — title-search candidates now score `min(0.8, 0.24 + 0.58 × similarity)` instead of `0.62 × similarity`, so moderate (~0.55+) title matches clear the 0.42 threshold; weak/garbage lookups stay filtered.
+- **Resolve panel field prefill parity (#20)** — switching the lookup kind auto-copies the row's matching field into the key box (DOI/PMID/PMCID/URL/title), never clobbering user edits; Verify-row syncs kind+key to the best identifier so the UI shows what will be searched.
+- **Wayback archive links gated on snapshot existence (#18)** — unconditional `[Wayback ↗]` links removed from bibliography URL rows; the Resolve panel queries the availability API in main (`registry:checkWaybackAvailability` IPC) and renders a direct-to-snapshot link only when a snapshot exists. Archive lookups always target the page URL — the doi.org fallback no longer leaks into Wayback targets.
+
+### Tests
+
+- `raqim-url-title-fallback.test.ts` — URL+title registry resolution, host-result merging, grey-web last resort, garbage filtering, rebalanced-confidence bounds.
+- `raqim-resolve-panel.test.tsx` — kind-switch prefill, dirty-input rule, verify-sync chain, Wayback gating (snapshot / no-snapshot / no-URL).
+- `webpage-metadata.test.ts` — `queryWaybackSnapshot` hit/miss/failure/invalid-target.
+- `manuscript-bib-mapping.test.ts` — DOI merge + aliases, title+year merge, conflicting-DOI separation, ambiguity bucket, alias rewrite through mapping.
+- `manuscript-audit-contract.test.ts` — `normalizeBibKeyFilter` caps + legacy normalization; sanitized targeted re-audit requests.
+- `papers-scan-match.test.ts` — folder walk + caps, DOI/title/ambiguous/unmatched matching, filename DOI, first-page heuristics, pdf.js identity extraction (mocked).
+- Updated: `loop-audit-detail-attach.test.tsx` (array re-audit), `webpage-hosts.test.ts` (grey-web ordering moved to mocked coverage).
+
 ## [1.8.0] — 2026-08-13 · Sanad 9B
 
 Windows installer `Nassila Setup 1.8.0.exe`. **GitHub Release:** [v1.8.0](https://github.com/jamalesam93/Nassila/releases/tag/v1.8.0).
