@@ -531,6 +531,21 @@ export async function resolveDoiForTitle(
   item: CslItem
 ): Promise<{ item: CslItem; log: CorrectionLog[] } | null> {
   const match = await findRegistryMatchForItem(item)
+  if (!match) return null
+  return resolveDoiFromCandidates(item, [match])
+}
+
+/**
+ * Pure core of the DOI↔title repair ("Keep my title — find correct DOI"):
+ * pick the first candidate carrying a DOI that genuinely belongs to the row's
+ * title, swap the DOI, and fill missing fields. Title similarity below 0.6
+ * rejects registry noise; the current DOI short-circuits.
+ */
+export function resolveDoiFromCandidates(
+  item: CslItem,
+  candidates: CslItem[]
+): { item: CslItem; log: CorrectionLog[] } | null {
+  const match = candidates.find((candidate) => candidate.DOI?.trim())
   if (!match?.DOI) return null
 
   const current = item.DOI?.trim().toLowerCase()
@@ -751,7 +766,8 @@ function registryIdentityCompatible(local: CslItem, canonical: CslItem): boolean
   return titleSimilarity(local.title.toLowerCase(), canonical.title.toLowerCase()) >= 0.45
 }
 
-function mergeFields(
+/** Fill only EMPTY local fields from the online record — never overwrites populated values. */
+export function mergeFields(
   local: CslItem,
   online: CslItem,
   log: CorrectionLog[],

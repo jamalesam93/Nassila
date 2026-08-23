@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useCitationStore, type CitationStatus } from '../stores/citation-store'
 import { useShellStore } from '../stores/shell-store'
 import { requestConfirm } from '../stores/confirm-store'
+import { pushToast } from '../lib/notify'
 import type { PredatoryFlag } from '../../engine/types'
 import type { LayerVerdict } from '../../engine/manuscript/types'
 import type { OutputListFilter } from '../utils/output-filters'
@@ -263,7 +264,7 @@ export default function IssuePanel() {
                         setPredatoryListMeta(meta)
                         setPredatoryUpdateAvailable(false)
                       } catch {
-                        /* ignore */
+                        pushToast('error', t('predatoryPanel.updateFailed'))
                       }
                     })()
                   }}

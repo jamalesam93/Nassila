@@ -225,7 +225,15 @@ export function useCitationEngine() {
   }, [ingestItems, processRawInput])
 
   const resolveId = useCallback(async (input: string) => {
-    const item = await resolveIdentifier(input)
+    // Identifier resolution runs in main via IPC (packaged CSP blocks renderer
+    // fetch); the direct engine path stays as a dev fallback.
+    let item: CslItem | null
+    if (window.api?.resolveIdentifiers) {
+      const results = (await window.api.resolveIdentifiers([input])) as (CslItem | null)[]
+      item = results[0] ?? null
+    } else {
+      item = await resolveIdentifier(input)
+    }
     if (item) {
       const store = useCitationStore.getState()
       const nextItems = [...store.citations, item]
@@ -236,7 +244,9 @@ export function useCitationEngine() {
   }, [applyDerivedState])
 
   const batchResolveIds = useCallback(async (inputs: string[]) => {
-    const results = await batchResolve(inputs)
+    const results = window.api?.resolveIdentifiers
+      ? ((await window.api.resolveIdentifiers(inputs)) as (CslItem | null)[])
+      : await batchResolve(inputs)
     const items = results.filter((r): r is CslItem => r !== null)
     if (items.length > 0) {
       const store = useCitationStore.getState()
@@ -279,12 +289,24 @@ export function useCitationEngine() {
     }
 
     if (useOnline && store.networkStatus === 'online') {
-      const { enhanceCitationsOnline } = await import('../../engine/autocorrect/enhance')
-      const { enhanced, log: onlineLog } = await enhanceCitationsOnline(allCorrected, undefined, {
-        shouldAbort: () => useCitationStore.getState().citations.length === 0
-      })
-      allCorrected = enhanced
-      allLog.push(...onlineLog)
+      // Online enhancement runs in main via IPC (packaged CSP blocks renderer
+      // fetch); the direct engine path stays as a dev fallback. Abort cannot
+      // cross IPC — the post-call empty-library guard covers cancellation.
+      if (window.api?.enhanceCitations) {
+        const result = (await window.api.enhanceCitations(allCorrected)) as {
+          enhanced: CslItem[]
+          log: CorrectionLog[]
+        }
+        allCorrected = result.enhanced
+        allLog.push(...result.log)
+      } else {
+        const { enhanceCitationsOnline } = await import('../../engine/autocorrect/enhance')
+        const { enhanced, log: onlineLog } = await enhanceCitationsOnline(allCorrected, undefined, {
+          shouldAbort: () => useCitationStore.getState().citations.length === 0
+        })
+        allCorrected = enhanced
+        allLog.push(...onlineLog)
+      }
     }
 
     if (useCitationStore.getState().citations.length === 0) {
@@ -334,16 +356,39 @@ export function useCitationEngine() {
     const target = store.citations.find((item) => item.id === citationId)
     if (!target || target.DOI) return []
 
+    // Online enhancement runs in main via IPC (packaged CSP blocks renderer fetch).
+    let log: CorrectionLog[]
+    if (window.api?.enhanceCitations) {
+      const result = (await window.api.enhanceCitations([target])) as {
+        enhanced: CslItem[]
+        log: CorrectionLog[]
+      }
+      log = result.log
+      const enhancedTarget = result.enhanced[0]
+      if (!enhancedTarget || log.length === 0) return log
+      const latestStore = useCitationStore.getState()
+      const nextItems = latestStore.citations.map((item) =>
+        item.id === citationId ? enhancedTarget : item
+      )
+      latestStore.setCitations(nextItems, 'autocorrect', 'Find missing DOI')
+      const postIssues = validateCitations(nextItems, latestStore.selectedStyleId ?? undefined)
+      applyDerivedState(nextItems, latestStore.selectedStyleId, {
+        issues: postIssues,
+        statuses: buildValidationStatuses(nextItems, postIssues)
+      })
+      return log
+    }
+
     const { enhanceCitationsOnline } = await import('../../engine/autocorrect/enhance')
-    const { enhanced, log } = await enhanceCitationsOnline([target])
+    const { enhanced, log: directLog } = await enhanceCitationsOnline([target])
     const enhancedTarget = enhanced[0]
 
-    if (!enhancedTarget || log.length === 0) return log
+    if (!enhancedTarget || directLog.length === 0) return directLog
 
     const latestStore = useCitationStore.getState()
-    const nextItems = latestStore.citations.map((item) => (
+    const nextItems = latestStore.citations.map((item) =>
       item.id === citationId ? enhancedTarget : item
-    ))
+    )
 
     latestStore.setCitations(nextItems, 'autocorrect', 'Find missing DOI')
     const postIssues = validateCitations(nextItems, latestStore.selectedStyleId ?? undefined)
@@ -352,7 +397,7 @@ export function useCitationEngine() {
       statuses: buildValidationStatuses(nextItems, postIssues)
     })
 
-    return log
+    return directLog
   }, [applyDerivedState])
 
   const resolveDoiForCitation = useCallback(async (citationId: string): Promise<CorrectionLog[]> => {
@@ -362,8 +407,25 @@ export function useCitationEngine() {
     const target = store.citations.find((item) => item.id === citationId)
     if (!target?.title?.trim()) return []
 
-    const { resolveDoiForTitle } = await import('../../engine/autocorrect/enhance')
-    const result = await resolveDoiForTitle(target)
+    const { resolveDoiForTitle, resolveDoiFromCandidates } = await import(
+      '../../engine/autocorrect/enhance'
+    )
+    // Registry search runs in main via the Raqim lookup IPC (packaged CSP blocks
+    // renderer fetch); the direct engine path stays as a dev fallback.
+    let result: { item: CslItem; log: CorrectionLog[] } | null
+    if (window.api?.lookupRaqimCandidates) {
+      const candidates = await window.api.lookupRaqimCandidates({
+        item: target,
+        kind: 'title',
+        key: target.title
+      })
+      result = resolveDoiFromCandidates(
+        target,
+        candidates.map((candidate) => candidate.item)
+      )
+    } else {
+      result = await resolveDoiForTitle(target)
+    }
     if (!result) return []
 
     const latestStore = useCitationStore.getState()

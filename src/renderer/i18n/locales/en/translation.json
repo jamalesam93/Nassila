@@ -507,6 +507,7 @@
     "source": "List: {{origin}} (v{{version}})",
     "updateAvailableBanner": "A newer community predatory-journal list may be available.",
     "updateNow": "Update list",
+    "updateFailed": "Predatory-list update failed — check your connection and try again.",
     "delete": "Delete",
     "keep": "Keep (this session)"
   },

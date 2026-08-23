@@ -34,6 +34,18 @@ function sanitizeVerifyMaxItems(maxItems: unknown): number {
   return Math.min(MAX_VERIFICATION_ITEMS, Math.max(1, Math.floor(maxItems)))
 }
 
+const MAX_RESOLVE_INPUTS = 200
+const MAX_RESOLVE_INPUT_LENGTH = 500
+
+function sanitizeResolveInputs(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return []
+  return raw
+    .filter((value): value is string => typeof value === 'string')
+    .map((value) => value.trim())
+    .filter((value) => value.length > 0 && value.length <= MAX_RESOLVE_INPUT_LENGTH)
+    .slice(0, MAX_RESOLVE_INPUTS)
+}
+
 export function registerRegistryIpcHandlers(): void {
   ipcMain.handle('registry:searchJournals', async (_event, query: unknown, rows: unknown) => {
     const q = sanitizeJournalSearchQuery(query)
@@ -96,5 +108,23 @@ export function registerRegistryIpcHandlers(): void {
     }
     const { queryWaybackSnapshot } = await import('../engine/resolver/webpage-metadata')
     return queryWaybackSnapshot(rawUrl.trim())
+  })
+
+  /** Online citation enhancement (autocorrect step, DOI lookup) — registry fetch stays in main. */
+  ipcMain.handle('registry:enhanceCitations', async (_event, citations: unknown) => {
+    const items = sanitizeCitations(citations).slice(0, MAX_VERIFICATION_ITEMS)
+    if (items.length === 0) {
+      return { enhanced: [], log: [] }
+    }
+    const { enhanceCitationsOnline } = await import('../engine/autocorrect/enhance')
+    return enhanceCitationsOnline(items)
+  })
+
+  /** Input-bar identifier resolution (DOI/PMID/PMCID/ISBN/URL) — registry fetch stays in main. */
+  ipcMain.handle('registry:resolveIdentifiers', async (_event, inputs: unknown) => {
+    const cleaned = sanitizeResolveInputs(inputs)
+    if (cleaned.length === 0) return []
+    const { batchResolve } = await import('../engine/resolver/index')
+    return batchResolve(cleaned)
   })
 }

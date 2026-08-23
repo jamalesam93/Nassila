@@ -388,6 +388,34 @@ These were identified in the cross-repo review and confirmed by the 2026-06-28 s
 
 ✅ **Implemented 2026-08-22.**
 
+### 21. Packaged network parity — renderer fetch → main IPC
+
+**Problem.** Production CSP is `connect-src 'self'` (SEC hardening, 1.1.x): the packaged renderer can only reach the network through IPC. Four user-facing paths still called network-bound engine functions directly from the renderer and **silently did nothing in installed builds** (dev worked, masking them):
+
+1. **"Keep my title — find correct DOI"** (`resolveDoiForTitle` → Crossref/PubMed/OpenAlex) — reported via the DOI↔title conflict buttons.
+2. **DOI lookup** — row action + "Find Missing DOIs" menu (`enhanceCitationsOnline`).
+3. **Autocorrect's online step** (`enhanceCitationsOnline` over the whole library).
+4. **Input-bar "Resolve"** (`resolveIdentifier`/`batchResolve`).
+
+**Design.**
+- Keep-my-title: registry search via the existing `registry:lookupRaqimCandidates` IPC (main, ranked by the #20-tuned scorer); new pure core `resolveDoiFromCandidates` in `enhance.ts` ports the guards (same-DOI short-circuit, ≥0.6 title similarity, fill-missing via exported `mergeFields`). Semantics preserved: title is the trusted anchor, the replacement DOI must belong to it.
+- New `registry:enhanceCitations` IPC: `sanitizeCitations` + `MAX_VERIFICATION_ITEMS` cap → `enhanceCitationsOnline` in main. Used by DOI lookup and the autocorrect online step (abort callback can't cross IPC; post-call empty-library guard covers it).
+- New `registry:resolveIdentifiers` IPC: trimmed string inputs (200×500 caps) → `batchResolve` in main.
+- Renderer call sites use IPC when `window.api` exposes it; direct engine paths remain as dev fallbacks (pattern parity with `registry:verifyUnified`).
+- **Guard:** `tests/unit/renderer-network-boundary.test.ts` fails CI if renderer code imports network-bound engine modules (`engine/resolver`, `autocorrect/enhance`, `network/http`) outside the guarded fallback site — this bug class cannot be silently reintroduced.
+- Sweep fix: predatory "Update list" banner button now toasts failure instead of ignoring it.
+
+**Effort:** medium. **Blast radius:** `use-citation-engine.ts`, `enhance.ts` (exports), `ipc-registry.ts`, preload, `ipc-policy.ts`, `IssuePanel.tsx`, tests.
+
+**Ship:** **1.10.1** ✅ **Shipped 2026-08-23.**
+
+**Acceptance.**
+- [x] Keep-my-title swaps the DOI in the packaged app; same-DOI and low-similarity candidates rejected (unit-tested via `resolveDoiFromCandidates`).
+- [x] DOI lookup + autocorrect online step + input-bar Resolve all run in main; renderer falls back to engine paths only when `window.api` is absent.
+- [x] New IPCs registered in the policy inventory (self-scanning test) with input caps.
+- [x] Boundary guard test green; only `use-citation-engine.ts` may import network-bound engine modules.
+- [x] Predatory Update-list failure shows a toast (EN/AR).
+
 ---
 
 ## P2 — Polish / when loop IA work continues
@@ -449,6 +477,7 @@ Do not pull these into a tweak batch:
 13. **P1 #16 + #17 → 1.8.0 Sanad 9B** — sole-tier registry + Qwen3.5 thinking handling + no-thinking template on the web. ✅ **Shipped 2026-08-13.**
 14. **P1 #18 + #19 + #20 → 1.10.0 Masdar Papers** — Wayback availability gating + papers dedupe/folder attach + Raqim Resolve URL/title fixes (`Nassila-Ouroboros-Future.md` §5). ✅ **Shipped 2026-08-22** — installer `Nassila Setup 1.10.0.exe`.
 15. **∥ NassilaT:** **FT-6** Hub **SHIPPED 2026-08-21** (no 1.9.0 installer); next app cut **1.10.0**; **FT-7 Arabic** → **2.1.0**.
+16. **P1 #21 → 1.10.1 Packaged network parity** — Keep-my-title / DOI lookup / autocorrect online / input-Resolve through main IPC + renderer network-boundary guard. ✅ **Shipped 2026-08-23.**
 16. **2.0.0 MaktabOCR + Shahid** — Arabic/vision OCR + tables/figures (Tier 3 + multimodal gate).
 
 **Red-line check before each merge:** no training/corpus/eval content surfaces in app UI or copy (see top of file).

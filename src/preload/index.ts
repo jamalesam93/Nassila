@@ -292,7 +292,13 @@ const api = {
   checkWaybackAvailability: (
     rawUrl: string
   ): Promise<{ timestamp: string; url: string } | null> =>
-    ipcRenderer.invoke('registry:checkWaybackAvailability', rawUrl)
+    ipcRenderer.invoke('registry:checkWaybackAvailability', rawUrl),
+
+  enhanceCitations: (items: unknown): Promise<unknown> =>
+    ipcRenderer.invoke('registry:enhanceCitations', items),
+
+  resolveIdentifiers: (inputs: string[]): Promise<unknown> =>
+    ipcRenderer.invoke('registry:resolveIdentifiers', inputs)
 }
 
 contextBridge.exposeInMainWorld('api', api)

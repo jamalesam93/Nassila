@@ -73,6 +73,8 @@ export const IPC_POLICY: readonly IpcPolicyEntry[] = [
   { channel: 'registry:alignManuscriptMetadata', direction: 'renderer-to-main', handler: 'ipc-registry.ts', networkScope: 'registry', input: 'sanitized', notes: 'sanitizeCslItem ×2 + sanitizeRegistrySource' },
   { channel: 'registry:resolveWebpageMetadata', direction: 'renderer-to-main', handler: 'ipc-registry.ts', networkScope: 'oa_fetch', input: 'sanitized', notes: 'URL policy check; webpage metadata fetch' },
   { channel: 'registry:checkWaybackAvailability', direction: 'renderer-to-main', handler: 'ipc-registry.ts', networkScope: 'oa_fetch', input: 'sanitized', notes: 'trimmed-string gate; Wayback availability API query' },
+  { channel: 'registry:enhanceCitations', direction: 'renderer-to-main', handler: 'ipc-registry.ts', networkScope: 'registry', input: 'sanitized', notes: 'sanitizeCitations + MAX_VERIFICATION_ITEMS cap; online enhance in main (packaged CSP)' },
+  { channel: 'registry:resolveIdentifiers', direction: 'renderer-to-main', handler: 'ipc-registry.ts', networkScope: 'registry', input: 'sanitized', notes: 'trimmed string[] with count/length caps; batchResolve in main (packaged CSP)' },
 
   // ── Open access / URL fetch (main-process only) ───────────────────────────
   { channel: 'oa:unpaywall', direction: 'renderer-to-main', handler: 'ipc-oa.ts', networkScope: 'oa_fetch', input: 'sanitized', notes: 'DOI validation + Unpaywall API (SEC-04)' },

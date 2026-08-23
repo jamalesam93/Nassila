@@ -2,6 +2,27 @@
 
 All notable changes to **Nassila** are documented here.
 
+## [1.10.1] — 2026-08-23 · Packaged network parity
+
+Windows installer `Nassila Setup 1.10.1.exe`. **GitHub Release:** [v1.10.1](https://github.com/jamalesam93/Nassila/releases/tag/v1.10.1).
+
+### Fixed
+
+- **"Keep my title — find correct DOI" works in the packaged app** — the DOI↔title repair searched Crossref/PubMed/OpenAlex from the renderer, which production CSP (`connect-src 'self'`) blocks; every resolver swallowed the failure, so the button silently did nothing in installed builds (dev was unaffected). The registry search now runs in main process via the Raqim lookup IPC, keeping the same semantics: title is the trusted anchor, the replacement DOI must belong to it (≥0.6 title similarity, same-DOI short-circuit), and only empty fields fill from the new record (`resolveDoiFromCandidates`, `src/engine/autocorrect/enhance.ts`).
+- **DOI lookup works in the packaged app** — the row-level "Find DOI" action and the "Find Missing DOIs" menu used the same renderer-fetch path; online enhancement now runs in main via `registry:enhanceCitations` IPC.
+- **Autocorrect's online step works in the packaged app** — same migration through `registry:enhanceCitations`.
+- **Input-bar "Resolve" works in the packaged app** — pasting DOI/ISBN/PMID/URL identifiers and pressing Resolve fetched registries from the renderer; resolution now runs in main via `registry:resolveIdentifiers` IPC (trimmed string inputs, 200×500 caps).
+- **"Update list" (predatory banner) reports failure** — the Issue-panel update button swallowed errors silently; it now shows a toast on failure.
+
+### Changed
+
+- **Network boundary guard** — new architecture test (`renderer-network-boundary.test.ts`) fails CI if renderer code ever imports network-bound engine modules outside the guarded IPC-fallback sites in `use-citation-engine.ts`, making this bug class structurally impossible to reintroduce.
+
+### Tests
+
+- `resolve-doi-candidates.test.ts` — DOI swap + field fill, same-DOI short-circuit, <0.6 similarity rejection, no-DOI candidates, confidence ordering, doi.org URL fallback.
+- `renderer-network-boundary.test.ts` — renderer import scan + IPC-fallback wiring assertions.
+
 ## [1.10.0] — 2026-08-22 · Masdar Papers
 
 Windows installer `Nassila Setup 1.10.0.exe`. **GitHub Release:** [v1.10.0](https://github.com/jamalesam93/Nassila/releases/tag/v1.10.0).

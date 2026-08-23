@@ -4,7 +4,7 @@
 **Scope:** Nassila (app) · NassilaT (training) · nassila-web (docs)  
 **Sources reviewed:** `NassilaT/training/OUROBOROS_OPERATOR_MAP.md`, `Nassila/docs/FEATURES-AND-TWEAKS.md`, `STATE.md`, `PRODUCT.md`, `OUROBOROS_CONTEXT.md`, `CHANGELOG.md`, engine/renderer code, field notes, website release train
 
-**App baseline:** **1.10.0** (Masdar Papers, 2026-08-22). **Sanad model (Hub):** 9B **FT-6** (sole published tier, v119, 2026-08-21) — Hub/GGUF only, **no 1.9.0 installer**. **Shahid** stays in **2.0.0** (Tier 3 multimodal gate).
+**App baseline:** **1.10.1** (Packaged network parity, 2026-08-23; 1.10.0 Masdar Papers 2026-08-22). **Sanad model (Hub):** 9B **FT-6** (sole published tier, v119, 2026-08-21) — Hub/GGUF only, **no 1.9.0 installer**. **Shahid** stays in **2.0.0** (Tier 3 multimodal gate).
 
 ---
 
