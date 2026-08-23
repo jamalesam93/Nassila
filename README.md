@@ -21,6 +21,12 @@ Import or paste your bibliography, fix common errors, verify rows against Crossr
 
 The name **Nassila** is coined, inspired by the idea of a **sanad** (سند): a clear chain from what you write to where it came from.
 
+## What's new in v1.10.1 — Packaged network parity
+
+- **"Keep my title — find correct DOI" works in installed builds** — the DOI↔title repair searched Crossref / PubMed / OpenAlex from the sandboxed renderer, which the production security policy blocks, so the button silently did nothing in the installed app (dev runs were unaffected). The registry search now runs in the main process with the same semantics: your title is the trusted anchor, the replacement DOI must genuinely belong to it, and only empty fields fill from the new record.
+- **DOI lookup, Autocorrect's online step, and the input-bar "Resolve" work in installed builds** — all three used the same blocked renderer path; all three now resolve through the main process.
+- **"Update list" (predatory-journal banner) reports failure** with a toast instead of failing silently.
+
 ## What's new in v1.10.0 — Masdar Papers
 
 - **Raqim Resolve fixed for titles and URLs** — Resolve no longer works "only with DOI": paper landing pages now search Crossref / PubMed / OpenAlex / DataCite instead of returning a placeholder card, and title matches with moderate similarity surface again. The panel auto-copies the row's DOI/PMID/URL/title into the search box as you switch kinds, and Verify shows exactly what it searched.
