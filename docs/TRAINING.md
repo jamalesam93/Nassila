@@ -37,10 +37,16 @@ E:/Cursor Projects/
 | Laptop smoke sign-off | `training/outputs/LAPTOP_SMOKE_SIGNOFF.md` |
 | HF verify | `training/HF_RELEASE_VERIFY.md` |
 | Tier 3 plan | `training/PHASE3_TIER3_GROUNDWORK.md` |
+| **2.0 operator index** | `training/2.0_OPERATOR_INDEX.md` |
+| Sidecar Vast run | `training/SIDECAR_VAST_RUNBOOK.md` |
+| Product holdout build | `training/PRODUCT_HOLDOUT_BUILD.md` |
 | Next Vast run | `training/PHASE2_14_12B_MULTI_CLAIM_WALKTHROUGH.md` |
 | Roadmap | `training/ROADMAP.md` |
 | Ship gates | `docs/DUAL_TIER_POLICY.md` |
 | GO/NO-GO log | `training/EVAL_GONOGO.md` |
+| Packaged OCR smoke | `docs/PACKAGED_OCR_SMOKE.md` |
+| Arabic OCR adapter | `docs/ARABIC_OCR_ADAPTER.md` |
+| 2.0 release (after GO) | `docs/RELEASE_2.0_CHECKLIST.md` |
 | A/B pipeline | `training/PHASE2_9_AB_PILOT_WALKTHROUGH.md` |
 | Dataset schema | `training/DATASET_SCHEMA.md` |
 | Corpus | `training/CORPUS_PIPELINE.md` |

@@ -164,7 +164,7 @@ export function buildSparseTextPdf(): ArrayBuffer {
 
 /**
  * Two-column page: left column x=60, right column x=380, staggered baselines
- * (left even y, right odd y) so pdf.js `reorderForColumns` has observable
+ * (left even y, right odd y) so pdf.js column detection has observable
  * effect. Right-column runs are written first in the content stream; correct
  * reading order must place left column first.
  */
@@ -175,6 +175,20 @@ export function buildTwoColumnPdf(): ArrayBuffer {
     const leftY = rightY - 5
     runs.push({ x: 380, y: rightY, size: 12, text: `R${String(i + 1).padStart(2, '0')} second column sentence` })
     runs.push({ x: 60, y: leftY, size: 12, text: `L${String(i + 1).padStart(2, '0')} first column sentence` })
+  }
+  return buildTextPdf([runs])
+}
+
+/**
+ * Two-column page with matching left/right baselines (same Y). Regression for
+ * equal-Y column merge: left and right text must not join on one line.
+ */
+export function buildAlignedTwoColumnPdf(): ArrayBuffer {
+  const runs: PdfTextRun[] = []
+  for (let i = 0; i < 12; i++) {
+    const y = 705 - i * 20
+    runs.push({ x: 380, y, size: 12, text: `R${String(i + 1).padStart(2, '0')} second column sentence` })
+    runs.push({ x: 60, y, size: 12, text: `L${String(i + 1).padStart(2, '0')} first column sentence` })
   }
   return buildTextPdf([runs])
 }

@@ -15,6 +15,7 @@ import {
   buildGroundingLlmMessages,
   downgradeInvalidSupportedClaims,
   evidenceFromGroundingParse,
+  filterClaimsForActiveBibKey,
   GROUNDING_EXCERPT_MAX_CHARS,
   GROUNDING_PASSAGE_MAX_CHARS,
   GROUNDING_PROMPT_CONTRACT_VERSION,
@@ -54,6 +55,11 @@ import {
 } from './prompt-injection-scan'
 import { buildPassageWindow } from './passage-window'
 import { segmentManuscriptText } from './segments'
+import {
+  extractDeterministicEvidenceFromMarkdown,
+  linkEvidenceToCiteSites,
+  type ShahidEvidence
+} from '../shahid'
 import type {
   AuditReport,
   CitationFinding,
@@ -426,10 +432,27 @@ async function auditEntry(params: {
   emitStage(progress, request.runId, index, entry.key, 'grounding')
   const citeSites: CiteGroundingSite[] = []
   const groundingEvidence: EvidenceSnippet[] = []
+  const passageCiteSpans = prepared.mappings.map((mapping) => ({
+    start: mapping.citation.start,
+    end: mapping.citation.end,
+    bibKeys: mapping.matchedBibKeys
+  }))
   for (const span of spans) {
     throwIfAborted(signal)
-    const passage = buildPassageWindow(prepared.bodyText, span.start, span.end).text
-    const site = await evaluateCiteSite(passage, span, resolved, request, services, params.llmPool, signal)
+    const passage = buildPassageWindow(prepared.bodyText, span.start, span.end, {
+      activeBibKeys: [entry.key],
+      citeSpans: passageCiteSpans
+    }).text
+    const site = await evaluateCiteSite(
+      passage,
+      span,
+      entry.key,
+      resolved,
+      request,
+      services,
+      params.llmPool,
+      signal
+    )
     citeSites.push(site)
     groundingEvidence.push(...groundingEvidenceFromSite(site, resolved))
     if (resolved.kind !== 'unavailable' && resolved.injectionFindings?.length) {
@@ -440,6 +463,8 @@ async function auditEntry(params: {
       })
     }
   }
+
+  const shahidEvidence = collectShahidEvidence(entry.key, resolved, citeSites)
 
   return {
     bibKey: entry.key,
@@ -470,8 +495,37 @@ async function auditEntry(params: {
       ...resolvedSourceSnippets(resolved),
       ...dedupeEvidence(groundingEvidence)
     ],
+    ...(shahidEvidence.length > 0 ? { shahidEvidence } : {}),
     greyTags: classifyGreyTags(entry.item),
     userAction
+  }
+}
+
+/** Non-blocking Shahid deterministic extract; empty when no tables/captions. */
+function collectShahidEvidence(
+  bibKey: string,
+  resolved: ResolvedL3Source,
+  citeSites: CiteGroundingSite[]
+): ShahidEvidence[] {
+  if (resolved.kind !== 'full_text') return []
+  try {
+    const extracted = extractDeterministicEvidenceFromMarkdown(
+      resolved.text,
+      resolved.pageBoundaries ?? []
+    )
+    if (extracted.length === 0) return []
+    return linkEvidenceToCiteSites(
+      extracted,
+      citeSites.map((site, index) => ({
+        citeSiteId: `${bibKey}:${index}`,
+        pageHint: site.sourcePageHint,
+        locator: site.inTextSpan.locator,
+        passageWindow: site.passageWindow,
+        claims: site.claimGrounding?.map((c) => c.claim)
+      }))
+    )
+  } catch {
+    return []
   }
 }
 
@@ -612,6 +666,7 @@ async function resolveL3Source(
 async function evaluateCiteSite(
   passage: string,
   span: InTextSpan,
+  activeBibKey: string,
   resolved: ResolvedL3Source,
   request: ManuscriptAuditStartRequest,
   services: ManuscriptAuditServices,
@@ -673,11 +728,17 @@ async function evaluateCiteSite(
   }
 
   if (llmOutcome.kind === 'parsed') {
+    const scoped = filterClaimsForActiveBibKey(llmOutcome.claims, activeBibKey)
+    const scopedVerdict =
+      scoped.filteredCount > 0
+        ? passageVerdictFromGroundingClaims(scoped.claims, deterministicBucket, sanitizedExcerpt)
+        : llmOutcome.verdict
+    const parseWarning = [llmOutcome.parseWarning, scoped.note].filter(Boolean).join(' ') || undefined
     return {
       ...base,
-      passageVerdict: guardVerdictAgainstInjection(llmOutcome.verdict, injectionFindings),
-      claimGrounding: llmOutcome.claims,
-      llmParseWarning: llmOutcome.parseWarning,
+      passageVerdict: guardVerdictAgainstInjection(scopedVerdict, injectionFindings),
+      claimGrounding: scoped.claims,
+      llmParseWarning: parseWarning,
       llmRawResponse: storeLlmSlice(llmOutcome.raw)
     }
   }

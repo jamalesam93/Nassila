@@ -14,8 +14,8 @@ export const MAKTAB_DEFAULT_LANGUAGES: readonly MaktabLanguage[] = ['eng', 'fra'
 export type MaktabExtractionTier = 'embedded_text' | 'ocr'
 
 /**
- * - auto: pdf.js first; OCR when embedded text missing or very sparse (Latin); Arabic deferred to DOCX
- * - embedded_only: pdf.js only (current fast path)
+ * - auto: native → WASM → pdf.js; OCR when embedded text missing or very sparse (Latin); Arabic deferred to DOCX
+ * - embedded_only: tier A only (native / WASM / pdf.js per `engine`)
  * - ocr_preferred: try embedded first; OCR when sparse/empty for Latin; Arabic-heavy / reversed → DOCX warning
  */
 export type MaktabExtractionMode = 'auto' | 'embedded_only' | 'ocr_preferred'
@@ -25,7 +25,7 @@ export interface MaktabExtractionOptions {
   languages?: MaktabLanguage[]
   /** OCR rasterization DPI when tier B runs (default 300). */
   ocrDpi?: number
-  /** Pin the tier-A extraction engine (test/fallback seam). */
+  /** Pin the tier-A extraction engine (test/fallback seam). `native` → WASM → pdf.js. */
   engine?: PdfExtractionEngine
 }
 

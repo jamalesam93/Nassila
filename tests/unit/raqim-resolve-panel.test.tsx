@@ -12,13 +12,14 @@ vi.mock('react-i18next', () => ({
 
 const replaceCitation = vi.fn()
 const updateCitation = vi.fn()
+const undo = vi.fn()
 
 vi.mock('../../src/renderer/stores/citation-store', () => ({
   useCitationStore: Object.assign(
     (selector: (state: Record<string, unknown>) => unknown) =>
       selector({ networkStatus: 'online', selectedStyleId: null }),
     {
-      getState: () => ({ replaceCitation, updateCitation })
+      getState: () => ({ replaceCitation, updateCitation, undo })
     }
   )
 }))
@@ -156,5 +157,112 @@ describe('RaqimResolvePanel Wayback availability gating (#18)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'raqimResolve.open' }))
 
     expect(waybackMock).not.toHaveBeenCalled()
+  })
+})
+
+describe('RaqimResolvePanel webpage / grey-lit confirm-before-apply', () => {
+  let resolveMetaMock: ReturnType<typeof vi.fn>
+
+  beforeEach(() => {
+    replaceCitation.mockReset()
+    updateCitation.mockReset()
+    undo.mockReset()
+    resolveMetaMock = vi.fn().mockResolvedValue({
+      item: {
+        id: 'tmp',
+        type: 'webpage',
+        title: 'Fetched title',
+        publisher: 'example.com',
+        URL: 'https://example.com/page',
+        'container-title': 'example.com'
+      },
+      hostProfile: { kind: 'blog', stableParser: false },
+      health: { isDead: false, waybackUrl: 'https://web.archive.org/web/*/https://example.com/page' }
+    })
+    ;(window as { api?: unknown }).api = {
+      lookupRaqimCandidates: vi.fn().mockResolvedValue([]),
+      resolveWebpageMetadata: resolveMetaMock,
+      checkWaybackAvailability: vi.fn().mockResolvedValue(null)
+    }
+  })
+
+  it('fetches webpage metadata as suggestions without mutating the citation', async () => {
+    const item: CslItem = {
+      id: 'row-1',
+      type: 'webpage',
+      title: 'Draft title',
+      URL: 'https://example.com/page'
+    }
+    render(<RaqimResolvePanel item={item} />)
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'raqimResolve.fetchWebpageMeta' }))
+    })
+
+    expect(resolveMetaMock).toHaveBeenCalledWith('https://example.com/page')
+    expect(updateCitation).not.toHaveBeenCalled()
+    expect(replaceCitation).not.toHaveBeenCalled()
+    expect(screen.getByText('raqimResolve.webpageSuggestionsHint')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'raqimResolve.applyAcceptedFields' })).toBeTruthy()
+  })
+
+  it('applies only accepted fields after explicit confirm', async () => {
+    const item: CslItem = {
+      id: 'row-1',
+      type: 'webpage',
+      title: 'Draft title',
+      URL: 'https://example.com/page'
+    }
+    render(<RaqimResolvePanel item={item} />)
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'raqimResolve.fetchWebpageMeta' }))
+    })
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'raqimResolve.applyAcceptedFields' }))
+    })
+
+    expect(updateCitation).toHaveBeenCalledTimes(1)
+    const [, updates] = updateCitation.mock.calls[0] as [string, Partial<CslItem>]
+    expect(updates.title).toBe('Fetched title')
+    expect(updates.publisher).toBe('example.com')
+  })
+
+  it('reject clears suggestions without mutating the citation', async () => {
+    const item: CslItem = {
+      id: 'row-1',
+      type: 'webpage',
+      title: 'Draft title',
+      URL: 'https://example.com/page'
+    }
+    render(<RaqimResolvePanel item={item} />)
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'raqimResolve.fetchWebpageMeta' }))
+    })
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'raqimResolve.rejectSuggestions' }))
+    })
+
+    expect(updateCitation).not.toHaveBeenCalled()
+    expect(screen.queryByText('raqimResolve.webpageSuggestionsHint')).toBeNull()
+  })
+
+  it('offers offline grey-lit suggestions without calling the network IPC', async () => {
+    const item: CslItem = {
+      id: 'row-gh',
+      type: 'webpage',
+      URL: 'https://github.com/acme/widgets'
+    }
+    render(<RaqimResolvePanel item={item} />)
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'raqimResolve.suggestGreyLit' }))
+    })
+
+    expect(resolveMetaMock).not.toHaveBeenCalled()
+    expect(updateCitation).not.toHaveBeenCalled()
+    expect(screen.getByText('raqimResolve.webpageSuggestionsHint')).toBeTruthy()
   })
 })

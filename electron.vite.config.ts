@@ -5,7 +5,14 @@ import react from '@vitejs/plugin-react'
 import type { Plugin } from 'vite'
 
 /** Native / worker assets that must not be Rollup-bundled (see electron-vite dependency handling). */
-export const MAIN_NATIVE_EXTERNALS = ['canvas', '@napi-rs/canvas', 'tesseract.js', 'tesseract.js-core'] as const
+export const MAIN_NATIVE_EXTERNALS = [
+  'canvas',
+  '@napi-rs/canvas',
+  'tesseract.js',
+  'tesseract.js-core',
+  '@firecrawl/pdf-inspector',
+  '@firecrawl/anydoc'
+] as const
 
 function copyAppIcons(): Plugin {
   return {

@@ -13,6 +13,7 @@
  * is unaffected.
  */
 
+import { getMaktabNativePdfBackend } from '../maktab/native-backend'
 import { extractFromPdfInspector } from './pdf-inspector-extract'
 
 const MAX_PDF_PAGES = 200
@@ -41,7 +42,8 @@ export interface PdfManuscriptExtraction {
   warnings: string[]
 }
 
-export type PdfExtractionEngine = 'inspector' | 'pdfjs'
+/** `native` = Firecrawl napi; `inspector` = WASM; `pdfjs` = column-aware fallback. */
+export type PdfExtractionEngine = 'native' | 'inspector' | 'pdfjs'
 
 export interface PdfExtractionOptions {
   engine?: PdfExtractionEngine
@@ -51,8 +53,33 @@ export async function extractManuscriptFromPdf(
   buffer: ArrayBuffer,
   options: PdfExtractionOptions = {}
 ): Promise<PdfManuscriptExtraction> {
-  if (options.engine !== 'pdfjs') {
-    // Primary Fast Path: Try firecrawl/pdf-inspector WASM engine (Rust PDF->Markdown)
+  const engine = options.engine
+
+  // Firecrawl-first: native napi (main IPC / registered backend) when available.
+  if (engine !== 'pdfjs' && engine !== 'inspector') {
+    const nativeBackend = getMaktabNativePdfBackend()
+    const nativeAvailable = await Promise.resolve(nativeBackend.isAvailable()).catch(() => false)
+    if (nativeAvailable) {
+      const nativeResult = await nativeBackend.extract(buffer.slice(0)).catch(() => null)
+      if (nativeResult && nativeResult.text.length > 0) {
+        const warnings = [...nativeResult.warnings]
+        if (nativeResult.provenance.pagesWithTables.length > 0) {
+          warnings.push(
+            `Native pdf-inspector detected tables on page(s): ${nativeResult.provenance.pagesWithTables.join(', ')}.`
+          )
+        }
+        return {
+          text: nativeResult.text,
+          pageCount: nativeResult.pageCount,
+          pageBoundaries: nativeResult.pageBoundaries,
+          warnings
+        }
+      }
+    }
+  }
+
+  if (engine !== 'pdfjs') {
+    // WASM Fast Path: @firecrawl/pdf-inspector-wasm@0.1.3 (pinned; see MAKTAB_OCR.md)
     const inspectorResult = extractFromPdfInspector(buffer)
     if (inspectorResult && inspectorResult.text.length > 0) {
       return {
@@ -92,8 +119,11 @@ export async function extractManuscriptFromPdf(
     totalGlyphCount += items.reduce((s, it) => s + (it.str?.length ?? 0), 0)
 
     const blocks = itemsToBlocks(items)
-    const ordered = reorderForColumns(blocks, viewport.width)
-    const lines = blocksToLines(ordered)
+    const columns = splitColumnGroups(blocks, viewport.width)
+    const lines: { text: string; y: number }[] = []
+    for (const column of columns) {
+      lines.push(...blocksToLines(column))
+    }
     const pageText = linesToText(lines)
 
     pageTexts.push(postProcess(pageText))
@@ -192,18 +222,18 @@ function itemsToBlocks(items: PdfTextItem[]): PageBlock[] {
 
 /**
  * Detect a 2-column layout by looking at the bimodal distribution of x
- * coordinates. If detected, emit blocks left-column-then-right-column;
- * otherwise return blocks in their original order (which pdfjs already
- * supplies in roughly reading order).
+ * coordinates. Returns one group (single-column reading order) or two groups
+ * (left column then right). Each column is processed independently by
+ * `blocksToLines` so equal-Y blocks from different columns cannot merge.
  */
-function reorderForColumns(blocks: PageBlock[], pageWidth: number): PageBlock[] {
-  if (blocks.length < 20) return blocks
+function splitColumnGroups(blocks: PageBlock[], pageWidth: number): PageBlock[][] {
+  if (blocks.length < 20) return [blocks]
 
   const xs = blocks.map((b) => b.x)
   const minX = Math.min(...xs)
   const maxX = Math.max(...xs)
   const span = maxX - minX
-  if (span < pageWidth * 0.4) return blocks
+  if (span < pageWidth * 0.4) return [blocks]
 
   // Bin x positions in 16 buckets across the page; if the histogram has two
   // strong peaks separated by a valley, treat as two-column.
@@ -222,7 +252,7 @@ function reorderForColumns(blocks: PageBlock[], pageWidth: number): PageBlock[] 
     peakRightCount >= blocks.length * 0.15 &&
     valleyMid < Math.min(peakLeftCount, peakRightCount) * 0.4
 
-  if (!looksTwoColumn) return blocks
+  if (!looksTwoColumn) return [blocks]
 
   const midX = minX + span / 2
   const left = blocks.filter((b) => b.x < midX)
@@ -230,7 +260,7 @@ function reorderForColumns(blocks: PageBlock[], pageWidth: number): PageBlock[] 
   // Sort each column by y descending (PDF y grows upward).
   left.sort((a, b) => b.y - a.y)
   right.sort((a, b) => b.y - a.y)
-  return [...left, ...right]
+  return [left, right]
 }
 
 function indexOfMax(arr: number[]): number {
@@ -243,6 +273,9 @@ function indexOfMax(arr: number[]): number {
  * Group blocks into lines by clustering on y-coordinate. Keeps the
  * superscript flag so we can wrap superscripts in `^{...}` markers that the
  * existing in-text citation parser knows about.
+ *
+ * Callers must pass a single column's blocks when the page is two-column —
+ * otherwise equal-Y blocks from left and right columns merge into one line.
  */
 function blocksToLines(blocks: PageBlock[]): { text: string; y: number }[] {
   const lines: { y: number; items: PageBlock[] }[] = []

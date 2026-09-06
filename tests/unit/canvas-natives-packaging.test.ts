@@ -9,7 +9,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '../..')
 describe('canvas native packaging for Maktab OCR', () => {
   it('keeps canvas external in the main Vite build', () => {
     const viteCfg = readFileSync(join(root, 'electron.vite.config.ts'), 'utf8')
-    expect(viteCfg).toMatch(/MAIN_NATIVE_EXTERNALS\s*=\s*\[[^\]]*['"]canvas['"]/)
+    expect(viteCfg).toMatch(/MAIN_NATIVE_EXTERNALS\s*=\s*\[[^\]]*['"]canvas['"]/s)
     expect(viteCfg).toMatch(/external:\s*\[\s*\.\.\.MAIN_NATIVE_EXTERNALS\s*\]/)
   })
 
@@ -29,12 +29,17 @@ describe('canvas native packaging for Maktab OCR', () => {
     expect(yml).toMatch(/node_modules\/canvas\/\*\*\/\*/)
     expect(yml).toMatch(/node_modules\/tesseract\.js\/\*\*\/\*/)
     expect(yml).toMatch(/node_modules\/tesseract\.js-core\/\*\*\/\*/)
+    expect(yml).toMatch(/node_modules\/@firecrawl\/pdf-inspector\/\*\*\/\*/)
+    expect(yml).toMatch(/node_modules\/@firecrawl\/anydoc\/\*\*\/\*/)
     expect(yml).toContain('asarUnpack:')
+    expect(yml).toMatch(/resources\/pdf-inspector/)
   })
 
-  it('keeps tesseract external in the main Vite build', () => {
+  it('keeps tesseract and firecrawl natives external in the main Vite build', () => {
     const viteCfg = readFileSync(join(root, 'electron.vite.config.ts'), 'utf8')
     expect(viteCfg).toMatch(/['"]tesseract\.js['"]/)
     expect(viteCfg).toMatch(/['"]tesseract\.js-core['"]/)
+    expect(viteCfg).toMatch(/['"]@firecrawl\/pdf-inspector['"]/)
+    expect(viteCfg).toMatch(/['"]@firecrawl\/anydoc['"]/)
   })
 })

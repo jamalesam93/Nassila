@@ -1,8 +1,8 @@
 # Maktab OCR — offline extraction plan
 
 **Worker:** Maktab (مكتب) · **Task:** `doc_extract` (LLM facet planned)  
-**Policy:** on-device only for v1; cloud optional later.  
-**Languages:** English and French via Tesseract (`eng`, `fra`). Arabic PDF OCR is **deferred** (prefer DOCX; vision/LLM OCR planned).
+**Policy:** on-device only for v1 / 2.0 scaffolding; cloud optional later.  
+**Languages:** English and French via Tesseract (`eng`, `fra`) and native PP-OCRv6 Small when routed. Arabic PDF OCR remains **deferred** behind an adapter seam (prefer DOCX); Tesseract `ara` is not enabled.
 
 ---
 
@@ -18,28 +18,34 @@ Maktab is the **first deterministic stage** after upload. It produces canonical 
 
 ```
 Upload PDF/DOCX
-    → Maktab.extractFromPdf (tier A: pdf.js | tier B: OCR)
+    → Maktab.extractFromPdf
+         (native pdf-inspector → WASM → pdf.js | tier B: Tesseract)
     → segments + cites
     → Masdar (source PDFs, same extract API)
     → Sanad grounding
 ```
 
-Operator map: NassilaT [`training/OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) § Maktab OCR.
+Operator map: NassilaT [`training/OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) § Maktab OCR.  
+**2.0 execution:** NassilaT [`2.0_OPERATOR_INDEX.md`](../../NassilaT/training/2.0_OPERATOR_INDEX.md) · packaged smoke [`PACKAGED_OCR_SMOKE.md`](./PACKAGED_OCR_SMOKE.md) · Arabic [`ARABIC_OCR_ADAPTER.md`](./ARABIC_OCR_ADAPTER.md)
 
 ---
 
-## Two-tier extraction
+## Firecrawl-first extraction (2.0 scaffolding)
 
 | Tier | Engine | When | Status |
 |------|--------|------|--------|
-| **A — embedded text** | `@firecrawl/pdf-inspector-wasm` (Fast Rust PDF-to-Markdown) with `pdfjs-dist` fallback via `pdf-extract.ts` | PDF has extractable glyphs | **Live (v1.5+)** |
-| **B — OCR** | Tesseract.js (Apache-2.0) + Leptonica (BSD-2) | Scan, empty glyph map, or OCR is requested | **Live (O1)** |
+| **A0 — native** | `@firecrawl/pdf-inspector@1.17.0` (`classifyPdf` / `processPdfWithOcr`, `mode: Auto`, `offline: true`) | Main process; napi + optional PP-OCRv6 Small cache | **Scaffolding** — soft-load; degrades when DLL/model missing |
+| **A1 — WASM** | `@firecrawl/pdf-inspector-wasm@0.1.3` | PDF has extractable glyphs; native unavailable | **Live** — **pinned at 0.1.3** (1.14+ WASM breaks `processPdf` options in `pdf-inspector-extract.ts`) |
+| **A2 — pdf.js** | `pdfjs-dist` via `pdf-extract.ts` | Native + WASM miss / pin `engine: 'pdfjs'` | **Live** |
+| **B — OCR** | Tesseract.js (Apache-2.0) + Leptonica (BSD-2) | Scan / sparse Latin after tier A | **Live (O1)** |
 
 **Mode** (`MaktabExtractionOptions.mode`):
 
-- `auto` (default) — try tier A; escalate to B when A fails or warns “very little text” **and** the document is not Arabic-deferred
+- `auto` (default) — try tier A (native → WASM → pdf.js); escalate to B when A fails or warns “very little text” **and** the document is not Arabic-deferred
 - `embedded_only` — tier A only (fast path)
 - `ocr_preferred` — try tier A first; use OCR when A is sparse/empty **for Latin**; Arabic-heavy or character-reversed PDFs keep embedded text and warn to prefer DOCX
+
+**Engine pin** (`engine?: 'native' | 'inspector' | 'pdfjs'`): test / emergency fallback. Default order still degrades gracefully.
 
 OCR language packs for Tesseract are **`eng`/`fra` only**. Soft page budget for OCR is **200** pages (matches manuscript PDF extract).
 
@@ -51,11 +57,26 @@ OCR language packs for Tesseract are **`eng`/`fra` only**. Soft page budget for 
 |------|------|
 | [`src/engine/maktab/extract.ts`](../src/engine/maktab/extract.ts) | Public entry: `extractFromPdf` |
 | [`src/engine/maktab/types.ts`](../src/engine/maktab/types.ts) | `MaktabExtractionResult`, languages, tiers |
-| [`src/engine/maktab/ocr/`](../src/engine/maktab/ocr/) | OCR backend interface + post-process |
-| [`src/engine/manuscript/pdf-inspector-extract.ts`](../src/engine/manuscript/pdf-inspector-extract.ts) | Tier A primary engine (`@firecrawl/pdf-inspector-wasm`) |
-| [`src/engine/manuscript/pdf-extract.ts`](../src/engine/manuscript/pdf-extract.ts) | Tier A orchestrator (WASM primary + column-aware pdf.js fallback) |
+| [`src/engine/maktab/native-pdf-inspector.ts`](../src/engine/maktab/native-pdf-inspector.ts) | Soft-load napi + map provenance (`engineId`, confidence, pagesRoutedToOcr, pagesWithTables) |
+| [`src/engine/maktab/native-backend.ts`](../src/engine/maktab/native-backend.ts) | Injectable native backend (IPC / main) |
+| [`src/engine/maktab/ocr/`](../src/engine/maktab/ocr/) | OCR backend + Arabic adapter seam + post-process |
+| [`src/engine/maktab/anydoc-docx.ts`](../src/engine/maktab/anydoc-docx.ts) | Optional `@firecrawl/anydoc` DOCX parity (fixture compare; mammoth default) |
+| [`src/engine/manuscript/pdf-inspector-extract.ts`](../src/engine/manuscript/pdf-inspector-extract.ts) | Tier A1 WASM (`@firecrawl/pdf-inspector-wasm@0.1.3`) |
+| [`src/engine/manuscript/pdf-extract.ts`](../src/engine/manuscript/pdf-extract.ts) | Tier A orchestrator (native → WASM → pdf.js) |
+| [`src/main/maktab/native-pdf-inspector.ts`](../src/main/maktab/native-pdf-inspector.ts) | Model-dir resolution + main backend registration |
+| IPC | `maktab:nativeAvailable`, `maktab:nativeClassify`, `maktab:nativeExtract` (+ existing Tesseract channels) |
 
-DOCX ingest remains separate (parser/document path); OCR applies to PDF and image-only inputs.
+DOCX ingest: mammoth Route C default; `engine: 'anydoc'` for optional native comparison only.
+
+---
+
+## Arabic recognizer adapter
+
+[`src/engine/maktab/ocr/arabic-adapter.ts`](../src/engine/maktab/ocr/arabic-adapter.ts) defines `ArabicRecognizerAdapter` with `unavailableArabicAdapter` as default.
+
+**Planned:** PP-OCRv5 Arabic (or equivalent) weights behind this adapter.  
+**Not:** drop-in files into the PP-OCRv6 Small directory used by native pdf-inspector selective OCR.  
+**Not yet:** enabling Tesseract `ara` or lifting DOCX deferral.
 
 ---
 
@@ -63,26 +84,30 @@ DOCX ingest remains separate (parser/document path); OCR applies to PDF and imag
 
 1. **Rasterize** PDF pages (~300 DPI quality / 200 DPI fast).
 2. **Preprocess** — grayscale, deskew, denoise (Nassila-owned heuristics).
-3. **Language packs** — `eng` / `fra` from official `tessdata_fast` under `resources/tesseract/`. **`ara` is not shipped** until Maktab LLM/vision OCR; Arabic PDFs prefer DOCX.
+3. **Language packs** — `eng` / `fra` from official `tessdata_fast` under `resources/tesseract/`. **`ara` is not shipped** until the Arabic adapter lands; Arabic PDFs prefer DOCX.
 4. **Recognize** — Tesseract.js runs in the **main process** through validated IPC.
 5. **Post-process** — de-hyphenation, Unicode normalize, Arabic policy (conservative).
 6. **Cache** — key = `sha256(file) + page + dpi + lang pack version`.
 
-**Native packaging:** Main is mostly bundled (`externalizeDeps: false`) so portable builds ship `out/**` without the full `node_modules` tree. **`canvas` is external** — Node addons cannot be Rollup-bundled (broken CJS/.node interop; missing Windows Cairo DLLs). `electron-builder.yml` includes `node_modules/canvas/**/*` and `asarUnpack`s it so the `.node` and companion DLLs load from a real filesystem path.
+**Native packaging:** Main is mostly bundled (`externalizeDeps: false`) so portable builds ship `out/**` without the full `node_modules` tree. **`canvas`**, **`@firecrawl/pdf-inspector`**, and **`@firecrawl/anydoc`** are external — Node addons cannot be Rollup-bundled. `electron-builder.yml` includes and `asarUnpack`s those packages (and platform optional deps) so `.node` / companion DLLs load from a real filesystem path.
 
-**Licensing:** Tesseract.js and the official Tesseract `tessdata_fast` files are Apache-2.0; Leptonica is BSD-2-Clause. Pack source and license details are recorded in [`resources/tesseract/README.md`](../resources/tesseract/README.md).
+**Offline pdf-inspector models:** see [`resources/pdf-inspector/README.md`](../resources/pdf-inspector/README.md). Fetch with:
 
-Install or refresh the pinned language packs before packaging:
+```bash
+npm run ocr:pdf-inspector-runtime
+```
+
+PDFium + ONNX Runtime shared libraries are a separate operator step (`--runtime`); set `PDFIUM_LIB_PATH` / `ORT_DYLIB_PATH` when OCR pages are routed.
+
+**Licensing:** Tesseract.js and the official Tesseract `tessdata_fast` files are Apache-2.0; Leptonica is BSD-2-Clause. PP-OCRv6 Small via oar-ocr is Apache-2.0. Pack source and license details are recorded in [`resources/tesseract/README.md`](../resources/tesseract/README.md) and [`resources/pdf-inspector/NOTICE`](../resources/pdf-inspector/NOTICE).
+
+Install or refresh the pinned Tesseract language packs before packaging:
 
 ```bash
 npm run ocr:langpacks
 ```
 
-The script downloads the official `tessdata_fast` packs for eng/fra (pinned to 4.1.0) and writes `resources/tesseract/checksums.sha256`. Electron Builder copies that directory to the installed app's resources. In development, OCR reads the same files directly from the repository.
-
-**Not in scope v1:** custom OCR model training; MinerU or other layout-VLM backends (optional plugin track only).
-
-If the files are absent in a development or CI checkout, OCR emits a clear warning and leaves Tesseract.js's network fallback available. Release builds must run `npm run ocr:langpacks`; packaged builds always prefer the bundled directory.
+**Not in scope this scaffolding pass:** Shahid UI; enabling Arabic Tesseract; bumping app `package.json` to 2.0.0.
 
 ---
 
@@ -92,7 +117,7 @@ Deterministic, hand-built PDFs (no committed binaries) generated by
 [`tests/fixtures/maktab-pdf-builder.ts`](../tests/fixtures/maktab-pdf-builder.ts):
 minimal Type1 Helvetica pages and a Type0 Identity-H Arabic page, with computed
 xref offsets so any malformation fails loudly at load time. The
-`engine?: 'inspector' | 'pdfjs'` pin in `extractManuscriptFromPdf` makes
+`engine?: 'native' | 'inspector' | 'pdfjs'` pin in `extractManuscriptFromPdf` makes
 per-engine assertions deterministic (and doubles as an emergency fallback).
 
 **Unit golden suite** — `tests/unit/maktab-golden-fixtures.test.ts` (12 tests,
@@ -137,6 +162,17 @@ npm run probe:ocr:golden   # prints probe-ocr-golden=true; exit 0 on pass
 Wired into the `.github/workflows/ci.yml` `package-windows` job after
 `probe:ocr`; the Linux `verify` job stays untouched (no Tesseract).
 
+**Native pdf-inspector soft-load probe** —
+[`scripts/probe-native-pdf-inspector.mjs`](../scripts/probe-native-pdf-inspector.mjs)
+checks that `@firecrawl/pdf-inspector` napi loads under Electron. Exit `2`
+means soft-unavailable (missing DLL/model — expected until operator runtime
+fetch). Exit `0` means classify/process entry points resolve; OCR pages still
+need PDFium/ONNX + model cache:
+
+```bash
+npm run probe:native-pdf-inspector
+```
+
 ---
 
 ## Extraction cache controls (shipped — v1.6.0 T2)
@@ -173,7 +209,7 @@ Per-page OCR cache (`sha256 + page + dpi + lang pack`) stays **deferred**
 | **1.2.8 / O2** | Offline/bundled eng/fra language-pack policy, golden fixtures, provenance/cache UX, scan fallback, Enhanced OCR control, hardware smoke |
 | **1.3.1** | Arabic Tesseract **deferred** — `ara` pack removed; Arabic PDFs prefer DOCX |
 | **1.6.0** | OCR golden fixtures + CI probe; cache controls; needsReview banner |
-| **2.0.0** | **MaktabOCR + Shahid** — Arabic/vision OCR (replaces deferred Tesseract `ara`) + table/figure evidence path (gated on Tier 3 + multimodal eval) |
+| **2.0.0** | **MaktabOCR + Shahid** — Firecrawl native pdf-inspector + pretrained Arabic adapter (replaces deferred Tesseract `ara`) + table/figure evidence path (gated on Tier 3 + multimodal eval). **Scaffolding in-tree before the 2.0.0 version bump**; Shahid UI did **not** ship in 1.8.0. |
 | **Tier 3** | Maktab LLM `doc_extract` facet + full-text eval corpus (M01 — only if deterministic baseline fails) |
 
 ---

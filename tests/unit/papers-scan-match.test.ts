@@ -91,6 +91,32 @@ describe('matchPaperIdentity (#19)', () => {
     expect(match.kind).toBe('matched')
     expect(match.matchedBy).toBe('doi')
   })
+
+  it('matches bare filename stem to bibliography key when DOI/title miss', () => {
+    const match = matchPaperIdentity({ fileName: '7.pdf' }, targets)
+    expect(match).toEqual({ bibKeys: ['7'], kind: 'matched', matchedBy: 'bibKey' })
+  })
+
+  it('does not treat DOI-shaped filenames as bib-key stems', () => {
+    const match = matchPaperIdentity({ fileName: '10.9999/unknown.pdf' }, targets)
+    expect(match.kind).toBe('unmatched')
+  })
+
+  it('leaves stems with no matching bibliography key unmatched', () => {
+    expect(matchPaperIdentity({ fileName: '56.pdf' }, targets)).toEqual({
+      bibKeys: [],
+      kind: 'unmatched',
+      matchedBy: null
+    })
+  })
+
+  it('prefers DOI over filename stem when both are present', () => {
+    const match = matchPaperIdentity(
+      { doi: '10.5555/attn', fileName: '7.pdf' },
+      targets
+    )
+    expect(match).toEqual({ bibKeys: ['3'], kind: 'matched', matchedBy: 'doi' })
+  })
 })
 
 describe('guessTitleFromFirstPage heuristics', () => {

@@ -26,6 +26,26 @@ References
     expect(mapped[0].matchedBibKeys).toEqual(['2'])
   })
 
+  it('does not map objectives-list markers as bibliography citations', async () => {
+    const bib = await buildBibEntriesFromReferencesText(
+      [
+        'References',
+        '[1] Smith J. Title one. Journal. 2020.',
+        '[2] Doe A. Title two. Journal. 2021.',
+        '[3] Lee K. Title three. Journal. 2022.'
+      ].join('\n')
+    )
+    const body =
+      'The objectives of this review are to: (1) provide an overview; (2) compare systems. See also prior work [3].'
+    const inText = parseInTextCitations(body)
+    const mapped = mapInTextToBibliography(inText.citations, bib.entries)
+    const keys = mapped.flatMap((m) => m.matchedBibKeys)
+    expect(keys).not.toContain('1')
+    expect(keys).not.toContain('2')
+    expect(keys).toContain('3')
+    expect(inText.citations.some((c) => c.raw === '(1)' || c.raw === '(2)')).toBe(false)
+  })
+
   it('reports zero mappings without selecting bibliography fallback entries', async () => {
     const bib = await buildBibEntriesFromReferencesText('[1] Smith J. Title one. Journal. 2020.')
     const inText = parseInTextCitations('An unsupported citation appears here [9].')

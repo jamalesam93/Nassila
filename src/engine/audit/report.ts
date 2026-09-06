@@ -56,6 +56,19 @@ export function formatFindingEvidenceMarkdown(finding: CitationFinding): string 
       lines.push('')
     }
   }
+
+  const shahid = finding.shahidEvidence ?? []
+  if (shahid.length > 0) {
+    lines.push('## Shahid table/figure evidence')
+    for (const row of shahid) {
+      const page = row.page != null ? ` p.${row.page}` : ''
+      const link = row.citeSiteId ? `; cite:${row.citeSiteId}` : '; unlinked'
+      lines.push(
+        `- **${row.regionKind}**${page} (${row.reviewState}${link}; ${row.extractionMethod}): ${row.caption ?? row.cellEvidence ?? row.text?.slice(0, 120) ?? row.id}`
+      )
+    }
+    lines.push('')
+  }
   return lines.join('\n')
 }
 

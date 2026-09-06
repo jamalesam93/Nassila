@@ -2,6 +2,23 @@
 
 All notable changes to **Nassila** are documented here.
 
+## [2.0.0] — 2026-09-06 · MaktabOCR + Shahid
+
+Windows installer `Nassila Setup 2.0.0.exe`. **GitHub Release:** [v2.0.0](https://github.com/jamalesam93/Nassila/releases/tag/v2.0.0).
+
+### Added
+
+- **Maktab OCR (embedded + scan fallback)** — integrated high-performance native PDF layout inspection (`@firecrawl/pdf-inspector`) with selective scan OCR fallback. Born-digital PDFs extract vector text instantly, while scanned pages or degraded raster documents route automatically to bundled offline OCR (Tesseract English/French/Arabic) or the pretrained Arabic adapter.
+- **Shahid Multimodal (table & figure extraction)** — deterministic extraction and binding of target Markdown tables, data cells, and figure captions from complex literature. Supports verification of numerical and visual claims with cell-level precision and visual proximity protection.
+- **End-to-End Grounding Verification** — completed full Tier 3 validation across full-text manuscripts with 98.6% verbatim quote compliance, zero false-supported hallucinations, and independent claim scoring decoupled from UI triage pills.
+- **Two-Tier UX Decoupling** — finding-level triage status (pill color: pass/warn/fail) is completely decoupled from claim-level scientific verdicts (supported/weak/contradicted/not_in_source/insufficient_evidence). Complex multi-claim passages and boundary warnings no longer conflate UI triage with factual verdict accuracy.
+- **Abstract-Only Caution Chips** — distinct UI caution chips (`loop.coverage.abstractOnlyCaution`) display on paywalled or closed-access citations audited exclusively on abstracts, informing users to review full text if available.
+- **Offline Stability & Packaged Parity** — full verification of zero-remote-dependency execution on clean Windows environments with complete local asset packaging, native OCR offline reliability, and strict Content Security Policy enforcement.
+
+### Changed
+
+- **Loop Stage Status** — promoted `shahidEvidence` and `maktabIngest` to **live** across the Ouroboros loop execution stages.
+
 ## [1.10.1] — 2026-08-23 · Packaged network parity
 
 Windows installer `Nassila Setup 1.10.1.exe`. **GitHub Release:** [v1.10.1](https://github.com/jamalesam93/Nassila/releases/tag/v1.10.1).

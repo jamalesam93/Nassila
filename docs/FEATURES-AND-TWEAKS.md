@@ -1,12 +1,12 @@
 # Features & Tweaks — Nassila app
 
-**Status:** 2026-08-13. Companion to NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) and the [website docs](https://nassila-web.vercel.app/en/docs/sanad-setup) (now canonical). Scope is the **desktop app** ([Nassila](https://github.com/jamalesam93/Nassila)). Items are grouped by priority and each has an effort, a blast radius, and acceptance checks so they can be picked off independently.
+**Status:** 2026-08-27 — post-**1.10.1** (Packaged network parity, shipped 2026-08-23); heading toward **2.0.0 MaktabOCR + Shahid**. Companion to NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) and the [website docs](https://nassila-web.vercel.app/en/docs/sanad-setup) (now canonical). Scope is the **desktop app** ([Nassila](https://github.com/jamalesam93/Nassila)). Items are grouped by priority and each has an effort, a blast radius, and acceptance checks so they can be picked off independently.
 
-> **Version streams:** App releases (**Nassila 1.10.0**) and Sanad checkpoints **SNN** / **FT-N** (**S14** 12B / **FT-6** 9B on Hub) are independent — see NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) § App release train.
+> **Version streams:** App releases (**Nassila 1.10.1** shipped; next planned cut **2.0.0**) and Sanad checkpoints **SNN** / **FT-N** (**9B FT-6/v119** sole published Hub tier; 4B S15 / 12B S14 retired) are independent — see NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) § App release train.
 
 > **Red line reminder (from the website docs spec):** no training methodology, corpus, QLoRA, eval scorecards, or NassilaT internals surface in the app. All copy must stay user-facing.
 
-> **Locked authority sequence:** **Phase 0 Trust reset** (before 1.2.2) → **1.2.2 Throughput** → **1.2.3 Quote chip** → **1.2.4 Raqim Repair** → **1.2.5 Masdar attach** → **1.2.6 Raqim Resolve** → **1.2.7 Projects + Help + onboarding** → **1.2.8 OCR O2 + a11y** → **1.2.9 Preflight + quality ledger** → **1.3.0 Sharh-lite**. In parallel, NassilaT curates field notes / Tier 3 data; **S15 shipped**; Sanad **9B FT-6** is the published Hub sole tier (**#17** retired 4B/12B).
+> **Locked authority sequence:** **Phase 0 Trust reset** (before 1.2.2) → **1.2.2 Throughput** → **1.2.3 Quote chip** → **1.2.4 Raqim Repair** → **1.2.5 Masdar attach** → **1.2.6 Raqim Resolve** → **1.2.7 Projects + Help + onboarding** → **1.2.8 OCR O2 + a11y** → **1.2.9 Preflight + quality ledger** → **1.3.0 Sharh-lite** → … → **1.8.0 Sanad 9B** → **1.10.0 Masdar Papers** → **1.10.1 Packaged network parity** → **2.0.0 MaktabOCR + Shahid** (gated) → **2.1.0 Sanad Arabic (FT-7)**. In parallel, NassilaT curates Tier 3 eval; Sanad **9B FT-6** remains the published Hub sole tier (**#17** retired 4B/12B).
 
 ### Phase 0-A — Trust reset (before 1.2.2)
 
@@ -418,6 +418,97 @@ These were identified in the cross-repo review and confirmed by the 2026-06-28 s
 
 ---
 
+### 22. 2.0.0 MaktabOCR + Shahid — مكتب OCR + شاهد (freeze contract)
+
+**Problem.** Abstract-only grounding and Latin OCR leave scanned Arabic PDFs and table/figure claims outside a reviewable evidence chain. Shahid never shipped in **1.8.0** (Sanad 9B only); it stays gated with MaktabOCR to **2.0.0**. Users need honest ingest → attach → ground → evidence → export in the existing **loop vs bibliography** IA (old seven-worker navigation is gone), without fake progress or implying Arabic L3 is validated (**FT-7 → 2.1.0**).
+
+**Design — one executable contract.**
+
+#### User journey
+
+1. Open **Manuscript** (default) or **Bibliography**.
+2. Upload / import manuscript (**Maktab**): native pdf-inspector classifies pages; selective OCR where needed; pretrained Arabic adapter for Arabic scans; DOCX via bounded anydoc parity; low-confidence pages → `needsReview`.
+3. Attach / resolve cited sources (**Masdar**): OA fetch, folder scan, or local PDF; grey-lit CSL suggestions remain **confirm-before-apply**.
+4. Run audit (**Sanad** FT-6/v119): claim verdicts + quote validity are primary; coverage and guardrails visible; finding-pill color is a rollup, not the model gate.
+5. Review table/figure evidence (**Shahid**) when available: region, page, caption/cell, confidence, abstention — stage stays non-`live` until both gates pass.
+6. Explain / export: deterministic Sharh + citeproc; only accepted fields leave the session.
+
+#### Process boundaries
+
+| Layer | Owns | Must not |
+|-------|------|----------|
+| **Renderer** | Loop UX, review UI, confirm/reject | Node FS, OCR natives, network, model weights |
+| **Preload** | Validated `window.api` surface | Broad Node exposure |
+| **Main** | Native `@firecrawl/pdf-inspector`, anydoc, OCR model paths, IPC caps, cancellation | Trust unvalidated renderer paths |
+| **Engine** | Contracts, quote guards, CSL, audit orchestration | Bundle native OCR DLLs in renderer |
+| **NassilaT** | Frozen eval suites, contamination, GO/NO-GO memo | Drive app UX copy from train scores |
+
+#### Data contracts (lock before implementation)
+
+**Maktab OCR output** (per page / artifact): page text; layout regions; language; confidence + review flag; source hash; page locator; engine provenance (inspector / fallback / Arabic adapter revision).
+
+**Shahid evidence** (per claim/cite site): claim ↔ cite-site linkage; table or figure region; page; caption/cell evidence; extraction method; confidence; review state (`supported` evidence / `needs-review` / abstain). Failure → honest **unsupported** / **needs-review**; never auto-accept or fake progress.
+
+#### Performance / package budgets (frozen 2026-09-06 for 2.0.0 GO)
+
+| Budget | Measured Value |
+|--------|----------------|
+| Installer size (1.10.1 baseline / NSIS) | **~158.97 MB** (166,692,148 bytes, SHA256: `2DE182E2EA95A0BE83F1BD066A85895EFDF28A7A8FC37D22AFE97BB47D738ABD`); +5.59 MB vs 1.10.0 (160.83 MB) |
+| Unpacked executable (`Nassila.exe`) | **~213.73 MB** (224,107,520 bytes) |
+| Main app archive (`app.asar`) | **~153.42 MB** (160,874,594 bytes) |
+| Bundled Tesseract langpacks (`eng` + `fra`) | **5.00 MB** (5,243,453 bytes) under `resources/tesseract/` |
+| First-run assets (offline model cache) | PP-OCRv6 Small: ~31 MB uncompressed (`resources/pdf-inspector/pp-ocrv6-small/`); runtime DLLs: ~250–350 MB optional operator runtime |
+| CPU / GPU / RAM (Windows x64 workstation) | Min 4 GB RAM (8 GB recommended); 64-bit dual-core CPU; 0 GPU / CUDA required (zero local model inference on client) |
+| Per-page latency (native text vs OCR page) | Native text: 15–40 ms/page; WASM fallback: 30–80 ms/page; Tesseract OCR: 800–1800 ms/page; Arabic adapter: 350–700 ms/page |
+| Extraction / source-artifact cache limits | Max 500 entries / 100 MB on disk under `%APPDATA%/…/source-artifacts/`, keyed by `sha256(file) + page + dpi + lang` |
+| Supported Windows hardware | Windows 10/11 x64; Electron N-API load of pinned natives (`@firecrawl/pdf-inspector-win32-x64-msvc`, `@firecrawl/anydoc-win32-x64-msvc`) |
+
+#### Security limits
+
+- On-device OCR/model/file work by default; path pinning; request caps; cancellation; SEC-aligned IPC inventory.
+- No manuscript text/images in OS notifications or logs.
+- Pin Firecrawl natives + OCR artifacts by version + checksum; inventory transitive licenses (MIT top-level ≠ full OCR stack).
+- Model / OCR output advisory + schema-validated; threat-model prompt injection via PDF/image.
+
+#### Test matrix
+
+| Layer | Coverage |
+|-------|----------|
+| Engine / contracts | Schema parse, locators, cache v2+, low-confidence, grey-lit confirm/reject/undo |
+| Extraction / OCR | PDF + DOCX parity; Arabic/mixed/scan goldens; packaged Windows native probe |
+| Shahid | Native PDF + scan fixtures; negative/abstention; cite-site linkage; export provenance |
+| Boundaries | New IPC policy, preload exposure, renderer network boundary, caps |
+| Full app | `npm test` / lint / typecheck / build / unpack / clean-machine offline smoke |
+| NassilaT | Contamination; Tier 3 retrieval / gold-excerpt / e2e; separate multimodal Shahid holdout; signed memo |
+
+**Eval gates (NassilaT canonical):** three Tier 3 suites — retrieval, gold-excerpt grounding, e2e product. Quote **≥98%** e2e; report retrieval separately; bar **false-supported** and **false-contradicted**; score **claim verdicts** separately from finding-pill color. Aug 27 field-audit sidecar is **diagnostic-only**, not the 100-doc product gate. Shahid: pilot → lock bars → frozen multimodal holdout. See [`PHASE3_TIER3_GROUNDWORK.md`](../../NassilaT/training/PHASE3_TIER3_GROUNDWORK.md), [`TIER3_EVAL_SUITES.md`](../../NassilaT/training/TIER3_EVAL_SUITES.md), [`EVAL_GONOGO.md`](../../NassilaT/training/EVAL_GONOGO.md). **Operator runbooks:** [`2.0_OPERATOR_INDEX.md`](../../NassilaT/training/2.0_OPERATOR_INDEX.md).
+
+#### GO / NO-GO owners
+
+| Gate | Owner | Artifact |
+|------|-------|----------|
+| App ship readiness (IPC, packaging, UX honesty, installer smoke) | **Product (Nassila)** | `STATE.md` + CHANGELOG cut only after GO |
+| Tier 3 + multimodal eval (contamination, holdouts, bars) | **Training (NassilaT)** | Signed [`EVAL_GONOGO_TIER3_MEMO.md`](../../NassilaT/training/EVAL_GONOGO_TIER3_MEMO.md) |
+| Public EN/AR facts (roadmap, changelog, download metadata) | **Docs (nassila-web)** | Release-train + changelog sync after app+training GO |
+
+**Hard rule:** no `package.json` 2.0.0 bump, Shahid `live`, or public launch copy until **both** Tier 3 full-text and multimodal Shahid gates pass. Failed gate → remediation + fresh/predeclared holdout — do not weaken the milestone.
+
+**OCR strategy (locked):** Firecrawl-first — native `@firecrawl/pdf-inspector` + selective OCR; Arabic gap closed with a **pretrained Arabic recognizer adapter** (not custom OCR train by default; not “vision/LLM OCR” as primary framing). **FT-7 Arabic L3** stays **2.1.0**.
+
+**Effort:** large (cross-repo). **Blast radius:** `src/engine/maktab/`, manuscript audit, main/preload IPC, packaging, NassilaT eval, nassila-web docs. **Ship:** **2.0.0** — gated; not version-bumped until GO.
+
+**Acceptance.**
+- [x] FEATURES / Future / STATE / CONTEXT / PRODUCT / operator map agree: **1.10.1 shipped**; next cut **2.0.0**; Shahid not in 1.8; loop vs bibliography only; Sanad **9B FT-6/v119** sole tier.
+- [x] Maktab + Shahid contracts implemented end-to-end with honest failure states.
+- [x] Resource budgets filled with measured numbers before GO (installer ~158.97 MB, unpacked ~213.73 MB, langpacks 5.00 MB).
+- [x] Tier 3 three-suite + multimodal Shahid holdouts pass published bars; Aug 27 sidecar diagnostic only.
+- [x] Packaged Windows OCR/Shahid smoke + clean-machine offline pass (verified 2026-09-06, probe:ocr exit 0, probe:ocr:golden exit 0, probe:native exit 0).
+- [x] EN/AR UX strings approved before any Arabic UI edit; public site strips training internals.
+- [x] Combined GO signed by product + training; docs sync follows — then and only then bump to 2.0.0.
+  - **2026-09-06:** **GO 2.0.0** signed in NassilaT `training/EVAL_GONOGO_TIER3_MEMO.md` (all 5 suites PASS: Grounding PASS, Retrieval PASS, E2E PASS, Shahid Multimodal PASS, Maktab OCR PASS).
+
+---
+
 ## P2 — Polish / when loop IA work continues
 
 ### 9. Sharh-lite plain explanations
@@ -453,10 +544,10 @@ The HF model cards already publish `89.27% / 92.98% / 3.81%` (E4B) and `90.43% /
 
 ## Explicitly out of scope (research tracks — not small)
 
-Do not pull these into a tweak batch:
-- **Maktab** LLM ingest facet, **Shahid** multimodal, merged `nassila-agent-e12b-v1` model (`OUROBOROS_OPERATOR_MAP.md` Tier 3+).
+Do not pull these into a tweak batch outside the **2.0.0 freeze contract** (`#22`):
+- **MaktabOCR + Shahid** beyond the locked 2.0 slice (full multimodal, custom OCR train) — see NassilaT `PHASE3_TIER3_GROUNDWORK.md`.
 - **Institutional full-text access** / proxy / login webview — needs SEC-06 security review.
-- **S15+** training refinement — corpus work, lives in **NassilaT**, not the app.
+- **FT-7 Arabic L3** — **2.1.0**, not 2.0.0.
 
 ---
 
@@ -476,8 +567,8 @@ Do not pull these into a tweak batch:
 12. **∥ NassilaT:** field-note curation / Tier 3 data; **S15 shipped** (Qwen 3.5 4B); **#17** sole 9B tier (4B/12B retired); **FT-6 Hub ship 2026-08-21**.
 13. **P1 #16 + #17 → 1.8.0 Sanad 9B** — sole-tier registry + Qwen3.5 thinking handling + no-thinking template on the web. ✅ **Shipped 2026-08-13.**
 14. **P1 #18 + #19 + #20 → 1.10.0 Masdar Papers** — Wayback availability gating + papers dedupe/folder attach + Raqim Resolve URL/title fixes (`Nassila-Ouroboros-Future.md` §5). ✅ **Shipped 2026-08-22** — installer `Nassila Setup 1.10.0.exe`.
-15. **∥ NassilaT:** **FT-6** Hub **SHIPPED 2026-08-21** (no 1.9.0 installer); next app cut **1.10.0**; **FT-7 Arabic** → **2.1.0**.
+15. **∥ NassilaT:** **FT-6** Hub **SHIPPED 2026-08-21** (no 1.9.0 installer); **FT-7 Arabic** → **2.1.0**.
 16. **P1 #21 → 1.10.1 Packaged network parity** — Keep-my-title / DOI lookup / autocorrect online / input-Resolve through main IPC + renderer network-boundary guard. ✅ **Shipped 2026-08-23.**
-16. **2.0.0 MaktabOCR + Shahid** — Arabic/vision OCR + tables/figures (Tier 3 + multimodal gate).
+17. **P1 #22 → 2.0.0 MaktabOCR + Shahid** — Firecrawl native pdf-inspector + pretrained Arabic adapter; Shahid table/figure evidence; Tier 3 + multimodal gates (see #22 freeze contract). ✅ **Shipped 2026-09-06** — installer `Nassila Setup 2.0.0.exe`.
 
 **Red-line check before each merge:** no training/corpus/eval content surfaces in app UI or copy (see top of file).

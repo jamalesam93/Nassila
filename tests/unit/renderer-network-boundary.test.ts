@@ -22,6 +22,13 @@ const ALLOWED = ['hooks/use-citation-engine.ts']
 
 const NETWORK_BOUND_IMPORT = /from\s+['"][^'"]*engine\/(?:resolver(?:\/|['"])|autocorrect\/enhance|network\/http)/
 
+/** Native OCR / napi must stay in main — renderer uses maktab:* IPC only. */
+const NATIVE_OCR_IMPORT =
+  /from\s+['"][^'"]*(?:maktab\/native-pdf-inspector|@firecrawl\/pdf-inspector(?:-wasm)?['"]|main\/maktab\/)/
+
+/** Type-only IPC adapters may import native-backend interfaces. */
+const NATIVE_OCR_ALLOWED = new Set(['maktab/register-maktab-ocr.ts'])
+
 function tsFiles(dir: string): string[] {
   const files: string[] = []
   for (const entry of readdirSync(dir)) {
@@ -58,5 +65,19 @@ describe('renderer network boundary', () => {
     expect(engine).toContain('window.api?.enhanceCitations')
     expect(engine).toContain('window.api?.resolveIdentifiers')
     expect(engine).toContain('window.api?.verifyUnifiedRegistry')
+  })
+
+  it('keeps native pdf-inspector and main OCR backends out of the renderer', () => {
+    const violations: string[] = []
+    for (const file of tsFiles(rendererDir)) {
+      const rel = relative(rendererDir, file).replace(/\\/g, '/')
+      if (NATIVE_OCR_ALLOWED.has(rel)) continue
+      const source = readFileSync(file, 'utf-8')
+      if (NATIVE_OCR_IMPORT.test(source)) violations.push(rel)
+    }
+    expect(
+      violations,
+      `Renderer imported native OCR/main backends: ${violations.join(', ')}. Use window.api.maktabNative* / maktabOcr* IPC.`
+    ).toEqual([])
   })
 })

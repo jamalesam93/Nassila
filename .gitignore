@@ -25,6 +25,11 @@ Nassila-Ouroboros.code-workspace
 # Local OCR downloads & file dumps
 *.traineddata
 
+# pdf-inspector offline models / shared libs (operator-fetched; see resources/pdf-inspector/README.md)
+resources/pdf-inspector/pp-ocrv6-small/
+resources/pdf-inspector/runtime/
+resources/pdf-inspector/checksums.sha256
+
 # TypeScript incremental build cache (machine-specific)
 *.tsbuildinfo
 

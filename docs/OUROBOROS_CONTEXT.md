@@ -1,6 +1,7 @@
 # Ouroboros context brief
 
-> **For agents.** Single entry point for Nassila + NassilaT. Last updated: 2026-08-13.
+> **For agents.** Single entry point for Nassila + NassilaT. Last updated: 2026-08-27.
+> **App:** **1.10.1** shipped (2026-08-23). **Next cut:** **2.0.0 MaktabOCR + Shahid** (gated). **Shahid did not ship in 1.8.0.**
 > **Ship checkpoints:** `nassila-sanad-9b` **FT-6** (Qwen 3.5 9B, sole Sanad tier on Hub; v119) · `nassila-sanad-4b` **S15** and `nassila-sanad-12b` **S14** retired (abstract-era). **v1.13 NO-GO.** **Laptop smoke PASS** (RTX 4060 8 GB, 2026-06-21). Operator map: NassilaT [`training/OUROBOROS_OPERATOR_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/OUROBOROS_OPERATOR_MAP.md). Sign-off: [`outputs/LAPTOP_SMOKE_SIGNOFF.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/outputs/LAPTOP_SMOKE_SIGNOFF.md).
 > Training pack: [`TRAINING.md`](./TRAINING.md) → NassilaT repo. Do not read every historical walkthrough — use this brief, then drill into linked paths only.
 
@@ -21,7 +22,7 @@
 
 ## 2. Workers = loop stages (two layers each)
 
-Each worker is a **stage in the Ouroboros loop** and a **code module**, not only a GPU-trained facet. When Ouroboros is complete, the UI centers on **one manuscript audit journey** (upload → sources → audit → explain → export). The seven-item worker nav from the first UI slice is **transitional scaffolding** — not the end-state IA. See [`PRODUCT.md`](./PRODUCT.md).
+Each worker is a **stage in the Ouroboros loop** and a **code module**, not only a GPU-trained facet. Shipping UI is **Manuscript loop** vs **Bibliography** only — the old seven-item worker nav is **gone**. See [`PRODUCT.md`](./PRODUCT.md).
 
 | Layer | Role | Examples |
 |-------|------|----------|
@@ -32,7 +33,7 @@ Do **not** read “no LLM facet yet” as “not part of Ouroboros.” Registry 
 
 **Agent warning:** Future UI work must **not** recreate seven disconnected mini-apps (Hydra). Sanad must ultimately consume **Maktab** + **Masdar** outputs automatically; manual passage/excerpt paste remains a Tier 2 fallback and model test panel only.
 
-**Today:** Maktab manuscript extraction is deterministic and live (pdf.js plus Tesseract O1); Masdar-lite deterministically fetches and extracts OA source text, and per-reference local PDF attach is live (loop detail → Attach source PDF → pdf.js extract → single-reference re-audit). Their optional `doc_extract` / `source_pdf_extract` LLM facets remain planned. **Target:** the same loop-first UI per [`DESIGN.md`](./DESIGN.md), with no peer-worker Hydra.
+**Today:** Maktab manuscript extraction is deterministic and live (pdf.js plus Tesseract O1/O2; Aug 27 baseline fixes pending commit). **2.0.0** moves to Firecrawl native pdf-inspector + pretrained Arabic adapter. Masdar-lite deterministically fetches and extracts OA source text; per-reference local PDF attach and folder scan are live. Optional `doc_extract` / `source_pdf_extract` LLM facets remain planned only if deterministic fails. **Target:** loop-first UI per [`DESIGN.md`](./DESIGN.md); no peer-worker Hydra.
 
 ```
 Ingest (Maktab) → Sources (Masdar) → Ground (Sanad) → Evidence (Shahid)
@@ -50,7 +51,7 @@ Codenames: `docs/BRAND.md`, `src/shared/nassila-agent-tasks.ts`. Forge **one LLM
 | 1 | **Sanad** | سند | `l3_grounding` | Ground claims to sources | JSON repair, quote substring checks, caps | Passage vs excerpt → grounding JSON | 1 | **PASS** (9B FT-6 ship; sole tier — 4B S15 / 12B S14 retired) |
 | 2 | **Maktab** | مكتب | `doc_extract` | Bring in the manuscript | File I/O, DOCX/PDF routing, pdf.js + Tesseract O1 | Structured text/chunks from PDF/DOCX | 2 | **Deterministic live**; LLM facet planned; O2 planned |
 | 3 | **Masdar** | مصدر | `source_pdf_extract` | Get source text for citations | OA fetch, PDF extraction, chunking, secure desktop I/O, per-reference local PDF attach | Cited OA PDF → text for Sanad | 2 | **Deterministic live** with local PDF attach; `source_pdf_extract` LLM facet planned |
-| 4 | **Shahid** | شاهد | `table_figure_grounding` | Tables & figures as evidence | Region detection (future) | Claims vs table/figure regions | 3+ | Planned (12B) |
+| 4 | **Shahid** | شاهد | `table_figure_grounding` | Tables & figures as evidence | Region detection (pdf-inspector / anydoc) | Claims vs table/figure regions | 3+ | Planned **2.0.0** (gated; not 12B-required; did not ship in 1.8.0) |
 | 5 | **Raqim** | رقيم | `webpage_metadata` | Build & fix reference **records** | **L1/L2 verify**, import parsers (BibTeX/RIS/Zotero), metadata merge, **citeproc export** | Webpage → CSL field suggestions | 2+ | Planned |
 | 6 | **Tasnif** | تصنيف | `webpage_classify` | Sort, type, dedupe, flag risk | **Predatory lists**, **dedup**, reference-type rules | Grey-web / platform typing | 2+ | Planned |
 | 7 | **Sharh** | شرح | `issue_explain` | Explain what went wrong | Mismatch messages, i18n, guardrail copy | Fetch/verify/paywall explanations | 2+ | Planned |
@@ -219,7 +220,7 @@ Manual Sanad paste does **not** satisfy Tier 3 product ship; it is a bridge unti
 - **Default tier (record):** Qwen 3.5 **4B** Q6_K — **`nassila-sanad-4b` S15** = 94.48% combined expect on `eval_holdout_body_contrastive_frozen_v2` (4.87% false-supported), 4B default-tier **PASS** (Training converged at epoch 1.73, step 193/330: loss 0.3464, token acc 91.90%; training data = same 874-row `l3_grounding_train_v114.jsonl` used for v1.14)
 - **Quality tier:** Gemma 4 **12B** Q6_K — **S14 selected** = 90.43% combined, quote 100%, Tier 2 **PASS** (h-045/h-088 fixed); v1.12 12B = 94.20% higher-combined fallback
 - **v1.13:** **NO-GO** — do not publish ([`OUROBOROS_OPERATOR_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/OUROBOROS_OPERATOR_MAP.md))
-- **Shahid:** 12B when multimodal worker forges (unchanged)
+- **Shahid:** bounded table/figure evidence in **2.0.0** after multimodal gate; reuse FT-6 if it satisfies the locked contract (not 12B-required)
 - **v1.11:** trained, **NO-GO** (80.58% regression) — do not publish
 - **v1.12 E4B:** **GO** — archive [`PHASE2_11_V112_WALKTHROUGH.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/archive/PHASE2_11_V112_WALKTHROUGH.md)
 - **v1.12 12B:** **GO** — archive [`PHASE2_12_12B_QUALITY_WALKTHROUGH.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/archive/PHASE2_12_12B_QUALITY_WALKTHROUGH.md)

@@ -296,6 +296,8 @@ export interface SubmissionIntegrityBundle {
       registryStatus: string
       metadataStatus: string
       passageStatus: string
+      /** Additive; older consumers ignore. */
+      shahidEvidenceCount?: number
     }>
   }
 }
@@ -328,7 +330,9 @@ export function buildSubmissionIntegrityBundle(
         l3Coverage: f.l3Coverage,
         registryStatus: f.layers.registry.status,
         metadataStatus: f.layers.metadata.status,
-        passageStatus: f.layers.passage.status
+        passageStatus: f.layers.passage.status,
+        /** Additive Shahid count — consumers may ignore. */
+        shahidEvidenceCount: f.shahidEvidence?.length ?? 0
       }))
     }
   }

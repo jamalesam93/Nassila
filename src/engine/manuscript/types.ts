@@ -1,4 +1,5 @@
 import type { CslItem, NetworkStatus } from '../types'
+import type { ShahidEvidence } from '../shahid/types'
 
 export type AuthenticityLayer = 'registry' | 'metadata' | 'passage'
 
@@ -123,6 +124,11 @@ export interface CitationFinding {
    */
   citeSites?: CiteGroundingSite[]
   evidence: EvidenceSnippet[]
+  /**
+   * Deterministic table/figure evidence (Shahid). Additive; omit when none extracted.
+   * Never implies multimodal LLM grounding.
+   */
+  shahidEvidence?: ShahidEvidence[]
   greyTags: GreyTag[]
   ambiguity?: AmbiguityInfo
   userAction: UserAction

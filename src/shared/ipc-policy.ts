@@ -82,9 +82,12 @@ export const IPC_POLICY: readonly IpcPolicyEntry[] = [
   { channel: 'url:fetchHtml', direction: 'renderer-to-main', handler: 'ipc-oa.ts', networkScope: 'oa_fetch', input: 'sanitized', notes: 'HTML_FETCH_URL_POLICY (https-only, no private hosts)' },
   { channel: 'oa:fetchOaUrl', direction: 'renderer-to-main', handler: 'ipc-oa.ts', networkScope: 'oa_fetch', input: 'sanitized', notes: 'OA_FETCH_URL_POLICY SSRF guard (SEC-04)' },
 
-  // ── Maktab OCR (local Tesseract) ──────────────────────────────────────────
+  // ── Maktab OCR (local Tesseract) + native pdf-inspector ───────────────────
   { channel: 'maktab:ocrAvailable', direction: 'renderer-to-main', handler: 'ipc-maktab.ts', networkScope: 'none', input: 'none', notes: 'no renderer input' },
   { channel: 'maktab:ocrExtract', direction: 'renderer-to-main', handler: 'ipc-maktab.ts', networkScope: 'none', input: 'sanitized', notes: 'buffer size cap + language/dpi clamps' },
+  { channel: 'maktab:nativeAvailable', direction: 'renderer-to-main', handler: 'ipc-maktab.ts', networkScope: 'none', input: 'none', notes: 'soft-load @firecrawl/pdf-inspector napi' },
+  { channel: 'maktab:nativeClassify', direction: 'renderer-to-main', handler: 'ipc-maktab.ts', networkScope: 'none', input: 'sanitized', notes: 'buffer size cap; offline classifyPdf' },
+  { channel: 'maktab:nativeExtract', direction: 'renderer-to-main', handler: 'ipc-maktab.ts', networkScope: 'none', input: 'sanitized', notes: 'buffer size cap; offline processPdfWithOcr Auto' },
   { channel: 'maktab:extractionCacheInfo', direction: 'renderer-to-main', handler: 'ipc-handlers.ts', networkScope: 'none', input: 'none', notes: 'no renderer input; counts sha256.json in userData/source-artifacts' },
   { channel: 'maktab:clearExtractionCache', direction: 'renderer-to-main', handler: 'ipc-handlers.ts', networkScope: 'none', input: 'none', notes: 'no renderer input; deletes only pinned cache files (SEC-01)' },
 

@@ -450,6 +450,32 @@
     "waybackArchive": "أرشيف Wayback",
     "webpageMetaApplied": "تم جلب بيانات صفحة الويب الوصفية وتطبيقها.",
     "webpageMetaFailed": "تعذّر جلب البيانات الوصفية لصفحة الويب من الرابط.",
+    "webpageMetaNoChanges": "البيانات الوصفية المجلوبة تطابق هذا المرجع — لا شيء للتطبيق.",
+    "suggestGreyLit": "اقتراح من الرابط (دون اتصال)",
+    "greyLitNoSuggestions": "لا اقتراحات حقول للأدب الرمادي لهذا الرابط.",
+    "webpageSuggestionsTitle": "حقول مقترحة ({{source}})",
+    "webpageSuggestionsHint": "راجع كل حقل. لن يُطبَّق شيء قبل التأكيد.",
+    "webpageApplyHint": "طبّق الحقول المحددة فقط. الرفض يتجاهل الاقتراحات.",
+    "applyAcceptedFields": "تطبيق الحقول المقبولة",
+    "rejectSuggestions": "رفض الاقتراحات",
+    "undoWebpageApply": "التراجع عن آخر تطبيق",
+    "suggestionSource": {
+      "webpage_metadata": "بيانات ويب وصفية",
+      "grey_lit": "أدب رمادي"
+    },
+    "suggestField": {
+      "title": "العنوان",
+      "container-title": "عنوان الحاوية",
+      "publisher": "الناشر",
+      "URL": "URL",
+      "author": "المؤلف",
+      "issued": "تاريخ الإصدار",
+      "accessed": "تاريخ الوصول",
+      "abstract": "الملخص",
+      "DOI": "DOI",
+      "genre": "النوع",
+      "type": "النوع الببليوغرافي"
+    },
     "deadLinkWarning": "تعذّر جلب بيانات الويب (قد يكون الرابط معطلاً أو محمياً). استخدم أرشيف Wayback البديل.",
     "hint": "ابحث في السجلات العلمية ومستودعات المواد البحثية. لن تُطبَّق أي نتيجة قبل أن تحددها.",
     "legislationHint": "صفوف التشريع تُطابَق مع السجلات الرسمية (ELI للاتحاد الأوروبي، التشريع الفيدرالي الأمريكي، legislation.gov.uk، وعناوين .gov المعتمدة)—وليس Crossref أو PubMed.",
@@ -653,8 +679,8 @@
     },
     "shahid": {
       "name": "شاهد",
-      "tagline": "الجداول والأشكال كأدلة (مخطط)",
-      "stubBody": "ربط الادعاءات بمناطق الجداول والأشكال. المستوى 3 متعدد الوسائط — غير متاح في هذا الإصدار."
+      "tagline": "الجداول والأشكال كأدلة (جزئي)",
+      "stubBody": "تسميات توضيحية حتمية للجداول والأشكال من Markdown المصدر. توثيق سند متعدد الوسائط غير متاح في هذا الإصدار."
     }
   },
   "tasnif": {
@@ -818,6 +844,25 @@
     "pdfAttached": "PDF مرفق",
     "groundingSites": "توثيق الادعاءات",
     "citeSitesSummary": "{{count}} اقتباسات داخل النص تشترك في هذا الحكم",
+    "shahid": {
+      "title": "شاهد — أدلة الجداول والأشكال",
+      "empty": "لم يُستخرج دليل جداول/أشكال",
+      "note": "استخراج حتمي من Markdown المصدر فقط. التوثيق متعدد الوسائط غير مفعّل.",
+      "page": "ص. {{page}}",
+      "linkedCite": "موضع اقتباس مربوط {{id}}",
+      "region": {
+        "table": "جدول",
+        "figure": "شكل",
+        "caption": "تسمية توضيحية",
+        "cell": "خلية"
+      },
+      "review": {
+        "accepted": "مقبول",
+        "needs_review": "يحتاج مراجعة",
+        "unsupported": "غير مدعوم",
+        "abstain": "امتناع"
+      }
+    },
     "error": {
       "noReferencesSection": "تعذّر العثور على قسم المراجع في هذا النص.",
       "bibliographyEmpty": "مكتبة المراجع فارغة. صدّر المراجع أو استوردها في وضع المراجع أولاً.",
@@ -845,8 +890,12 @@
       "fullTextEpmc": "نص كامل مفتوح (Europe PMC)",
       "fullTextOa": "نص كامل مفتوح",
       "abstractOnly": "ملخص فقط",
+      "abstractOnlyHint": "تغطية ملخص",
+      "abstractOnlyCaution": "اللون البرتقالي هنا غالباً يعني تغطية ملخص ضعيفة — وليس أن سند فشل. أرفق ملف PDF عند توفره.",
       "unavailable": "نص المصدر غير متاح"
-    }
+    },
+    "claimSummaryCompact": "{{supported}}/{{total}} ادعاء مدعوم",
+    "claimSummaryDetail": "الادعاءات: {{supported}} مدعوم من أصل {{total}}"
   },
   "sharhLite": {
     "title": "ملخص الأدلة",

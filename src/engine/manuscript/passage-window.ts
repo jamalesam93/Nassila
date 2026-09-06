@@ -6,6 +6,22 @@ export interface PassageWindow {
   end: number
 }
 
+/** Numeric/author cite span used to clip adjacent sentences that belong to other references. */
+export interface PassageCiteSpan {
+  start: number
+  end: number
+  /** Bibliography keys referenced by this span. */
+  bibKeys: string[]
+}
+
+export interface BuildPassageWindowOptions {
+  maxChars?: number
+  /** Bib key(s) for the cite site currently being grounded. */
+  activeBibKeys?: string[]
+  /** Document cite spans used to decide whether a neighbor sentence is foreign. */
+  citeSpans?: PassageCiteSpan[]
+}
+
 interface TextRange {
   start: number
   end: number
@@ -17,13 +33,21 @@ const WORD_CHAR = /[\p{L}\p{N}\p{M}]/u
 /**
  * Build a paragraph-bounded passage around a citation, including the citation
  * sentence and one adjacent sentence on each side when available.
+ *
+ * When `activeBibKeys` and `citeSpans` are provided, an adjacent sentence is
+ * omitted if it only cites other bibliography keys (cross-cite pollution).
+ * Same-sentence multi-cites such as `[1,3]` are always retained.
  */
 export function buildPassageWindow(
   bodyText: string,
   spanStart: number,
   spanEnd: number,
-  maxChars = GROUNDING_PASSAGE_MAX_CHARS
+  maxCharsOrOptions: number | BuildPassageWindowOptions = GROUNDING_PASSAGE_MAX_CHARS
 ): PassageWindow {
+  const options: BuildPassageWindowOptions =
+    typeof maxCharsOrOptions === 'number' ? { maxChars: maxCharsOrOptions } : maxCharsOrOptions
+  const maxChars = options.maxChars ?? GROUNDING_PASSAGE_MAX_CHARS
+
   if (!bodyText || maxChars <= 0) return { text: '', start: 0, end: 0 }
 
   const rawStart = clamp(Math.min(spanStart, spanEnd), 0, bodyText.length)
@@ -32,12 +56,26 @@ export function buildPassageWindow(
   const sentences = sentenceRanges(bodyText, paragraph)
   const citeSentence = sentenceIndexAt(sentences, rawStart, rawEnd)
 
-  const selected: TextRange = citeSentence < 0
-    ? paragraph
-    : {
-        start: sentences[Math.max(0, citeSentence - 1)].start,
-        end: sentences[Math.min(sentences.length - 1, citeSentence + 1)].end
-      }
+  let selected: TextRange
+  if (citeSentence < 0) {
+    selected = paragraph
+  } else {
+    const active = new Set((options.activeBibKeys ?? []).map(String))
+    const spans = options.citeSpans ?? []
+    const includePrev =
+      citeSentence > 0 &&
+      sentenceBelongsWithActive(sentences[citeSentence - 1], active, spans)
+    const includeNext =
+      citeSentence < sentences.length - 1 &&
+      sentenceBelongsWithActive(sentences[citeSentence + 1], active, spans)
+
+    const from = includePrev ? citeSentence - 1 : citeSentence
+    const to = includeNext ? citeSentence + 1 : citeSentence
+    selected = {
+      start: sentences[from].start,
+      end: sentences[to].end
+    }
+  }
 
   const bounded = fitRangeToMax(bodyText, selected, rawStart, rawEnd, maxChars)
   return {
@@ -45,6 +83,26 @@ export function buildPassageWindow(
     start: bounded.start,
     end: bounded.end
   }
+}
+
+/**
+ * Keep neighbor sentences that have no cites (anaphora) or that also cite an
+ * active key. Drop neighbors whose only cites belong to other bib keys.
+ * When active keys are empty (legacy callers), keep adjacent sentences.
+ */
+function sentenceBelongsWithActive(
+  sentence: TextRange,
+  activeBibKeys: Set<string>,
+  citeSpans: PassageCiteSpan[]
+): boolean {
+  if (activeBibKeys.size === 0) return true
+
+  const overlapping = citeSpans.filter(
+    (span) => span.start < sentence.end && span.end > sentence.start
+  )
+  if (overlapping.length === 0) return true
+
+  return overlapping.some((span) => span.bibKeys.some((key) => activeBibKeys.has(key)))
 }
 
 function paragraphRangeAt(text: string, start: number, end: number): TextRange {

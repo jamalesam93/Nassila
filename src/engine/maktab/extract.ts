@@ -46,7 +46,7 @@ function withArabicOcrDeferred(embedded: MaktabExtractionResult): MaktabExtracti
 async function extractEmbeddedTier(
   buffer: ArrayBuffer,
   languages: MaktabLanguage[],
-  engine?: 'inspector' | 'pdfjs'
+  engine?: 'native' | 'inspector' | 'pdfjs'
 ): Promise<MaktabExtractionResult> {
   const embedded = await extractManuscriptFromPdf(buffer, engine ? { engine } : {})
   const sparse = embeddedTextLooksSparse(embedded.warnings)

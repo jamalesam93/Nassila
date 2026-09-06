@@ -140,4 +140,53 @@ describe('source artifact cache', () => {
       text: 'Roundtrip text'
     })
   })
+
+  it('ignores CACHE_VERSION 1 entries and re-extracts with version 2', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'nassila-source-cache-v1-'))
+    const filePath = join(root, 'paper.pdf')
+    const bytes = Buffer.from('%PDF-version-bump')
+    await writeFile(filePath, bytes)
+    const cacheDirectory = join(root, 'cache')
+    await mkdir(cacheDirectory, { recursive: true })
+
+    const { createHash } = await import('node:crypto')
+    const sha256 = createHash('sha256').update(bytes).digest('hex')
+    await writeFile(
+      join(cacheDirectory, `${sha256}.json`),
+      JSON.stringify({
+        version: 1,
+        sha256,
+        sourceHash: `sha256:${sha256}`,
+        text: 'Stale v1 garbbled column text',
+        tier: 'embedded_text',
+        languages: ['eng'],
+        warnings: [],
+        pageCount: 1,
+        pageBoundaries: [{ page: 1, start: 0, end: 28 }]
+      })
+    )
+
+    const extract = vi.fn(async () => ({
+      text: 'Fresh v2 extraction',
+      pageCount: 1,
+      warnings: [],
+      tier: 'embedded_text' as const,
+      languages: ['eng' as const],
+      needsReview: false
+    }))
+
+    const artifact = await attachSourcePdf(filePath, cacheDirectory, extract)
+    expect(extract).toHaveBeenCalledTimes(1)
+    await expect(loadSourceArtifact(artifact, cacheDirectory)).resolves.toMatchObject({
+      status: 'ready',
+      text: 'Fresh v2 extraction'
+    })
+
+    const rewritten = JSON.parse(await readFile(join(cacheDirectory, `${sha256}.json`), 'utf8')) as {
+      version: number
+      text: string
+    }
+    expect(rewritten.version).toBe(2)
+    expect(rewritten.text).toBe('Fresh v2 extraction')
+  })
 })

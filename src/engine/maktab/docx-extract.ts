@@ -195,14 +195,31 @@ function toMammothInput(
   return { arrayBuffer }
 }
 
+export interface StructuredDocxOptions {
+  /**
+   * Default mammoth (Route C). `anydoc` is for fixture comparison only —
+   * falls back to mammoth when the anydoc native binary is unavailable.
+   */
+  engine?: 'mammoth' | 'anydoc'
+}
+
 /**
  * Structured DOCX manuscript extraction — Maktab Route C.
  * Plain text stays byte-compatible with `extractRawText`; real Word headings
  * are returned as a segmentation side-channel.
  */
-export async function extractStructuredDocx(arrayBuffer: ArrayBuffer): Promise<DocxExtractionResult> {
+export async function extractStructuredDocx(
+  arrayBuffer: ArrayBuffer,
+  options: StructuredDocxOptions = {}
+): Promise<DocxExtractionResult> {
   if (arrayBuffer.byteLength > MAX_DOCX_BYTES) {
     throw new MaktabDocxError('DOCX file is too large to parse safely')
+  }
+
+  if (options.engine === 'anydoc') {
+    const { extractDocxWithAnydoc } = await import('./anydoc-docx')
+    const anydocResult = await extractDocxWithAnydoc(arrayBuffer)
+    if (anydocResult) return anydocResult
   }
 
   const result = await mammoth.convertToHtml(toMammothInput(arrayBuffer))

@@ -74,33 +74,32 @@ Seven workers map to stages in the loop. Maturity varies; honest gaps only — n
 
 | Worker | Arabic | Loop stage | End-state role | Current status |
 |--------|--------|------------|----------------|----------------|
-| **Maktab** | مكتب | Ingest | Manuscript upload and segmentation | **Deterministic live:** DOCX/text + pdf.js; Enhanced OCR (**eng/fra** bundled) for Latin scans; Arabic PDF OCR deferred (prefer DOCX); `doc_extract` / vision OCR planned |
-| **Masdar** | مصدر | Sources | Cited-paper text (user PDF or OA fetch) | **Deterministic live:** OA fetch + PDF extraction + per-reference local attach; `source_pdf_extract` LLM facet planned |
-| **Sanad** | سند | Ground | Passage vs source excerpt → verdicts | Live manual paste (Tier 2 bridge) |
-| **Shahid** | شاهد | Evidence | Tables and figures as evidence | Disabled — Tier 3+ |
+| **Maktab** | مكتب | Ingest | Manuscript upload and segmentation | **Deterministic live:** DOCX/text + pdf.js; Enhanced OCR (**eng/fra** bundled) for Latin scans; Arabic PDF OCR → **2.0.0** (native pdf-inspector + pretrained Arabic adapter); `doc_extract` LLM facet only if deterministic fails |
+| **Masdar** | مصدر | Sources | Cited-paper text (user PDF or OA fetch) | **Deterministic live:** OA fetch + PDF extraction + per-reference local attach + folder scan; `source_pdf_extract` LLM facet planned |
+| **Sanad** | سند | Ground | Passage vs source excerpt → verdicts | Live in loop (Tier 2 bridge + automated path); **9B FT-6/v119** sole Hub tier |
+| **Shahid** | شاهد | Evidence | Tables and figures as evidence | Disabled — gated to **2.0.0** (did not ship in 1.8.0) |
 | **Raqim** | رقيم | Records | Import, verify, export | Live — bibliography mode + loop feed |
 | **Tasnif** | تصنيف | Risk | Dedupe, predatory, issue triage | Live — feeds loop + Raqim filters |
 | **Sharh** | شرح | Explain | Issue and mismatch explanations | Partial — deterministic copy |
 
 **Settings** holds the LM Studio slot: `nassila-sanad-9b` (**FT-6**, sole Sanad tier; 4B S15 / 12B S14 retired as abstract-era). Run laptop smoke ([`LAPTOP_SMOKE_TEST.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/LAPTOP_SMOKE_TEST.md)) on downloaded GGUFs before treating release as verified.
 
-## Transitional UI (v1 reform scaffold)
+## Shipping UI (loop vs bibliography)
 
-The shipping app may still expose a **seven-item worker nav** from the first Ouroboros UI slice. Treat that as **transitional scaffolding**, not the end-state IA:
+**User-facing modes only:** **Manuscript** (Ouroboros loop) and **Bibliography** (Raqim). The old seven-item worker navigation is **gone** — do not restore Hydra peer tabs.
 
-- **Do not** present unfinished workers as peer destinations when they are pipeline stages.
-- **Do not** ask users to manually carry manuscript text from tab to tab.
+- Workers remain **loop stages and code modules**, not nav destinations.
 - Manual **Sanad** passage + excerpt paste is a **Tier 2 / developer bridge** and model smoke path — not the final user journey.
-- When the loop ships, Sanad consumes **Maktab** + **Masdar** outputs automatically; manual paste remains an advanced fallback only.
+- When sources attach, Sanad consumes **Maktab** + **Masdar** outputs automatically; manual paste remains an advanced fallback only.
 
 ## Data flow today vs target
 
-**Today (shipping scaffold):**
+**Today (shipping):**
 
-1. User opens **Manuscript** (default) or switches to **Bibliography** (Raqim).
+1. User opens **Manuscript** (default) or switches to **Bibliography** (Raqim) — loop vs bibliography only.
 2. In the loop: upload/paste manuscript → **Run audit** → L1/L2 per cite, OA/abstract fetch, L3 Sanad when Passage grounding is enabled.
 3. **Tasnif** / **Sharh** copy appears inline in loop detail; bibliography drawer opens Raqim filters.
-4. **Maktab** and **Masdar-lite** deterministic stages are live, including Masdar local-PDF attach; their LLM facets remain planned. **Shahid** remains planned — none are separate peer tabs.
+4. **Maktab** and **Masdar-lite** deterministic stages are live, including Masdar local-PDF attach and folder scan; their LLM facets remain planned. **Shahid** remains gated to **2.0.0** — not a peer tab.
 5. Engine applies JSON repair + quote-substring guardrails; LLM is advisory.
 
 **Target (full Ouroboros):**
@@ -117,11 +116,11 @@ The shipping app may still expose a **seven-item worker nav** from the first Our
 
 ## Anti-references (do not ship)
 
-- **Hydra IA** — seven equal worker tabs as the main product experience.
+- **Hydra IA** — seven equal worker tabs as the main product experience (removed; do not restore).
 - Retired **Manuscript Audit** tab layout remounted as-is.
 - Single undifferentiated “References” mega-tab hiding the loop forever.
 - Generic AI SaaS patterns (see `DESIGN.md` Impeccable discipline).
-- Shipping Sanad on **12B-only** without E4B default tier passing Tier 2.
+- Shipping Sanad without the sole **9B FT-6** Hub tier as default (4B/12B retired).
 - Stubs with fake progress bars or “coming soon” marketing chrome.
 
 ## Non-goals (v1 reform)
@@ -129,12 +128,12 @@ The shipping app may still expose a **seven-item worker nav** from the first Our
 - Full reference manager replacement (Zotero/Mendeley).
 - Open-ended thesis generation or drafting pillar.
 - Cloud LLM as default; local LM Studio remains the Sanad path.
-- Presenting the worker nav scaffold as the finished Ouroboros experience.
+- Restoring seven-worker navigation as the finished Ouroboros experience.
 
 ## Success criteria (product direction)
 
-- Docs and future UI treat **Ouroboros loop** as primary IA; worker nav is secondary or advanced.
+- Docs and UI treat **Ouroboros loop** as primary IA; bibliography is the second mode only.
 - Sanad wired to `nassila-sanad-9b` (FT-6 on Hub) with Tier 2b guardrails (invalid quotes never show as pass).
-- Raqim + Tasnif remain usable for bibliography-only users during transition.
-- Copy distinguishes live deterministic Maktab/Masdar-lite (including local-PDF attach) from planned LLM facets; Tier 3 adds the full evaluated manuscript/source pipeline.
+- Raqim + Tasnif remain usable for bibliography-only users.
+- Copy distinguishes live deterministic Maktab/Masdar-lite (including local-PDF attach) from planned LLM facets; Tier 3 / **2.0.0** adds evaluated full-text + Shahid evidence.
 - RTL parity; no AI-template UI tells per `DESIGN.md`.

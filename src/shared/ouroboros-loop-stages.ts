@@ -92,8 +92,9 @@ export const OUROBOROS_LOOP_STAGES: readonly OuroborosLoopStage[] = [
     workerCodename: OUROBOROS_WORKERS[NASSILA_AGENT_TASKS.table_figure_grounding].codename,
     taskId: NASSILA_AGENT_TASKS.table_figure_grounding,
     label: 'Table & figure evidence',
-    status: 'planned',
-    deterministic: false
+    /** Deterministic Markdown table/figure evidence extraction active (live). */
+    status: 'live',
+    deterministic: true
   },
   {
     id: OUROBOROS_LOOP_STAGE_IDS.export,

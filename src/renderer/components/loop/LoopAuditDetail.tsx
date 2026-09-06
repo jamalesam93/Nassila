@@ -1,8 +1,13 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { CitationFinding, L3Coverage } from '../../../engine/manuscript/types'
+import type { ShahidEvidence } from '../../../engine/shahid/types'
 import { formatFindingEvidenceMarkdown } from '../../../engine/audit/report'
 import { manuscriptRefCitationId } from '../../../engine/manuscript/bibliography-bridge'
+import {
+  getOuroborosStage,
+  OUROBOROS_LOOP_STAGE_IDS
+} from '../../../shared/ouroboros-loop-stages'
 import { copyToClipboard } from '../../utils/copy-to-clipboard'
 import { scrollToCitationRow } from '../../utils/citation-row-dom'
 import { notifyCopied, pushToast } from '../../lib/notify'
@@ -64,6 +69,10 @@ export default function LoopAuditDetail({ finding, onReaudit }: LoopAuditDetailP
   const otherCautionCount = claims.filter(
     (claim) => claim.verdict !== 'supported' && claim.verdict !== 'contradicted'
   ).length
+  const shahidStage = getOuroborosStage(OUROBOROS_LOOP_STAGE_IDS.shahidEvidence)
+  const shahidEvidence = finding.shahidEvidence ?? []
+  const showShahid =
+    shahidEvidence.length > 0 || shahidStage?.status === 'partial' || shahidStage?.status === 'live'
 
   const handleCopyEvidence = async () => {
     const ok = await copyToClipboard(formatFindingEvidenceMarkdown(finding))
@@ -156,9 +165,20 @@ export default function LoopAuditDetail({ finding, onReaudit }: LoopAuditDetailP
         <p className="mt-3 text-xs text-muted-foreground">
           {t('loop.sourceCoverage')}: {t(coverageLabelKey(finding.l3Coverage))}
         </p>
+        {finding.l3Coverage === 'abstract_only_closed' ? (
+          <p className="mt-1 text-xs text-amber-800 dark:text-amber-200">
+            {t('loop.coverage.abstractOnlyCaution')}
+          </p>
+        ) : null}
         {claims.length > 0 ? (
           <p className="mt-1 text-xs text-muted-foreground">
-            {t('loop.contradictedClaims')}: {contradictionCount} · {t('loop.otherCautions')}: {otherCautionCount}
+            {t('loop.claimSummaryDetail', {
+              supported: claims.filter((c) => c.verdict === 'supported').length,
+              total: claims.length
+            })}
+            {' · '}
+            {t('loop.contradictedClaims')}: {contradictionCount} · {t('loop.otherCautions')}:{' '}
+            {otherCautionCount}
           </p>
         ) : null}
       </section>
@@ -178,6 +198,51 @@ export default function LoopAuditDetail({ finding, onReaudit }: LoopAuditDetailP
       ) : (
         <p className="px-4 py-6 text-sm text-muted-foreground">{t('loop.noCiteSites')}</p>
       )}
+
+      {showShahid ? (
+        <section className="border-t border-border px-4 py-3">
+          <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            {t('loop.shahid.title')}
+          </h4>
+          {shahidEvidence.length === 0 ? (
+            <p className="mt-2 text-sm text-muted-foreground">{t('loop.shahid.empty')}</p>
+          ) : (
+            <ul className="mt-2 space-y-2">
+              {shahidEvidence.map((row) => (
+                <ShahidEvidenceRow key={row.id} row={row} />
+              ))}
+            </ul>
+          )}
+          <p className="mt-2 text-[11px] text-muted-foreground">{t('loop.shahid.note')}</p>
+        </section>
+      ) : null}
     </div>
+  )
+}
+
+function ShahidEvidenceRow({ row }: { row: ShahidEvidence }) {
+  const { t } = useTranslation()
+  const summary =
+    row.caption?.trim() ||
+    row.cellEvidence?.trim() ||
+    row.text?.trim().slice(0, 160) ||
+    row.id
+  const pageLabel = row.page != null ? t('loop.shahid.page', { page: row.page }) : null
+  const reviewKey = `loop.shahid.review.${row.reviewState}` as const
+
+  return (
+    <li className="border-b border-border/80 py-2 last:border-b-0">
+      <p className="text-xs font-medium text-foreground">
+        {t(`loop.shahid.region.${row.regionKind}`)}
+        {pageLabel ? <span className="ms-1.5 font-normal text-muted-foreground">{pageLabel}</span> : null}
+        <span className="ms-1.5 font-normal text-muted-foreground">{t(reviewKey)}</span>
+      </p>
+      <p className="mt-0.5 text-xs leading-snug text-muted-foreground">{summary}</p>
+      {row.citeSiteId ? (
+        <p className="mt-0.5 text-[11px] text-muted-foreground">
+          {t('loop.shahid.linkedCite', { id: row.citeSiteId })}
+        </p>
+      ) : null}
+    </li>
   )
 }

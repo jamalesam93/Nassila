@@ -46,6 +46,21 @@ function statusDotClass(status: string): string {
   }
 }
 
+function coverageLabelKey(coverage: string): string {
+  switch (coverage) {
+    case 'full_text_oa_europe_pmc':
+      return 'loop.coverage.fullTextEpmc'
+    case 'full_text_oa_unpaywall':
+      return 'loop.coverage.fullTextOa'
+    case 'full_text_attached_pdf':
+      return 'loop.pdfAttached'
+    case 'abstract_only_closed':
+      return 'loop.coverage.abstractOnly'
+    default:
+      return 'loop.coverage.unavailable'
+  }
+}
+
 export default function LoopSourcesPanel({
   report,
   running,
@@ -250,6 +265,20 @@ export default function LoopSourcesPanel({
                     f.evidence[0]?.text?.slice(0, 72) ||
                     f.bibKey
                   const active = f.bibKey === selectedBibKey
+                  const claimRows =
+                    f.citeSites?.flatMap((site) => site.claimGrounding ?? []) ?? []
+                  const supported = claimRows.filter((c) => c.verdict === 'supported').length
+                  const claimSummary =
+                    claimRows.length > 0
+                      ? t('loop.claimSummaryCompact', {
+                          supported,
+                          total: claimRows.length
+                        })
+                      : t(coverageLabelKey(f.l3Coverage))
+                  const coverageNote =
+                    f.l3Coverage === 'abstract_only_closed'
+                      ? t('loop.coverage.abstractOnlyHint')
+                      : null
                   return (
                     <tr
                       key={f.bibKey}
@@ -262,12 +291,16 @@ export default function LoopSourcesPanel({
                     >
                       <td className="px-3 py-2 align-top">
                         <span className="line-clamp-2 font-medium">{label}</span>
+                        <span className="mt-0.5 block text-[10px] text-muted-foreground">
+                          {claimSummary}
+                          {coverageNote ? ` · ${coverageNote}` : null}
+                        </span>
                       </td>
                       <td className="px-2 py-2 align-top">
                         <span
                           className={`inline-block h-2 w-2 rounded-full ${statusDotClass(f.layers.passage.status)}`}
-                          aria-label={f.layers.passage.status}
-                          title={f.layers.passage.status}
+                          aria-label={`${f.layers.passage.status}; ${claimSummary}`}
+                          title={`${f.layers.passage.status} · ${claimSummary}`}
                         />
                       </td>
                     </tr>

@@ -1,0 +1,22 @@
+# Third-party notices — pdf-inspector offline runtime
+
+This directory may contain operator-fetched artifacts used only for on-device
+Maktab OCR (Nassila). Artifacts are not embedded in the git tree by default.
+
+## PP-OCRv6 Small (oar-ocr v0.7.0)
+
+- Source: https://github.com/GreatV/oar-ocr/releases/tag/v0.7.0
+- License: Apache License 2.0 (oar-ocr / upstream PaddleOCR lineage)
+- Files: `pp-ocrv6_small_det.onnx`, `pp-ocrv6_small_rec.onnx`, `ppocrv6_dict.txt`
+
+## PDFium (Firecrawl native-v7988)
+
+- Source: https://github.com/firecrawl/pdfium-rs/releases/tag/native-v7988
+- License: see release SPDX / LICENSE files in the platform archive
+
+## ONNX Runtime 1.27.0
+
+- Source: https://github.com/microsoft/onnxruntime/releases/tag/v1.27.0
+- License: see ONNX Runtime LICENSE / ThirdPartyNotices
+
+Nassila does not relicense these components.

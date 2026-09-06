@@ -14,6 +14,10 @@ files:
   - node_modules/@napi-rs/canvas-*/**/*
   - node_modules/tesseract.js/**/*
   - node_modules/tesseract.js-core/**/*
+  - node_modules/@firecrawl/pdf-inspector/**/*
+  - node_modules/@firecrawl/pdf-inspector-*/**/*
+  - node_modules/@firecrawl/anydoc/**/*
+  - node_modules/@firecrawl/anydoc-*/**/*
 # Native .node, worker scripts, and WASM must load from a real filesystem path (not asar).
 asarUnpack:
   - node_modules/canvas/**/*
@@ -21,6 +25,10 @@ asarUnpack:
   - node_modules/@napi-rs/canvas-*/**/*
   - node_modules/tesseract.js/**/*
   - node_modules/tesseract.js-core/**/*
+  - node_modules/@firecrawl/pdf-inspector/**/*
+  - node_modules/@firecrawl/pdf-inspector-*/**/*
+  - node_modules/@firecrawl/anydoc/**/*
+  - node_modules/@firecrawl/anydoc-*/**/*
 extraResources:
   - from: resources/tesseract
     to: tesseract
@@ -28,6 +36,10 @@ extraResources:
       - '*.traineddata'
       - checksums.sha256
       - README.md
+  - from: resources/pdf-inspector
+    to: pdf-inspector
+    filter:
+      - '**/*'
   # Real filesystem paths — nativeImage often cannot load .ico from inside asar.
   - from: build/icon.ico
     to: app-icon.ico

@@ -5,6 +5,17 @@ import type {
   RaqimLookupKind,
   RaqimResolveCandidate
 } from '../../shared/raqim-resolve'
+import type {
+  WebpageFieldSuggestion,
+  WebpageSuggestableField,
+  WebpageSuggestionSource
+} from '../../shared/webpage-suggestions'
+import {
+  applyWebpageFieldSuggestions,
+  buildGreyLitFieldSuggestions,
+  buildWebpageFieldSuggestions,
+  formatWebpageSuggestionPreview
+} from '../../engine/webpage-field-suggestions'
 import { autocorrect } from '../../engine/autocorrect'
 import { validateCitations } from '../../engine/validator'
 import { useCitationStore } from '../stores/citation-store'
@@ -25,6 +36,10 @@ export default function RaqimResolvePanel({ item }: RaqimResolvePanelProps) {
   const [busy, setBusy] = useState(false)
   const [searched, setSearched] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [fieldSuggestions, setFieldSuggestions] = useState<WebpageFieldSuggestion[]>([])
+  const [suggestionSource, setSuggestionSource] = useState<WebpageSuggestionSource | null>(null)
+  const [acceptedFields, setAcceptedFields] = useState<Set<WebpageSuggestableField>>(new Set())
+  const [canUndoApply, setCanUndoApply] = useState(false)
   const keyDirtyRef = useRef(false)
   const networkStatus = useCitationStore((state) => state.networkStatus)
   const selectedStyleId = useCitationStore((state) => state.selectedStyleId)
@@ -58,6 +73,24 @@ export default function RaqimResolvePanel({ item }: RaqimResolvePanelProps) {
   const syncKey = (lookupKind: RaqimLookupKind) => {
     setKind(lookupKind)
     if (!keyDirtyRef.current) setKey(fieldForKey(lookupKind))
+  }
+
+  const clearFieldSuggestions = () => {
+    setFieldSuggestions([])
+    setSuggestionSource(null)
+    setAcceptedFields(new Set())
+    setCanUndoApply(false)
+  }
+
+  const presentSuggestions = (
+    suggestions: WebpageFieldSuggestion[],
+    source: WebpageSuggestionSource
+  ) => {
+    setFieldSuggestions(suggestions)
+    setSuggestionSource(source)
+    setAcceptedFields(new Set(suggestions.map((s) => s.field)))
+    setCanUndoApply(false)
+    setOpen(true)
   }
 
   const lookup = async (manual: boolean) => {
@@ -127,30 +160,84 @@ export default function RaqimResolvePanel({ item }: RaqimResolvePanelProps) {
     if (next) void checkWayback()
   }
 
+  /** Network webpage metadata — suggest only; never auto-apply. */
   const fetchWebpageMeta = async () => {
     if (!webpageUrl || !window.api?.resolveWebpageMetadata || networkStatus !== 'online') return
     setBusy(true)
     setError(null)
+    clearFieldSuggestions()
     try {
       const result = (await window.api.resolveWebpageMetadata(webpageUrl)) as {
         item: CslItem | null
+        hostProfile?: { kind: string; stableParser: boolean }
         health: { isDead: boolean; waybackUrl: string }
       } | null
 
-      if (result?.item) {
-        useCitationStore.getState().updateCitation(item.id, {
-          ...result.item,
-          id: item.id,
-          _original: item._original
-        })
-      } else {
+      if (!result?.item) {
         setError(t('raqimResolve.webpageMetaFailed'))
+        return
       }
+
+      const suggestions = buildWebpageFieldSuggestions(item, result.item, {
+        source: 'webpage_metadata',
+        hostProfile: result.hostProfile
+          ? { stableParser: result.hostProfile.stableParser }
+          : undefined,
+        suggestAccessed: true
+      })
+
+      if (suggestions.length === 0) {
+        setError(t('raqimResolve.webpageMetaNoChanges'))
+        return
+      }
+      presentSuggestions(suggestions, 'webpage_metadata')
     } catch (metaErr) {
       setError(metaErr instanceof Error ? metaErr.message : t('raqimResolve.webpageMetaFailed'))
     } finally {
       setBusy(false)
     }
+  }
+
+  /** Offline grey-lit host/path stubs — suggest only; never auto-apply. */
+  const suggestGreyLit = () => {
+    setError(null)
+    clearFieldSuggestions()
+    const batch = buildGreyLitFieldSuggestions(item)
+    if (!batch || batch.suggestions.length === 0) {
+      setError(t('raqimResolve.greyLitNoSuggestions'))
+      return
+    }
+    presentSuggestions(batch.suggestions, 'grey_lit')
+  }
+
+  const toggleField = (field: WebpageSuggestableField) => {
+    setAcceptedFields((prev) => {
+      const next = new Set(prev)
+      if (next.has(field)) next.delete(field)
+      else next.add(field)
+      return next
+    })
+  }
+
+  const applyAcceptedSuggestions = () => {
+    if (fieldSuggestions.length === 0 || acceptedFields.size === 0) return
+    const patched = applyWebpageFieldSuggestions(item, fieldSuggestions, acceptedFields)
+    const updates: Partial<CslItem> = {}
+    for (const field of acceptedFields) {
+      ;(updates as Record<string, unknown>)[field] = patched[field]
+    }
+    useCitationStore.getState().updateCitation(item.id, updates)
+    clearFieldSuggestions()
+    setCanUndoApply(true)
+  }
+
+  const rejectSuggestions = () => {
+    clearFieldSuggestions()
+  }
+
+  const undoLastApply = () => {
+    useCitationStore.getState().undo()
+    setCanUndoApply(false)
   }
 
   return (
@@ -191,6 +278,16 @@ export default function RaqimResolvePanel({ item }: RaqimResolvePanelProps) {
             {busy ? t('raqimResolve.fetchingWebpageMeta') : t('raqimResolve.fetchWebpageMeta')}
           </button>
         )}
+        {item.URL?.trim() && (
+          <button
+            type="button"
+            className="rounded border border-input bg-background px-2 py-1 text-xs text-foreground hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={busy}
+            onClick={suggestGreyLit}
+          >
+            {t('raqimResolve.suggestGreyLit')}
+          </button>
+        )}
         <button
           type="button"
           className="rounded border border-input bg-background px-2 py-1 text-xs text-foreground hover:bg-accent"
@@ -207,6 +304,15 @@ export default function RaqimResolvePanel({ item }: RaqimResolvePanelProps) {
           >
             {t('raqimResolve.waybackArchive')} ↗
           </a>
+        )}
+        {canUndoApply && (
+          <button
+            type="button"
+            className="rounded border border-input bg-background px-2 py-1 text-xs text-foreground hover:bg-accent"
+            onClick={undoLastApply}
+          >
+            {t('raqimResolve.undoWebpageApply')}
+          </button>
         )}
       </div>
 
@@ -256,6 +362,69 @@ export default function RaqimResolvePanel({ item }: RaqimResolvePanelProps) {
             <p className="text-xs text-muted-foreground">{t('raqimResolve.noCandidates')}</p>
           )}
 
+          {fieldSuggestions.length > 0 && suggestionSource && (
+            <div className="space-y-2 border border-border bg-muted/20 p-2">
+              <p className="text-xs font-medium text-foreground">
+                {t('raqimResolve.webpageSuggestionsTitle', {
+                  source: t(`raqimResolve.suggestionSource.${suggestionSource}`)
+                })}
+              </p>
+              <p className="text-xs text-muted-foreground">{t('raqimResolve.webpageSuggestionsHint')}</p>
+              <div className="divide-y divide-border border-y border-border">
+                {fieldSuggestions.map((suggestion) => (
+                  <label
+                    key={suggestion.field}
+                    className="flex cursor-pointer items-start gap-2 py-2 text-xs hover:bg-muted/40"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={acceptedFields.has(suggestion.field)}
+                      onChange={() => toggleField(suggestion.field)}
+                      className="mt-0.5"
+                    />
+                    <span className="min-w-0 flex-1">
+                      <span className="block font-medium text-foreground">
+                        {t(`raqimResolve.suggestField.${suggestion.field}`)}
+                      </span>
+                      <span className="mt-0.5 block text-foreground" dir="auto">
+                        {formatWebpageSuggestionPreview(suggestion.field, suggestion.proposed)}
+                      </span>
+                      <span className="mt-0.5 flex flex-wrap gap-x-2 text-muted-foreground">
+                        <span>
+                          {t('raqimResolve.confidence', {
+                            score: Math.round(suggestion.provenance.confidence * 100)
+                          })}
+                        </span>
+                        <span>{suggestion.provenance.evidence}</span>
+                        <span>{t(`raqimResolve.suggestionSource.${suggestion.provenance.source}`)}</span>
+                      </span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-xs text-muted-foreground">{t('raqimResolve.webpageApplyHint')}</p>
+                <div className="flex gap-1.5">
+                  <button
+                    type="button"
+                    className="rounded border border-input bg-background px-2.5 py-1 text-xs text-foreground hover:bg-accent"
+                    onClick={rejectSuggestions}
+                  >
+                    {t('raqimResolve.rejectSuggestions')}
+                  </button>
+                  <button
+                    type="button"
+                    className="rounded bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                    disabled={acceptedFields.size === 0}
+                    onClick={applyAcceptedSuggestions}
+                  >
+                    {t('raqimResolve.applyAcceptedFields')}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {candidates.length > 0 && (
             <div className="divide-y divide-border border-y border-border">
               {candidates.map((candidate) => (
@@ -277,7 +446,9 @@ export default function RaqimResolvePanel({ item }: RaqimResolvePanelProps) {
                     <span className="mt-0.5 flex flex-wrap gap-x-2 text-muted-foreground">
                       <span>{t(`raqimResolve.provider.${candidate.provider}`)}</span>
                       <span>{t(`raqimResolve.candidateKind.${candidate.kind}`)}</span>
-                      <span>{t('raqimResolve.confidence', { score: Math.round(candidate.confidence * 100) })}</span>
+                      <span>
+                        {t('raqimResolve.confidence', { score: Math.round(candidate.confidence * 100) })}
+                      </span>
                     </span>
                     {candidate.matchedFields.length > 0 && (
                       <span className="mt-0.5 block text-green-700 dark:text-green-300">
@@ -286,7 +457,9 @@ export default function RaqimResolvePanel({ item }: RaqimResolvePanelProps) {
                     )}
                     {candidate.mismatchReasons.length > 0 && (
                       <span className="mt-0.5 block text-amber-700 dark:text-amber-300">
-                        {t('raqimResolve.mismatchReasons', { fields: candidate.mismatchReasons.join(', ') })}
+                        {t('raqimResolve.mismatchReasons', {
+                          fields: candidate.mismatchReasons.join(', ')
+                        })}
                       </span>
                     )}
                   </span>

@@ -247,13 +247,88 @@ export function normalizeWhitespaceForQuoteMatch(text: string): string {
   return text.replace(/\s+/g, ' ').trim()
 }
 
-/** True when quote appears verbatim in excerpt (raw or whitespace-normalized). */
+/**
+ * Extraction-tolerant normalization for quote checks: Unicode NFKC, soft-hyphen
+ * removal, line-break dehyphenation, and whitespace collapse. Applied identically
+ * to quote and excerpt — not fuzzy/semantic matching.
+ */
+export function normalizeForQuoteMatch(text: string): string {
+  return text
+    .normalize('NFKC')
+    .replace(/\u00ad/g, '')
+    .replace(/(\p{L})-\r?\n(\p{L})/gu, '$1$2')
+    .replace(/(\p{L})-\s+(\p{L})/gu, '$1$2')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+/** True when quote appears verbatim in excerpt (raw, whitespace-, or extraction-normalized). */
 export function isVerbatimQuoteSubstring(quote: string, excerpt: string): boolean {
   if (!quote.trim()) return false
   if (excerpt.includes(quote)) return true
   const nq = normalizeWhitespaceForQuoteMatch(quote)
   const ne = normalizeWhitespaceForQuoteMatch(excerpt)
-  return nq.length > 0 && ne.includes(nq)
+  if (nq.length > 0 && ne.includes(nq)) return true
+  const eq = normalizeForQuoteMatch(quote)
+  const ee = normalizeForQuoteMatch(excerpt)
+  return eq.length > 0 && ee.includes(eq)
+}
+
+/**
+ * Extract numeric bibliography keys mentioned as `[n]` / `[n,m]` / `[n–m]` in claim text.
+ * Returns an empty array when the claim has no explicit citation markers.
+ */
+export function extractCiteKeysFromClaim(claim: string): string[] {
+  const keys = new Set<string>()
+  for (const match of claim.matchAll(/\[([^\]]+)\]/g)) {
+    const body = match[1]
+    for (const part of body.split(/[,;]/)) {
+      const trimmed = part.trim()
+      const range = trimmed.split(/\s*[-–]\s*/)
+      if (range.length === 1 && /^\d+$/.test(range[0])) {
+        keys.add(range[0])
+        continue
+      }
+      if (range.length === 2 && /^\d+$/.test(range[0]) && /^\d+$/.test(range[1])) {
+        const start = Number.parseInt(range[0], 10)
+        const end = Number.parseInt(range[1], 10)
+        if (end >= start && end - start < 50) {
+          for (let i = start; i <= end; i++) keys.add(String(i))
+        }
+      }
+    }
+  }
+  return Array.from(keys)
+}
+
+/**
+ * Drop model claims whose explicit citation set excludes the active bib key
+ * (cross-cite pollution from wide passage windows). Claims with no cite markers
+ * are kept. Returns kept claims and a short provenance note when anything was filtered.
+ */
+export function filterClaimsForActiveBibKey(
+  claims: ClaimGroundingRow[],
+  activeBibKey: string
+): { claims: ClaimGroundingRow[]; filteredCount: number; note?: string } {
+  const kept: ClaimGroundingRow[] = []
+  let filteredCount = 0
+  for (const claim of claims) {
+    const keys = extractCiteKeysFromClaim(claim.claim)
+    if (keys.length > 0 && !keys.includes(activeBibKey)) {
+      filteredCount++
+      continue
+    }
+    kept.push(claim)
+  }
+  return {
+    claims: kept,
+    filteredCount,
+    ...(filteredCount > 0
+      ? {
+          note: `Filtered ${filteredCount} claim(s) that cite other bibliography keys (not ${activeBibKey}).`
+        }
+      : {})
+  }
 }
 
 export interface SourceQuoteValidationIssue {
@@ -335,16 +410,33 @@ export function downgradeInvalidSupportedClaims(
 }
 
 /** Helper to extract all numbers, percentages, and years from text. */
-export function extractNumbersFromText(text: string): number[] {  const matches = text.match(/\b\d+(?:\.\d+)?%?\b/g)
+export function extractNumbersFromText(text: string): number[] {
+  const matches = text.match(/\b\d+(?:\.\d+)?%?\b/g)
   if (!matches) return []
   return matches.map((m) => parseFloat(m.replace('%', '')))
 }
 
+/**
+ * Remove numeric in-text citation markers (`[1]`, `[1,3]`, `(1–3)`) so cite
+ * indices are not treated as claim statistics by the numeric guardrail.
+ */
+export function stripInTextCitationMarkers(text: string): string {
+  return text
+    .replace(
+      /\[\s*\d+(?:\s*[-–]\s*\d+)?(?:\s*,\s*\d+(?:\s*[-–]\s*\d+)?)*\s*(?:,\s*[^\]]{1,30})?\s*\]/g,
+      ' '
+    )
+    .replace(
+      /\(\s*\d+(?:\s*[-–]\s*\d+)?(?:\s*,\s*\d+(?:\s*[-–]\s*\d+)?)*\s*\)/g,
+      ' '
+    )
+}
+
 /** Check if claim numbers are missing or contradict source excerpt numbers. */
 export function hasContradictoryNumbers(claimText: string, excerptText: string): boolean {
-  const claimNums = extractNumbersFromText(claimText)
+  const claimNums = extractNumbersFromText(stripInTextCitationMarkers(claimText))
   if (claimNums.length === 0) return false
-  const excerptNums = extractNumbersFromText(excerptText)
+  const excerptNums = extractNumbersFromText(stripInTextCitationMarkers(excerptText))
   if (excerptNums.length === 0) return true
 
   for (const cn of claimNums) {

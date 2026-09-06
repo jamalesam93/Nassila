@@ -13,7 +13,7 @@ export const NASSILA_AGENT_TASKS = {
   doc_extract: 'doc_extract',
   /** Cited OA PDF → text for L3 (planned). */
   source_pdf_extract: 'source_pdf_extract',
-  /** Claims vs table/figure regions (planned, multimodal). */
+  /** Claims vs table/figure regions (Shahid schema v1; multimodal; 9B FT-6 baseline). */
   table_figure_grounding: 'table_figure_grounding',
   webpage_metadata: 'webpage_metadata',
   webpage_classify: 'webpage_classify',
@@ -45,7 +45,8 @@ export const OUROBOROS_WORKERS: Record<
   [NASSILA_AGENT_TASKS.table_figure_grounding]: {
     codename: 'Shahid',
     module: 'Tables & figures as evidence',
-    description: 'LLM: claims vs table/figure regions (multimodal, planned 12B)'
+    description:
+      'LLM: claims vs table/figure regions (schema v1; 9B FT-6 baseline; multimodal pilot TBD)'
   },
   [NASSILA_AGENT_TASKS.webpage_metadata]: {
     codename: 'Raqim',

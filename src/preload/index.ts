@@ -190,6 +190,19 @@ const api = {
   ): Promise<import('../engine/maktab/types').MaktabExtractionResult> =>
     ipcRenderer.invoke('maktab:ocrExtract', pdfBytes, options ?? {}),
 
+  maktabNativeAvailable: (): Promise<boolean> => ipcRenderer.invoke('maktab:nativeAvailable'),
+
+  maktabNativeClassify: (
+    pdfBytes: ArrayBuffer
+  ): Promise<import('../engine/maktab/native-pdf-inspector').NativePdfClassification | null> =>
+    ipcRenderer.invoke('maktab:nativeClassify', pdfBytes),
+
+  maktabNativeExtract: (
+    pdfBytes: ArrayBuffer,
+    options?: { modelDirectory?: string; offline?: boolean; dpi?: number }
+  ): Promise<import('../engine/maktab/native-pdf-inspector').NativePdfInspectorExtraction | null> =>
+    ipcRenderer.invoke('maktab:nativeExtract', pdfBytes, options ?? {}),
+
   onMaktabOcrProgress: (callback: (progress: MaktabOcrProgressEvent) => void): (() => void) => {
     const listener = (_event: Electron.IpcRendererEvent, progress: MaktabOcrProgressEvent) => {
       callback(progress)

@@ -18,7 +18,7 @@ export type PaperMatchKind = 'matched' | 'ambiguous' | 'unmatched'
 export interface PaperMatch {
   bibKeys: string[]
   kind: PaperMatchKind
-  matchedBy: 'doi' | 'title' | null
+  matchedBy: 'doi' | 'title' | 'bibKey' | null
 }
 
 const FIRST_PAGES = 2
@@ -59,6 +59,20 @@ function doiFromFileName(fileName: string | undefined): string | undefined {
   const stem = fileName.replace(/\.pdf$/i, '')
   const match = stem.match(/10\.\d{4,9}\/[^\s]+/i)
   return match ? normalizeDoi(match[0]) : undefined
+}
+
+/**
+ * Bibliography key guessed from a bare file stem (`3.pdf` → `3`, `ref-12.pdf` → `ref-12`).
+ * Skips DOI-shaped stems so those stay on the DOI path.
+ */
+export function bibKeyFromFileName(fileName: string | undefined): string | undefined {
+  if (!fileName) return undefined
+  const stem = fileName.replace(/\.pdf$/i, '').trim()
+  if (!stem) return undefined
+  if (/^10\.\d{4,9}\//i.test(stem)) return undefined
+  // Numbered Vancouver keys and simple alphanumeric keys only — reject titles/slugs with spaces.
+  if (!/^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/.test(stem)) return undefined
+  return stem
 }
 
 /**
@@ -126,8 +140,9 @@ export async function extractPaperIdentity(
 const DOI_LINE_NOISE = /(?:doi[:\s]*)?10\.\d{4,9}\/\S*/gi
 
 /**
- * Deterministic matcher: DOI exact → normalized title exact → ambiguous when a
- * title hits multiple targets → unmatched. Confirm-before-apply lives in the UI.
+ * Deterministic matcher: DOI exact → normalized title exact → filename stem
+ * equal to a bibliography key (`3.pdf` → `[3]`). Ambiguous when a signal hits
+ * multiple targets. Confirm-before-apply lives in the UI.
  */
 export function matchPaperIdentity(
   signals: PaperIdentitySignals & { fileName?: string },
@@ -148,17 +163,28 @@ export function matchPaperIdentity(
   }
 
   const candidateTitle = signals.title ? normalizeTitle(signals.title) : undefined
-  if (!candidateTitle) return { bibKeys: [], kind: 'unmatched', matchedBy: null }
-
-  const byTitle = targets.filter((target) => {
-    const title = targetTitle(target)
-    return Boolean(title && title === candidateTitle)
-  })
-  if (byTitle.length === 1) {
-    return { bibKeys: [byTitle[0].bibKey], kind: 'matched', matchedBy: 'title' }
+  if (candidateTitle) {
+    const byTitle = targets.filter((target) => {
+      const title = targetTitle(target)
+      return Boolean(title && title === candidateTitle)
+    })
+    if (byTitle.length === 1) {
+      return { bibKeys: [byTitle[0].bibKey], kind: 'matched', matchedBy: 'title' }
+    }
+    if (byTitle.length > 1) {
+      return { bibKeys: byTitle.map((target) => target.bibKey), kind: 'ambiguous', matchedBy: 'title' }
+    }
   }
-  if (byTitle.length > 1) {
-    return { bibKeys: byTitle.map((target) => target.bibKey), kind: 'ambiguous', matchedBy: 'title' }
+
+  const stemKey = bibKeyFromFileName(signals.fileName)
+  if (stemKey) {
+    const byKey = targets.filter((target) => target.bibKey === stemKey)
+    if (byKey.length === 1) {
+      return { bibKeys: [byKey[0].bibKey], kind: 'matched', matchedBy: 'bibKey' }
+    }
+    if (byKey.length > 1) {
+      return { bibKeys: byKey.map((target) => target.bibKey), kind: 'ambiguous', matchedBy: 'bibKey' }
+    }
   }
 
   return { bibKeys: [], kind: 'unmatched', matchedBy: null }

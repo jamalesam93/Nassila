@@ -450,6 +450,32 @@
     "waybackArchive": "Wayback archive",
     "webpageMetaApplied": "Webpage metadata fetched and applied.",
     "webpageMetaFailed": "Failed to fetch webpage metadata from URL.",
+    "webpageMetaNoChanges": "Fetched metadata matches this row — nothing to apply.",
+    "suggestGreyLit": "Suggest from URL (offline)",
+    "greyLitNoSuggestions": "No grey-literature field suggestions for this URL.",
+    "webpageSuggestionsTitle": "Suggested fields ({{source}})",
+    "webpageSuggestionsHint": "Review each field. Nothing is applied until you confirm.",
+    "webpageApplyHint": "Apply only the checked fields. Reject discards the suggestions.",
+    "applyAcceptedFields": "Apply accepted fields",
+    "rejectSuggestions": "Reject suggestions",
+    "undoWebpageApply": "Undo last apply",
+    "suggestionSource": {
+      "webpage_metadata": "webpage metadata",
+      "grey_lit": "grey literature"
+    },
+    "suggestField": {
+      "title": "Title",
+      "container-title": "Container title",
+      "publisher": "Publisher",
+      "URL": "URL",
+      "author": "Author",
+      "issued": "Issued",
+      "accessed": "Accessed",
+      "abstract": "Abstract",
+      "DOI": "DOI",
+      "genre": "Genre",
+      "type": "Type"
+    },
     "deadLinkWarning": "Webpage metadata could not be fetched (link may be dead or restricted). Use Wayback archive fallback.",
     "hint": "Search scholarly registries and artifact hosts. A candidate is never applied until you select it.",
     "legislationHint": "Legislation rows are matched against official catalogues (EU ELI, US federal, UK legislation.gov.uk, and allowlisted .gov URLs)—not Crossref or PubMed.",
@@ -653,8 +679,8 @@
     },
     "shahid": {
       "name": "Shahid",
-      "tagline": "Tables & figures as evidence (planned)",
-      "stubBody": "Ground claims against table and figure regions. Multimodal Tier 3 — not available in this release."
+      "tagline": "Tables & figures as evidence (partial)",
+      "stubBody": "Deterministic table and figure captions from source Markdown. Multimodal LLM grounding is not available in this release."
     }
   },
   "tasnif": {
@@ -818,6 +844,25 @@
     "pdfAttached": "PDF attached",
     "groundingSites": "Passage grounding",
     "citeSitesSummary": "{{count}} in-text citations share this verdict",
+    "shahid": {
+      "title": "Shahid — table & figure evidence",
+      "empty": "No table/figure evidence extracted",
+      "note": "Deterministic extract from source Markdown only. Multimodal grounding is not enabled.",
+      "page": "p. {{page}}",
+      "linkedCite": "Linked cite site {{id}}",
+      "region": {
+        "table": "Table",
+        "figure": "Figure",
+        "caption": "Caption",
+        "cell": "Cell"
+      },
+      "review": {
+        "accepted": "Accepted",
+        "needs_review": "Needs review",
+        "unsupported": "Unsupported",
+        "abstain": "Abstain"
+      }
+    },
     "error": {
       "noReferencesSection": "Could not locate a References section in this text.",
       "bibliographyEmpty": "Bibliography library is empty. Export references or import in Bibliography mode first.",
@@ -845,8 +890,12 @@
       "fullTextEpmc": "Open-access full text (Europe PMC)",
       "fullTextOa": "Open-access full text",
       "abstractOnly": "Abstract only",
+      "abstractOnlyHint": "abstract coverage",
+      "abstractOnlyCaution": "Orange here often means thin abstract coverage — not that Sanad failed. Attach the PDF when you have it.",
       "unavailable": "Source text unavailable"
-    }
+    },
+    "claimSummaryCompact": "{{supported}}/{{total}} claims supported",
+    "claimSummaryDetail": "Claims: {{supported}} supported of {{total}}"
   },
   "sharhLite": {
     "title": "Evidence summary",

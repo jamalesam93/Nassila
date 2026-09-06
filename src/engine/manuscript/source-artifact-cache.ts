@@ -9,7 +9,7 @@ import type {
   SourcePageBoundary
 } from '../../shared/source-artifact'
 
-const CACHE_VERSION = 1
+const CACHE_VERSION = 2
 const MAX_SOURCE_PDF_BYTES = 100 * 1024 * 1024
 
 type ExtractPdf = (buffer: ArrayBuffer) => Promise<MaktabExtractionResult>

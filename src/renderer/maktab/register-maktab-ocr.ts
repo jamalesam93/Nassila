@@ -1,5 +1,6 @@
 import type { MaktabOcrBackend } from '@engine/maktab/ocr/types'
 import type { MaktabOcrExtractOptions } from '@engine/maktab/types'
+import type { MaktabNativePdfBackend } from '@engine/maktab/native-backend'
 
 /** Renderer-side OCR backend that delegates to main-process Tesseract. */
 export function createIpcMaktabOcrBackend(): MaktabOcrBackend {
@@ -19,6 +20,27 @@ export function createIpcMaktabOcrBackend(): MaktabOcrBackend {
   }
 }
 
+/** Renderer-side native pdf-inspector backend (main-process napi). */
+export function createIpcNativePdfBackend(): MaktabNativePdfBackend {
+  return {
+    id: 'firecrawl-pdf-inspector-native-ipc',
+
+    isAvailable(): boolean {
+      return Boolean(window.api?.maktabNativeAvailable)
+    },
+
+    async classify(buffer: ArrayBuffer) {
+      if (!window.api?.maktabNativeClassify) return null
+      return window.api.maktabNativeClassify(buffer)
+    },
+
+    async extract(buffer: ArrayBuffer, options) {
+      if (!window.api?.maktabNativeExtract) return null
+      return window.api.maktabNativeExtract(buffer, options)
+    }
+  }
+}
+
 export async function registerMaktabOcrBackendWhenReady(): Promise<void> {
   if (!window.api?.maktabOcrAvailable) return
 
@@ -27,4 +49,14 @@ export async function registerMaktabOcrBackendWhenReady(): Promise<void> {
 
   const { setMaktabOcrBackend } = await import('@engine/maktab')
   setMaktabOcrBackend(createIpcMaktabOcrBackend())
+}
+
+export async function registerMaktabNativePdfBackendWhenReady(): Promise<void> {
+  if (!window.api?.maktabNativeAvailable) return
+
+  const available = await window.api.maktabNativeAvailable().catch(() => false)
+  if (!available) return
+
+  const { setMaktabNativePdfBackend } = await import('@engine/maktab/native-backend')
+  setMaktabNativePdfBackend(createIpcNativePdfBackend())
 }

@@ -7,6 +7,8 @@ import {
   buildGroundingUserPrompt,
   buildGroundingLlmMessages,
   downgradeInvalidSupportedClaims,
+  extractCiteKeysFromClaim,
+  filterClaimsForActiveBibKey,
   findInvalidSourceQuotes,
   GROUNDING_PROMPT_CONTRACT_VERSION,
   hasContradictoryNumbers,
@@ -47,8 +49,21 @@ describe('isVerbatimQuoteSubstring', () => {
     expect(isVerbatimQuoteSubstring('approximately  30%   of patients', excerpt)).toBe(true)
   })
 
+  it('accepts soft-hyphen and line-break dehyphenation', () => {
+    const garbled = 'Clinical phar\u00adma-\ncy is defined as that area of pharmacy.'
+    expect(isVerbatimQuoteSubstring('Clinical pharmacy is defined as that area of pharmacy.', garbled)).toBe(
+      true
+    )
+  })
+
   it('rejects hallucinated quote', () => {
     expect(isVerbatimQuoteSubstring('invented text not in source', excerpt)).toBe(false)
+  })
+
+  it('rejects paraphrased quotes that are not substrings', () => {
+    expect(
+      isVerbatimQuoteSubstring('It became a separate faculty in 2002.', 'It became an independent faculty in 2002.')
+    ).toBe(false)
   })
 })
 
@@ -279,6 +294,33 @@ describe('applyNumericAndNegationGuard', () => {
     expect(guarded[0].verdict).toBe('contradicted')
     expect(guarded[0].rationale?.[0]).toContain('Guardrail: Claim contains numbers/statistics')
   })
+
+  it('does not treat citation markers like [1] as contradictory claim numbers', () => {
+    const claim =
+      'Clinical pharmacy is defined as an area of pharmacy practice concerned with the science and practice of rational medication use [1].'
+    const excerpt =
+      'Clinical pharmacy is defined as that area of pharmacy concerned with the science and practice of rational medication use.'
+    expect(hasContradictoryNumbers(claim, excerpt)).toBe(false)
+
+    const guarded = applyNumericAndNegationGuard(
+      [{ claim, verdict: 'supported', sourceQuotes: [excerpt] }],
+      excerpt
+    )
+    expect(guarded[0].verdict).toBe('supported')
+
+    const verdict = passageVerdictFromGroundingClaims(
+      [{ claim, verdict: 'supported', sourceQuotes: [excerpt] }],
+      'high',
+      excerpt
+    )
+    expect(verdict.status).toBe('pass')
+  })
+
+  it('still flags real statistics when a citation marker is also present', () => {
+    expect(
+      hasContradictoryNumbers('Mortality was 54.2% in the cohort [1].', 'Mortality was 24.1% in the cohort.')
+    ).toBe(true)
+  })
 })
 
 describe('downgradeInvalidSupportedClaims', () => {
@@ -313,5 +355,54 @@ describe('downgradeInvalidSupportedClaims', () => {
     ]
     const out = downgradeInvalidSupportedClaims(claims, excerpt)
     expect(out[0].verdict).toBe('not_in_source')
+  })
+
+  it('keeps supported claim when quote matches after extraction normalization', () => {
+    const dynbled = 'Clinical pharma-\ncy is defined as that area of pharmacy concerned with rational use.'
+    const claims = [
+      {
+        claim: 'Clinical pharmacy is defined…',
+        verdict: 'supported' as const,
+        sourceQuotes: ['Clinical pharmacy is defined as that area of pharmacy concerned with rational use.']
+      }
+    ]
+    const out = downgradeInvalidSupportedClaims(claims, dynbled)
+    expect(out[0].verdict).toBe('supported')
+  })
+})
+
+describe('filterClaimsForActiveBibKey', () => {
+  it('extracts numeric cite keys from claim text', () => {
+    expect(extractCiteKeysFromClaim('Definition [1].')).toEqual(['1'])
+    expect(extractCiteKeysFromClaim('See [1,3] and [7–9].')).toEqual(['1', '3', '7', '8', '9'])
+  })
+
+  it('drops claims that only cite other bibliography keys', () => {
+    const claims = [
+      {
+        claim: 'Clinical pharmacy is defined as rational medication use [1].',
+        verdict: 'weak' as const,
+        sourceQuotes: ['Clinical pharmacy is defined']
+      },
+      {
+        claim: 'It is a health science discipline [2].',
+        verdict: 'not_in_source' as const,
+        sourceQuotes: []
+      }
+    ]
+    const scoped = filterClaimsForActiveBibKey(claims, '1')
+    expect(scoped.filteredCount).toBe(1)
+    expect(scoped.claims).toHaveLength(1)
+    expect(scoped.claims[0].claim).toContain('[1]')
+    expect(scoped.note).toContain('Filtered 1 claim')
+  })
+
+  it('keeps claims with no explicit citation markers', () => {
+    const claims = [
+      { claim: 'Definition matches the source.', verdict: 'supported' as const, sourceQuotes: ['defined'] }
+    ]
+    const scoped = filterClaimsForActiveBibKey(claims, '1')
+    expect(scoped.filteredCount).toBe(0)
+    expect(scoped.claims).toHaveLength(1)
   })
 })

@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { applyPrefsToStore } from './use-manuscript-audit-prefs-sync'
 import { useManuscriptAuditStore } from '../stores/manuscript-audit-store'
-import { registerMaktabOcrBackendWhenReady } from '../maktab/register-maktab-ocr'
+import { registerMaktabOcrBackendWhenReady, registerMaktabNativePdfBackendWhenReady } from '../maktab/register-maktab-ocr'
 
 type StructureTemplate = { id: string; name: string; headings: Record<string, string[]> }
 
@@ -49,6 +49,7 @@ export function useOuroborosLoopBootstrap() {
 
   useEffect(() => {
     void registerMaktabOcrBackendWhenReady()
+    void registerMaktabNativePdfBackendWhenReady()
   }, [])
 
   useEffect(() => {
