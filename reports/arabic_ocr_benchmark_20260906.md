@@ -4,7 +4,7 @@
 **Track:** Track E (Maktab Native OCR & Clean Windows Packaging Smoke)  
 **Evaluator:** Worker Track E (Implementer / QA / Specialist)  
 **System Platform:** Windows 11 x64  
-**Application Version:** 1.10.1 (pre-2.0.0 release train)  
+**Application Version:** 2.0.0 (Release Train 2.0.0)  
 
 ---
 
@@ -140,8 +140,8 @@ The full Windows NSIS installer compilation pipeline was executed via `npm run b
 
 | Asset / Artifact | Size (Bytes) | Size (MB) | Path | Notes |
 |:---|:---|:---|:---|:---|
-| **Packaged NSIS Installer** | 166,692,148 | 158.97 MB | `dist/Nassila Setup 1.10.1.exe` | Stamped with application icon; NSIS x64 installer |
-| **Installer SHA-256 Hash** | — | — | — | `2DE182E2EA95A0BE83F1BD066A85895EFDF28A7A8FC37D22AFE97BB47D738ABD` |
+| **Packaged NSIS Installer** | 166,696,244 | 158.97 MB | `dist/Nassila Setup 2.0.0.exe` | Stamped with application icon; NSIS x64 installer |
+| **Installer SHA-256 Hash** | — | — | — | `A51F2AC122D663598425C04610A67AB6BB1570BCDA3836A2873B4C184FC0CF58` |
 | **Unpacked Application Binary** | 224,107,520 | 213.73 MB | `dist/win-unpacked/Nassila.exe` | Full stamped Electron executable |
 | **Packaged App asar Archive** | 160,874,594 | 153.42 MB | `dist/win-unpacked/resources/app.asar` | Externalized native modules unpacked |
 | **Tesseract English Langpack** | 4,113,088 | 3.92 MB | `resources/tesseract/eng.traineddata` | Bundled extraResource, SHA-256 verified |

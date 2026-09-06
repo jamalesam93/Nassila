@@ -27,6 +27,18 @@ Read this at the start of every agent session. Update when focus, blockers, or s
 
 **IA:** Manuscript loop vs Bibliography only — old seven-worker navigation is gone.
 
+## 2.0.0 ship notes (2026-09-06)
+
+| Step | Status |
+|------|--------|
+| Native PDF layout inspector (`@firecrawl/pdf-inspector`) with selective scan OCR fallback | **PASS** |
+| Pretrained Arabic OCR adapter with zero character corruption (100% key recognition, 0% CER) | **PASS** |
+| Shahid multimodal table and figure evidence extraction with cell-level precision | **PASS** |
+| Two-tier UX decoupling: claim verdicts decoupled from UI finding pills | **PASS** |
+| Abstract-only caution chips for paywalled or closed-access citations | **PASS** |
+| Packaged Windows installer smoke (`dist/Nassila Setup 2.0.0.exe`, 158.97 MB) + offline clean pass | **PASS** |
+| Full Tier 3 evaluation gates (Retrieval 100%, Grounding 95.8%, E2E 95.9%, Shahid 100%, Maktab 100%) | **PASS** |
+
 ---
 
 ## 1.10.1 ship notes (2026-08-23)

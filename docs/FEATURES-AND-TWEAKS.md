@@ -1,12 +1,12 @@
 # Features & Tweaks — Nassila app
 
-**Status:** 2026-08-27 — post-**1.10.1** (Packaged network parity, shipped 2026-08-23); heading toward **2.0.0 MaktabOCR + Shahid**. Companion to NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) and the [website docs](https://nassila-web.vercel.app/en/docs/sanad-setup) (now canonical). Scope is the **desktop app** ([Nassila](https://github.com/jamalesam93/Nassila)). Items are grouped by priority and each has an effort, a blast radius, and acceptance checks so they can be picked off independently.
+**Status:** 2026-09-06 — post-**2.0.0** (MaktabOCR + Shahid, shipped 2026-09-06); heading toward **2.1.0 Sanad Arabic (FT-7)**. Companion to NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) and the [website docs](https://nassila-web.vercel.app/en/docs/sanad-setup) (now canonical). Scope is the **desktop app** ([Nassila](https://github.com/jamalesam93/Nassila)). Items are grouped by priority and each has an effort, a blast radius, and acceptance checks so they can be picked off independently.
 
-> **Version streams:** App releases (**Nassila 1.10.1** shipped; next planned cut **2.0.0**) and Sanad checkpoints **SNN** / **FT-N** (**9B FT-6/v119** sole published Hub tier; 4B S15 / 12B S14 retired) are independent — see NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) § App release train.
+> **Version streams:** App releases (**Nassila 2.0.0** shipped; next planned cut **2.1.0**) and Sanad checkpoints **SNN** / **FT-N** (**9B FT-6/v119** sole published Hub tier; 4B S15 / 12B S14 retired) are independent — see NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) § App release train.
 
 > **Red line reminder (from the website docs spec):** no training methodology, corpus, QLoRA, eval scorecards, or NassilaT internals surface in the app. All copy must stay user-facing.
 
-> **Locked authority sequence:** **Phase 0 Trust reset** (before 1.2.2) → **1.2.2 Throughput** → **1.2.3 Quote chip** → **1.2.4 Raqim Repair** → **1.2.5 Masdar attach** → **1.2.6 Raqim Resolve** → **1.2.7 Projects + Help + onboarding** → **1.2.8 OCR O2 + a11y** → **1.2.9 Preflight + quality ledger** → **1.3.0 Sharh-lite** → … → **1.8.0 Sanad 9B** → **1.10.0 Masdar Papers** → **1.10.1 Packaged network parity** → **2.0.0 MaktabOCR + Shahid** (gated) → **2.1.0 Sanad Arabic (FT-7)**. In parallel, NassilaT curates Tier 3 eval; Sanad **9B FT-6** remains the published Hub sole tier (**#17** retired 4B/12B).
+> **Locked authority sequence:** **Phase 0 Trust reset** (before 1.2.2) → **1.2.2 Throughput** → **1.2.3 Quote chip** → **1.2.4 Raqim Repair** → **1.2.5 Masdar attach** → **1.2.6 Raqim Resolve** → **1.2.7 Projects + Help + onboarding** → **1.2.8 OCR O2 + a11y** → **1.2.9 Preflight + quality ledger** → **1.3.0 Sharh-lite** → … → **1.8.0 Sanad 9B** → **1.10.0 Masdar Papers** → **1.10.1 Packaged network parity** → **2.0.0 MaktabOCR + Shahid** (shipped 2026-09-06) → **2.1.0 Sanad Arabic (FT-7)**. In parallel, NassilaT curates Tier 3 eval; Sanad **9B FT-6** remains the published Hub sole tier (**#17** retired 4B/12B).
 
 ### Phase 0-A — Trust reset (before 1.2.2)
 
@@ -453,7 +453,7 @@ These were identified in the cross-repo review and confirmed by the 2026-06-28 s
 
 | Budget | Measured Value |
 |--------|----------------|
-| Installer size (1.10.1 baseline / NSIS) | **~158.97 MB** (166,692,148 bytes, SHA256: `2DE182E2EA95A0BE83F1BD066A85895EFDF28A7A8FC37D22AFE97BB47D738ABD`); +5.59 MB vs 1.10.0 (160.83 MB) |
+| Installer size (2.0.0 NSIS) | **~158.97 MB** (166,696,244 bytes, SHA256: `A51F2AC122D663598425C04610A67AB6BB1570BCDA3836A2873B4C184FC0CF58`); baseline 1.10.1 was 166,692,148 bytes |
 | Unpacked executable (`Nassila.exe`) | **~213.73 MB** (224,107,520 bytes) |
 | Main app archive (`app.asar`) | **~153.42 MB** (160,874,594 bytes) |
 | Bundled Tesseract langpacks (`eng` + `fra`) | **5.00 MB** (5,243,453 bytes) under `resources/tesseract/` |
@@ -498,7 +498,7 @@ These were identified in the cross-repo review and confirmed by the 2026-06-28 s
 **Effort:** large (cross-repo). **Blast radius:** `src/engine/maktab/`, manuscript audit, main/preload IPC, packaging, NassilaT eval, nassila-web docs. **Ship:** **2.0.0** — gated; not version-bumped until GO.
 
 **Acceptance.**
-- [x] FEATURES / Future / STATE / CONTEXT / PRODUCT / operator map agree: **1.10.1 shipped**; next cut **2.0.0**; Shahid not in 1.8; loop vs bibliography only; Sanad **9B FT-6/v119** sole tier.
+- [x] FEATURES / Future / STATE / CONTEXT / PRODUCT / operator map agree: **2.0.0 shipped**; next cut **2.1.0**; Shahid live in 2.0.0; loop vs bibliography only; Sanad **9B FT-6/v119** sole tier.
 - [x] Maktab + Shahid contracts implemented end-to-end with honest failure states.
 - [x] Resource budgets filled with measured numbers before GO (installer ~158.97 MB, unpacked ~213.73 MB, langpacks 5.00 MB).
 - [x] Tier 3 three-suite + multimodal Shahid holdouts pass published bars; Aug 27 sidecar diagnostic only.

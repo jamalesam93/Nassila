@@ -1,10 +1,10 @@
 # Nassila-Ouroboros Future
 
-**Date:** 2026-08-27 (header refresh; original synthesis 2026-07-20)  
+**Date:** 2026-09-06 (header refresh for 2.0.0 ship; original synthesis 2026-07-20)  
 **Scope:** Nassila (app) · NassilaT (training) · nassila-web (docs)  
 **Sources reviewed:** `NassilaT/training/OUROBOROS_OPERATOR_MAP.md`, `Nassila/docs/FEATURES-AND-TWEAKS.md`, `STATE.md`, `PRODUCT.md`, `OUROBOROS_CONTEXT.md`, `CHANGELOG.md`, engine/renderer code, field notes, website release train
 
-**App baseline:** **1.10.1** (Packaged network parity, 2026-08-23; 1.10.0 Masdar Papers 2026-08-22). **Sanad model (Hub):** 9B **FT-6** (sole published tier, v119, 2026-08-21) — Hub/GGUF only, **no 1.9.0 installer**. **Next planned cut:** **2.0.0 MaktabOCR + Shahid**. **Shahid did not ship in 1.8.0** — stays gated to **2.0.0** (Tier 3 + multimodal). **IA:** loop vs bibliography only (old seven-worker nav gone).
+**App baseline:** **2.0.0** (MaktabOCR + Shahid, 2026-09-06; 1.10.1 Packaged network parity 2026-08-23). **Sanad model (Hub):** 9B **FT-6** (sole published tier, v119, 2026-08-21). **Next planned cut:** **2.1.0 Sanad Arabic (FT-7)**. **Shahid is LIVE in 2.0.0** (Tier 3 + multimodal PASS). **IA:** loop vs bibliography only (old seven-worker nav gone).
 
 ---
 
@@ -151,7 +151,7 @@ July field notes (`masdar-lite-jul13`) remain useful raw material (captured unde
 - Many `truncated` / echo heuristics — **re-ground after the new window** before treating as train labels.
 - Human adjudication **done:** **49/49** labeled → boost JSONL (operator map W3). Historical note: was 14/49 as of 2026-07-18.
 
-**Status (2026-08-21):** **9B FT-6** (`nassila-sanad-9b`) shipped on Hub (v119 QLoRA; 6 default + 6 MTP GGUFs; bf16 unquant). Product GO vs FT-5. **FT-5** (v117) superseded. **No separate app installer for FT-6** — app baseline now **1.10.1**; next cut **2.0.0**.
+**Status (2026-08-21):** **9B FT-6** (`nassila-sanad-9b`) shipped on Hub (v119 QLoRA; 6 default + 6 MTP GGUFs; bf16 unquant). Product GO vs FT-5. **FT-5** (v117) superseded. **No separate app installer for FT-6** — app baseline now **2.0.0**; next cut **2.1.0**.
 
 ### 3.5 App vs training prompt contract
 
@@ -159,7 +159,7 @@ July field notes (`masdar-lite-jul13`) remain useful raw material (captured unde
 
 **Qwen 3.5 thinking note:** the GGUFs embed a thinking chat template; the app strips thinking traces natively and ships the no-thinking template (`FEATURES-AND-TWEAKS.md` #16).
 
-**Residual:** optional multi-seed re-eval on private manuscripts; keep prompt version/hash on model cards. FT-6 Hub ship done — app baseline **1.10.1**; next installer **2.0.0** (gated).
+**Residual:** optional multi-seed re-eval on private manuscripts; keep prompt version/hash on model cards. FT-6 Hub ship done — app baseline **2.0.0**; next installer **2.1.0** (Sanad Arabic).
 
 ### 3.6 Arabic Sanad validation
 
@@ -696,7 +696,7 @@ Before retaining an unqualified Arabic model claim:
 | W7 | Maktab gold manuscripts (50–100) | NassilaT + manual | Not started (after W5) | M01 QLoRA smoke only if deterministic fails |
 | W8 | Tier 3 Sanad train (body chunks) | NassilaT | Parked until W6 product freeze + written model-gap memo | Tier 3 product ship |
 | W9 | S15+ abstract recovery (optional) | NassilaT | Parked / superseded by FT-6 sole tier | Historical |
-| W10 | Raqim legislation + web (1.4–1.5) | Nassila | **Done** (through 1.10.1) | Bibliography quality (orthogonal) |
+| W10 | Raqim legislation + web (1.4–1.5) | Nassila | **Done** (through 2.0.0) | Bibliography quality (orthogonal) |
 
 **Tier 3 product claim:** Retrieval, gold-excerpt, e2e, Maktab OCR, and Shahid multimodal suites all **PASS** → GO memo signed 2026-09-06 → **2.0.0 SHIPPED**. Canonical W-status: NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md).
 
@@ -749,7 +749,7 @@ Cross-repo review notes. Items marked **shipped** were delivered in the 1.3.0 tr
 | Local-model setup | Yes | Web canonical + settings; keep USER_GUIDE synced |
 | Evidence transparency | Yes | Quote chips + Sharh-lite; denser provenance in 1.6–1.7 |
 | Bilingual UX | Yes | EN/AR parity; Sanad AR **unvalidated** (§3.6) |
-| Release positioning | Yes | Baseline **1.10.1**; website train synced at each cut |
+| Release positioning | Yes | Baseline **2.0.0**; website train synced at each cut |
 | Onboarding | Partial | Website good; in-app first-run still thin |
 | Documentation | Partial | Stub language / dead `POST_V114` links still need §8 pass |
 | Persistence | Partial | `.nassila` save/open live; dirty-close / recovery → 1.7 |
@@ -789,7 +789,7 @@ L6  Technical specs
 
 ### Naming rules
 
-1. **App:** current `package.json` version (**1.10.1** baseline; do not bump to 2.0.0 until GO) — never freeze headers at older cuts.
+1. **App:** current `package.json` version (**2.0.0** baseline; do not bump to 2.1.0 until GO) — never freeze headers at older cuts.
 2. **Models:** **FT-6 / 9B** sole published Hub tier; S12/S14/S15 only in historical/archive docs.
 3. **Workers:** two columns everywhere — **Deterministic stage** (Live / Partial / Planned) vs **LLM facet** (Planned / M01 / etc.).
 
@@ -826,12 +826,13 @@ If Sanad validation metrics appear on the site, do not publish bare “accuracy.
 
 ## 9. Implementation matrix (current vs planned)
 
-**Baseline:** app **1.10.1** (2026-08-23). Model **9B FT-6** (sole published Hub Sanad tier, Qwen 3.5 9B v119); 4B S15 / 12B S14 retired.
+**Baseline:** app **2.0.0** (2026-09-06). Model **9B FT-6** (sole published Hub Sanad tier, Qwen 3.5 9B v119); 4B S15 / 12B S14 retired.
 
 ### Shipped
 
 | Release | Codename (EN) | Codename (AR) | Status |
 |---------|---------------|---------------|--------|
+| 2.0.0 | MaktabOCR + Shahid | مكتب OCR + شاهد | **Shipped** 2026-09-06 — Firecrawl native + pretrained Arabic adapter; Shahid table/figure live; Tier 3 + multimodal PASS |
 | 1.10.1 | Packaged network parity | تكافؤ الشبكة المعبأة | **Shipped** 2026-08-23 |
 | 1.10.0 | Masdar Papers | أوراق مصدر | **Shipped** 2026-08-22 |
 | 1.8.0 | Sanad 9B | سند 9B | **Shipped** 2026-08-13 (Shahid **not** included) |
@@ -847,8 +848,7 @@ If Sanad validation metrics appear on the site, do not publish bare “accuracy.
 
 | Release | Codename (EN) | Codename (AR) | Status |
 |---------|---------------|---------------|--------|
-| 2.0.0 | MaktabOCR + Shahid | مكتب OCR + شاهد | Planned — Tier 3 + multimodal gate; Firecrawl native + pretrained Arabic adapter |
-| 2.1.0 | Sanad Arabic | سند عربي | Planned — FT-7 |
+| 2.1.0 | Sanad Arabic | سند عربي | Planned — FT-7 native Arabic train + holdout |
 
 > FT-6 shipped on Hub 2026-08-21 — **no 1.9.0 installer slot**.
 ### Long-term (see §5 · not versioned)

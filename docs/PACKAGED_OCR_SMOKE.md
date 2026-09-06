@@ -35,7 +35,7 @@ Record sizes in [`FEATURES-AND-TWEAKS.md`](./FEATURES-AND-TWEAKS.md) #22 resourc
 
 | Asset | Size (MB) | Path |
 |-------|-----------|------|
-| Installer (1.10.1) | ~158.97 MB (166,692,148 bytes) | `dist/Nassila Setup 1.10.1.exe` |
+| Installer (2.0.0) | ~158.97 MB (166,696,244 bytes) | `dist/Nassila Setup 2.0.0.exe` |
 | Unpacked executable | ~213.73 MB (224,107,520 bytes) | `dist/win-unpacked/Nassila.exe` |
 | Main app asar archive | ~153.42 MB (160,874,594 bytes) | `dist/win-unpacked/resources/app.asar` |
 | Tesseract langpacks (eng+fra) | 5.00 MB (5,243,453 bytes) | `resources/tesseract/` |
@@ -133,7 +133,7 @@ Create `reports/packaged_ocr_smoke_YYYYMMDD.md` (gitignored OK):
 ```
 
 ### Verified Smoke Run — 2026-09-06
-- Installer: `Nassila Setup 1.10.1.exe` (166,692,148 bytes, SHA256: `2DE182E2EA95A0BE83F1BD066A85895EFDF28A7A8FC37D22AFE97BB47D738ABD`)
+- Installer: `Nassila Setup 2.0.0.exe` (166,696,244 bytes, SHA256: `A51F2AC122D663598425C04610A67AB6BB1570BCDA3836A2873B4C184FC0CF58`)
 - VM / Environment: Windows 11 x64 clean / offline: verified
 - `probe:ocr`: **pass** (Exit 0; resolves bundled tesseract worker and wasm)
 - `probe:ocr:golden`: **pass** (Exit 0; all 6 golden checks passed)
