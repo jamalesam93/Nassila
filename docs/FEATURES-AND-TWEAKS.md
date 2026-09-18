@@ -1,13 +1,12 @@
 # Features & Tweaks — Nassila app
 
-**Status:** 2026-09-06 — post-**2.0.0** (MaktabOCR + Shahid, shipped 2026-09-06); heading toward **2.1.0 Sanad Arabic (FT-7)**. Companion to NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) and the [website docs](https://nassila-web.vercel.app/en/docs/sanad-setup) (now canonical). Scope is the **desktop app** ([Nassila](https://github.com/jamalesam93/Nassila)). Items are grouped by priority and each has an effort, a blast radius, and acceptance checks so they can be picked off independently.
+**Status:** 2026-09-18 — **2.1.0 Maktab Arabic shipped**; next cut **2.2.0 Sanad Arabic** (FT-7) paused for budget. Companion to NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) and the [website docs](https://nassila-web.vercel.app/en/docs/sanad-setup) (now canonical). Scope is the **desktop app** ([Nassila](https://github.com/jamalesam93/Nassila)). Items are grouped by priority and each has an effort, a blast radius, and acceptance checks so they can be picked off independently.
 
-> **Version streams:** App releases (**Nassila 2.0.0** shipped; next planned cut **2.1.0**) and Sanad checkpoints **SNN** / **FT-N** (**9B FT-6/v119** sole published Hub tier; 4B S15 / 12B S14 retired) are independent — see NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) § App release train.
+> **Version streams:** App releases (**Nassila 2.1.0** shipped; next planned cut **2.2.0 Sanad Arabic** paused) and Sanad checkpoints **SNN** / **FT-N** (**9B FT-6/v119** sole published Hub tier until FT-7 GO; 4B S15 / 12B S14 retired) are independent — see NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) § App release train.
 
 > **Red line reminder (from the website docs spec):** no training methodology, corpus, QLoRA, eval scorecards, or NassilaT internals surface in the app. All copy must stay user-facing.
 
-> **Locked authority sequence:** **Phase 0 Trust reset** (before 1.2.2) → **1.2.2 Throughput** → **1.2.3 Quote chip** → **1.2.4 Raqim Repair** → **1.2.5 Masdar attach** → **1.2.6 Raqim Resolve** → **1.2.7 Projects + Help + onboarding** → **1.2.8 OCR O2 + a11y** → **1.2.9 Preflight + quality ledger** → **1.3.0 Sharh-lite** → … → **1.8.0 Sanad 9B** → **1.10.0 Masdar Papers** → **1.10.1 Packaged network parity** → **2.0.0 MaktabOCR + Shahid** (shipped 2026-09-06) → **2.1.0 Sanad Arabic (FT-7)**. In parallel, NassilaT curates Tier 3 eval; Sanad **9B FT-6** remains the published Hub sole tier (**#17** retired 4B/12B).
-
+> **Locked authority sequence:** **Phase 0 Trust reset** (before 1.2.2) → **1.2.2 Throughput** → **1.2.3 Quote chip** → **1.2.4 Raqim Repair** → **1.2.5 Masdar attach** → **1.2.6 Raqim Resolve** → **1.2.7 Projects + Help + onboarding** → **1.2.8 OCR O2 + a11y** → **1.2.9 Preflight + quality ledger** → **1.3.0 Sharh-lite** → … → **1.8.0 Sanad 9B** → **1.10.0 Masdar Papers** → **1.10.1 Packaged network parity** → **2.0.0 MaktabOCR + Shahid** (shipped 2026-09-06) → **2.1.0 Maktab Arabic** (shipped 2026-09-18) → **2.2.0 Sanad Arabic** (FT-7, paused) → **2.3.0–5.0.0** (`Nassila-Ouroboros-Future.md` §5). Do not claim Arabic manuscript audit.
 ### Phase 0-A — Trust reset (before 1.2.2)
 
 Stabilize the production trust boundary before throughput work: move manuscript registry/network ownership out of the renderer, align the production prompt with evaluation, prevent false L3 passes and synthetic-span grounding, report mapping ambiguity/coverage, settle first-use OCR language-pack behavior, and add packaged Windows audit smoke plus basic CI. Exit gates are defined in [`Nassila-Ouroboros-Future.md`](./Nassila-Ouroboros-Future.md) §5.
@@ -259,10 +258,10 @@ These were identified in the cross-repo review and confirmed by the 2026-06-28 s
 **Ship:** **1.2.6** · **Effort:** medium–large (engine + Bibliography UI) · **Blast radius:** Raqim renderer panels, new resolver modules, IPC unchanged unless new host IPC needed
 
 **Acceptance.**
-- [ ] Unresolved row shows ≥1 suggested match when OpenAlex/Crossref/HF return near-misses (threshold documented in code).
-- [ ] User can paste a DOI or PubMed URL and re-run Verify/Autocorrect without re-importing the whole bibliography.
-- [ ] Gemma-class report cites can surface HF model-card suggestions; user picks before apply (no silent auto-fill).
-- [ ] EN + AR strings for repair panel; no training/corpus copy in UI.
+- [x] Unresolved row shows ≥1 suggested match when OpenAlex/Crossref/HF return near-misses (threshold documented in code).
+- [x] User can paste a DOI or PubMed URL and re-run Verify/Autocorrect without re-importing the whole bibliography.
+- [x] Gemma-class report cites can surface HF model-card suggestions; user picks before apply (no silent auto-fill).
+- [x] EN + AR strings for repair panel; no training/corpus copy in UI.
 
 ---
 
@@ -420,7 +419,7 @@ These were identified in the cross-repo review and confirmed by the 2026-06-28 s
 
 ### 22. 2.0.0 MaktabOCR + Shahid — مكتب OCR + شاهد (freeze contract)
 
-**Problem.** Abstract-only grounding and Latin OCR leave scanned Arabic PDFs and table/figure claims outside a reviewable evidence chain. Shahid never shipped in **1.8.0** (Sanad 9B only); it stays gated with MaktabOCR to **2.0.0**. Users need honest ingest → attach → ground → evidence → export in the existing **loop vs bibliography** IA (old seven-worker navigation is gone), without fake progress or implying Arabic L3 is validated (**FT-7 → 2.1.0**).
+**Problem.** Abstract-only grounding and Latin OCR leave scanned Arabic PDFs and table/figure claims outside a reviewable evidence chain. Shahid never shipped in **1.8.0** (Sanad 9B only); it stays gated with MaktabOCR to **2.0.0**. Users need honest ingest → attach → ground → evidence → export in the existing **loop vs bibliography** IA (old seven-worker navigation is gone), without fake progress or implying Arabic L3 is validated (**FT-7 → 2.2.0**).
 
 **Design — one executable contract.**
 
@@ -493,12 +492,12 @@ These were identified in the cross-repo review and confirmed by the 2026-06-28 s
 
 **Hard rule:** no `package.json` 2.0.0 bump, Shahid `live`, or public launch copy until **both** Tier 3 full-text and multimodal Shahid gates pass. Failed gate → remediation + fresh/predeclared holdout — do not weaken the milestone.
 
-**OCR strategy (locked):** Firecrawl-first — native `@firecrawl/pdf-inspector` + selective OCR; Arabic gap closed with a **pretrained Arabic recognizer adapter** (not custom OCR train by default; not “vision/LLM OCR” as primary framing). **FT-7 Arabic L3** stays **2.1.0**.
+**OCR strategy (locked):** Firecrawl-first — native `@firecrawl/pdf-inspector` + selective OCR; Arabic gap closed with a **pretrained Arabic recognizer adapter** (not custom OCR train by default; not “vision/LLM OCR” as primary framing). **FT-7 Arabic L3** stays **2.2.0**.
 
 **Effort:** large (cross-repo). **Blast radius:** `src/engine/maktab/`, manuscript audit, main/preload IPC, packaging, NassilaT eval, nassila-web docs. **Ship:** **2.0.0** — gated; not version-bumped until GO.
 
 **Acceptance.**
-- [x] FEATURES / Future / STATE / CONTEXT / PRODUCT / operator map agree: **2.0.0 shipped**; next cut **2.1.0**; Shahid live in 2.0.0; loop vs bibliography only; Sanad **9B FT-6/v119** sole tier.
+- [x] FEATURES / Future / STATE / CONTEXT / PRODUCT / operator map agree: **2.1.0 shipped**; next cut **2.2.0 Sanad Arabic** (paused); Shahid live in 2.0.0; loop vs bibliography only; Sanad **9B FT-6/v119** sole tier.
 - [x] Maktab + Shahid contracts implemented end-to-end with honest failure states.
 - [x] Resource budgets filled with measured numbers before GO (installer ~158.97 MB, unpacked ~213.73 MB, langpacks 5.00 MB).
 - [x] Tier 3 three-suite + multimodal Shahid holdouts pass published bars; Aug 27 sidecar diagnostic only.
@@ -513,15 +512,15 @@ These were identified in the cross-repo review and confirmed by the 2026-06-28 s
 
 ### 9. Sharh-lite plain explanations
 
-`OUROBOROS_OPERATOR_MAP.md` flags Sharh as deterministic copy only. Small step: when Sanad already ran for a cite site, template a one-sentence summary from the structured claims ("2 of 3 claims supported; 1 contradicted on dosing") — no new LLM call, deterministic. Feels like explanations without the Sharh LLM facet.
+**Shipped in 1.3.0.** `OUROBOROS_OPERATOR_MAP.md` richer **LLM** Sharh is **3.1.0**. Deterministic one-sentence summary from structured claims ships; no new LLM call.
 
 ### 10. Cancel granularity
 
-`controller.signal.aborted` is only checked at entry boundaries (`:141`, `:205`), not mid-LLM-call. A long local grounding call can't be interrupted. If `window.api.llmChat` can accept an abort signal, thread it through so Cancel feels responsive. **Verify the IPC shape first** — may be medium effort.
+**Shipped in 1.7.0.** AbortSignal threaded through `llmChat` / `executeLlmChat` / `fetch`.
 
 ### 11. In-app Help → deep-link to website
 
-`OUROBOROS_OPERATOR_MAP.md` defers "End-user Help → full reference" until loop IA stable. It's stable now. **Don't duplicate content** — the website docs are canonical. Ship a small Help menu / "Documentation" link to the docs index and specific pages (`/docs/sanad-setup`, `/docs/verification`, `/docs/troubleshooting`). One source of truth, consistent with #2.
+**Shipped in 1.3.0.** Help menu opens nassila-web docs (`/docs`, locale-aware). Website remains canonical — do not duplicate full reference in-app.
 
 ### 12. Public Sanad metrics on the website `local-models` page (cross-repo, optional)
 
@@ -536,18 +535,21 @@ The HF model cards already publish `89.27% / 92.98% / 3.81%` (E4B) and `90.43% /
 **Ship:** **1.2.3 Quote chip** (with #6) · **Effort:** tiny · **Blast radius:** `AppHeader.tsx` (+ spacing only)
 
 **Acceptance.**
-- [ ] No duplicate product name in the in-app header; title bar icon/name remain.
-- [ ] Mode switcher still clear as the first chrome control in EN and AR (RTL).
-- [ ] No new brand mark / logo treatment introduced in the header.
+- [x] No duplicate product name in the in-app header; title bar icon/name remain.
+- [x] Mode switcher still clear as the first chrome control in EN and AR (RTL).
+- [x] No new brand mark / logo treatment introduced in the header.
 
 ---
 
 ## Explicitly out of scope (research tracks — not small)
 
 Do not pull these into a tweak batch outside the **2.0.0 freeze contract** (`#22`):
-- **MaktabOCR + Shahid** beyond the locked 2.0 slice (full multimodal, custom OCR train) — see NassilaT `PHASE3_TIER3_GROUNDWORK.md`.
-- **Institutional full-text access** / proxy / login webview — needs SEC-06 security review.
-- **FT-7 Arabic L3** — **2.1.0**, not 2.0.0.
+- **MaktabOCR + Shahid** beyond the locked 2.0 slice (full multimodal → **4.0.0**; custom OCR train) — see NassilaT `PHASE3_TIER3_GROUNDWORK.md`.
+- **Institutional login webview** — **5.0.0** last resort; library proxy prefixes → **2.3.0**. Needs SEC-06 security review.
+- **Merged Ouroboros GGUF** (`nassila-agent-e12b-v1`) — **5.0.0 non-goal**; routed pack instead.
+- **Maktab M01 / Masdar Md01** — gated; train only if deterministic ingest fails.
+- **FT-7 Arabic L3** — **2.2.0** (#24); production Maktab AR OCR + mapping — **2.1.0** (#23).
+- Later map cuts **2.3.0–5.0.0** — see `Nassila-Ouroboros-Future.md` §5 (no FEATURES acceptance yet).
 
 ---
 
@@ -567,8 +569,44 @@ Do not pull these into a tweak batch outside the **2.0.0 freeze contract** (`#22
 12. **∥ NassilaT:** field-note curation / Tier 3 data; **S15 shipped** (Qwen 3.5 4B); **#17** sole 9B tier (4B/12B retired); **FT-6 Hub ship 2026-08-21**.
 13. **P1 #16 + #17 → 1.8.0 Sanad 9B** — sole-tier registry + Qwen3.5 thinking handling + no-thinking template on the web. ✅ **Shipped 2026-08-13.**
 14. **P1 #18 + #19 + #20 → 1.10.0 Masdar Papers** — Wayback availability gating + papers dedupe/folder attach + Raqim Resolve URL/title fixes (`Nassila-Ouroboros-Future.md` §5). ✅ **Shipped 2026-08-22** — installer `Nassila Setup 1.10.0.exe`.
-15. **∥ NassilaT:** **FT-6** Hub **SHIPPED 2026-08-21** (no 1.9.0 installer); **FT-7 Arabic** → **2.1.0**.
+15. **∥ NassilaT:** **FT-6** Hub **SHIPPED 2026-08-21** (no 1.9.0 installer); **FT-7 Arabic** → **2.2.0** (paused).
 16. **P1 #21 → 1.10.1 Packaged network parity** — Keep-my-title / DOI lookup / autocorrect online / input-Resolve through main IPC + renderer network-boundary guard. ✅ **Shipped 2026-08-23.**
 17. **P1 #22 → 2.0.0 MaktabOCR + Shahid** — Firecrawl native pdf-inspector + pretrained Arabic adapter; Shahid table/figure evidence; Tier 3 + multimodal gates (see #22 freeze contract). ✅ **Shipped 2026-09-06** — installer `Nassila Setup 2.0.0.exe`.
+18. **P0 #23 → 2.1.0 Maktab Arabic** — production Maktab AR OCR + Arabic-aware mapping (see #23). ✅ **Shipped 2026-09-18.**
+19. **P0 #24 → 2.2.0 Sanad Arabic** — Sanad FT-7 (see #24). **Paused (budget).** Data frozen.
 
 **Red-line check before each merge:** no training/corpus/eval content surfaces in app UI or copy (see top of file).
+
+### 23. 2.1.0 Maktab Arabic — مكتب عربي (freeze contract)
+
+**Problem.** Arabic users need reliable PDF/DOCX ingest. 2.0 shipped Latin OCR + Arabic adapter **goldens**, but production still DOCX-defers Arabic-heavy PDFs. Validated Arabic L3 is **#24 / 2.2.0**, not this cut.
+
+**Ship rule:** Do not bump `package.json` to 2.1.0 until **Track A (Maktab AR OCR)** and **Track C (Arabic-aware mapping)** GO. Do **not** wait for FT-7. Never claim Arabic manuscript audit. **GO 2026-09-18.**
+
+**Track A — Maktab:** Package PP-OCRv5 under `resources/arabic-ocr/`; register adapter; lift Arabic-heavy deferral when available; keep reverse-font DOCX prefer; never Tesseract `ara` primary.
+
+**Track C — mapping:** Arabic-aware segment/in-text fixtures green.
+
+**Acceptance.**
+- [x] Packaged Arabic adapter available; scan path not forced to DOCX-only for adapter-capable PDFs
+- [x] Reverse-font PDFs still warn DOCX
+- [x] Arabic-aware mapping fixtures green
+- [x] Cross-repo docs agree; Arabic L3 still qualified unvalidated
+
+**Index:** NassilaT `2.1_2.2_ARABIC_OPERATOR_INDEX.md`.
+
+### 24. 2.2.0 Sanad Arabic — سند عربي (freeze contract)
+
+**Problem.** Sanad train JSONL has ~zero Arabic rows in published FT-6. UI AR ≠ model AR.
+
+**Ship rule:** Do not bump to 2.2.0, publish FT-7 Hub sole-tier, or claim Arabic L3 until Track B GO. **Paused for budget.** No laptop 9B QLoRA substitute. **Sanad languages:** English and Arabic **only** — do not add French (or any third language) as a train track, eval gate, or later cut.
+
+**Track B — Sanad:** `FT7_ARABIC_PLAN.md`; v120 already merged (1719 EN + 240 AR); `eval_holdout_grounding_ar_v1.jsonl` (56 rows) frozen; contamination 0. Remaining: Vast QLoRA + 3-seed EN + AR.
+
+**Acceptance.**
+- [ ] FT-7 AR + EN gates PASS; contamination 0
+- [ ] Memo `EVAL_GONOGO_FT7_MEMO.md` signed GO
+- [ ] Hub sole tier labeled FT-7
+- [ ] Cross-repo docs agree
+
+**Index:** NassilaT `2.1_2.2_ARABIC_OPERATOR_INDEX.md`.

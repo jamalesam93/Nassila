@@ -102,7 +102,7 @@
       "institutionalNote": "This is not university paywall login. It only enables Unpaywall to find legally open copies. You can attach a local PDF in Masdar; institutional access is future work.",
       "savedHint": "Saved. Open-access lookups will use this address on future audits.",
       "enhancedOcr": "Enhanced OCR for scanned PDFs",
-      "enhancedOcrHint": "Prefer on-device Tesseract (bundled eng/fra) for Latin scanned PDFs. Arabic theses: import DOCX — Tesseract Arabic is deferred until vision/LLM OCR."
+      "enhancedOcrHint": "Prefer on-device Tesseract (bundled eng/fra) for Latin scanned PDFs. Arabic: DOCX is always reliable; scanned Arabic PDFs use the Paddle Arabic adapter when packaged (2.1). Broken font-encoding PDFs still need DOCX."
     },
     "localModels": {
       "title": "Passage grounding",
@@ -275,7 +275,7 @@
       "littleText": "Very little text was extracted. The PDF may be partially scanned or use embedded fonts without a Unicode map.",
       "ocrLowConfidence": "OCR confidence was low on some pages; kept embedded text there. For best Arabic fidelity, import the DOCX.",
       "reversedArabic": "Arabic text from this PDF looks character-reversed (broken font encoding). Prefer the DOCX.",
-      "arabicOcrDeferred": "Arabic PDF OCR via Tesseract is disabled for now. Prefer importing the DOCX; vision/LLM OCR is planned."
+      "arabicOcrDeferred": "Arabic PDF text looks unreliable for OCR (broken font encoding or no Arabic adapter). Prefer importing the DOCX."
     },
     "phase": {
       "idle": "Idle",

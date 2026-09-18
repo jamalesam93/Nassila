@@ -2,6 +2,19 @@
 
 All notable changes to **Nassila** are documented here.
 
+## [2.1.0] — 2026-09-18 · Maktab Arabic
+
+Windows installer `Nassila Setup 2.1.0.exe`. **GitHub Release:** [v2.1.0](https://github.com/jamalesam93/Nassila/releases/tag/v2.1.0).
+
+### Added
+
+- **Production Arabic scan OCR (Track A)** — official Paddle PP-OCRv5 Arabic ONNX pack under `resources/arabic-ocr/`, main-process `ppu-paddle-ocr` runner, and IPC `ara` route. Arabic-heavy PDFs escalate to this adapter when the pack is present; **never Tesseract `ara` as the primary path**. Character-reversed ToUnicode PDFs still prefer **DOCX**.
+- **Arabic-aware citation mapping (Track C)** — bibliography headings (قائمة المراجع), Arabic-Indic numeric cites (`[١]`), Arabic author-year (`الكتاب، 2020` / `الكتاب (2019)`), and `وآخرون` map onto bibliography keys without dropping Arabic family names.
+
+### Changed
+
+- Arabic-heavy DOCX deferral lifts when the Paddle pack is registered. **Arabic L3 grounding stays unvalidated** until 2.2.0 Sanad Arabic (FT-7).
+
 ## [2.0.0] — 2026-09-06 · MaktabOCR + Shahid
 
 Windows installer `Nassila Setup 2.0.0.exe`. **GitHub Release:** [v2.0.0](https://github.com/jamalesam93/Nassila/releases/tag/v2.0.0).

@@ -18,13 +18,23 @@ export interface InTextParseResult {
   warnings: string[]
 }
 
+/** Map Arabic-Indic / Eastern Arabic-Indic digits to ASCII (1:1, offsets preserved). */
+export function foldArabicIndicDigits(text: string): string {
+  return text.replace(/[\u0660-\u0669\u06F0-\u06F9]/g, (ch) => {
+    const code = ch.charCodeAt(0)
+    const n = code >= 0x06f0 ? code - 0x06f0 : code - 0x0660
+    return String(n)
+  })
+}
+
 export function parseInTextCitations(text: string): InTextParseResult {
   const warnings: string[] = []
   const citations: ParsedInTextCitation[] = []
+  const source = foldArabicIndicDigits(text)
 
-  // Numeric brackets: [1], [1-5], [1,3,7], [12, pp. 45-48]
+  // Numeric brackets: [1], [1-5], [1,3,7], [12, pp. 45-48] (Arabic-Indic folded)
   const numericBracket = /\[(\s*\d+(?:\s*[-–]\s*\d+)?(?:\s*,\s*\d+(?:\s*[-–]\s*\d+)?)*)\s*(?:,\s*([^\]]{1,30}))?\]/g
-  for (const match of text.matchAll(numericBracket)) {
+  for (const match of source.matchAll(numericBracket)) {
     const raw = match[0]
     const list = match[1]
     const locator = match[2]?.trim()
@@ -50,14 +60,14 @@ export function parseInTextCitations(text: string): InTextParseResult {
   // IMPORTANT: must run before author-year parsing, and only match digits/separators to avoid conflicting with (Smith, 2020).
   // Enumerated list markers after "to: (1) provide…" are rejected — see isEnumeratedListMarker.
   const numericParen = /\((\s*\d+(?:\s*[-–]\s*\d+)?(?:\s*,\s*\d+(?:\s*[-–]\s*\d+)?)*)\s*\)/g
-  for (const match of text.matchAll(numericParen)) {
+  for (const match of source.matchAll(numericParen)) {
     const raw = match[0]
     const list = match[1]
     const start = match.index ?? 0
     const end = start + raw.length
     const numbers = parseNumericList(list)
     if (numbers.length === 0) continue
-    if (isEnumeratedListMarker(text, start, end, numbers)) continue
+    if (isEnumeratedListMarker(source, start, end, numbers)) continue
     citations.push({
       kind: 'numeric',
       raw,
@@ -70,7 +80,7 @@ export function parseInTextCitations(text: string): InTextParseResult {
 
   // Superscript markup (best-effort for DOCX HTML extraction later): <sup>1,3</sup>
   const sup = /<sup>(\s*\d+(?:\s*[-–]\s*\d+)?(?:\s*,\s*\d+(?:\s*[-–]\s*\d+)?)*)<\/sup>/g
-  for (const match of text.matchAll(sup)) {
+  for (const match of source.matchAll(sup)) {
     const raw = match[0]
     const list = match[1]
     const start = match.index ?? 0
@@ -87,10 +97,10 @@ export function parseInTextCitations(text: string): InTextParseResult {
     })
   }
 
-  // Parenthetical author-year: (Smith, 2020a, p. 12)
+  // Parenthetical author-year: (Smith, 2020a, p. 12) or (الكتاب، 2020)
   const authorYearParen =
-    /\(([^()]{2,80}?)\s*,\s*(\d{4})([a-z])?(?:\s*,\s*([^)]{1,30}))?\)/gi
-  for (const match of text.matchAll(authorYearParen)) {
+    /\(([^()]{2,80}?)\s*[,،]\s*(\d{4})([a-z])?(?:\s*[,،]\s*([^)]{1,30}))?\)/gi
+  for (const match of source.matchAll(authorYearParen)) {
     const raw = match[0]
     const authorsRaw = match[1]
     const year = Number.parseInt(match[2], 10)
@@ -113,9 +123,10 @@ export function parseInTextCitations(text: string): InTextParseResult {
     })
   }
 
-  // Narrative author-year: Smith (2020b)
-  const narrative = /\b([A-Z][\p{L}'’-]+)\s*\((\d{4})([a-z])?\)/giu
-  for (const match of text.matchAll(narrative)) {
+  // Narrative author-year: Smith (2020b) or الكتاب (2020)
+  const narrative =
+    /(?<![\p{L}\p{N}])([\p{Lu}\p{Script=Arabic}][\p{L}'’-]+)\s*\((\d{4})([a-z])?\)/giu
+  for (const match of source.matchAll(narrative)) {
     const raw = match[0]
     const author = match[1]
     const year = Number.parseInt(match[2], 10)
@@ -136,9 +147,16 @@ export function parseInTextCitations(text: string): InTextParseResult {
 
   // Order by appearance, then de-duplicate exact spans.
   citations.sort((a, b) => a.start - b.start || a.end - b.end)
+  const authorYearSpans = citations.filter((c) => c.kind === 'author-year')
   const deduped: ParsedInTextCitation[] = []
   const seen = new Set<string>()
   for (const c of citations) {
+    if (
+      c.kind === 'numeric' &&
+      authorYearSpans.some((ay) => c.start >= ay.start && c.end <= ay.end)
+    ) {
+      continue
+    }
     const key = `${c.kind}:${c.start}:${c.end}:${c.raw}`
     if (seen.has(key)) continue
     seen.add(key)
@@ -165,7 +183,7 @@ export function isEnumeratedListMarker(
 
   const before = text.slice(Math.max(0, start - 80), start)
   const after = text.slice(end).replace(/^\s+/, '')
-  if (!/^[A-Za-z]/.test(after)) return false
+  if (!/^[\p{L}]/u.test(after)) return false
 
   // Strong signal: colon immediately before the marker (list intro).
   if (/:\s*$/.test(before)) return true
@@ -175,7 +193,7 @@ export function isEnumeratedListMarker(
   const n = numbers[0]
   if (n > 1) {
     const earlier = text.slice(Math.max(0, start - 500), start)
-    const prev = new RegExp(`:\\s*[\\s\\S]{0,400}\\(${n - 1}\\)\\s+[A-Za-z]`)
+    const prev = new RegExp(`:\\s*[\\s\\S]{0,400}\\(${n - 1}\\)\\s+[\\p{L}]`, 'u')
     if (prev.test(earlier)) return true
   }
 
@@ -208,12 +226,13 @@ function normalizeName(name: string): string {
     .toLowerCase()
     .normalize('NFKD')
     .replace(/\p{Diacritic}/gu, '')
-    .replace(/[^a-z0-9'’-]+/g, '')
+    .replace(/[^\p{Script=Arabic}a-z0-9'’-]+/gu, '')
 }
 
 function parseAuthorFamilyNames(authorsRaw: string): string[] {
   const normalized = authorsRaw
     .replace(/et\s+al\.?/gi, '')
+    .replace(/و\s*آخرون\.?/g, '')
     .replace(/&/g, ' and ')
     .replace(/;/g, ' and ')
     .replace(/\s+/g, ' ')
@@ -227,7 +246,7 @@ function parseAuthorFamilyNames(authorsRaw: string): string[] {
   const names: string[] = []
   for (const p of parts) {
     // "Smith" or "Smith J" or "Smith, J."
-    const family = p.split(',')[0].trim().split(' ')[0]?.trim()
+  const family = p.split(/[,،]/)[0].trim().split(' ')[0]?.trim()
     if (family) names.push(normalizeName(family))
   }
   return Array.from(new Set(names))

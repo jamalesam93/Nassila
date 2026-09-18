@@ -46,7 +46,7 @@ Use these on README, About, and marketing. In the app UI, `toolbar.brandSubtitle
 | User-Agent (registry APIs) | `Nassila/1.0` |
 | Sanad (9B, sole tier) | `nassila-sanad-9b` |
 | Sanad legacy (retired) | `nassila-sanad-4b` (S15) · `nassila-sanad-12b` (S14) · `nassila-sanad-e4b` (S12) |
-| Unified local model (future) | `nassila-agent-e12b-v1` (or merged multi-task GGUF) |
+| Unified local model | **Non-goal** — 5.0.0 is a routed pack, not `nassila-agent-e12b-v1` |
 | Strategy doc | [`OUROBOROS.md`](./OUROBOROS.md) · agent brief [`OUROBOROS_CONTEXT.md`](./OUROBOROS_CONTEXT.md) |
 | Locale storage key | `nassila.locale` |
 

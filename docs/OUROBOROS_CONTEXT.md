@@ -1,15 +1,15 @@
 # Ouroboros context brief
 
-> **For agents.** Single entry point for Nassila + NassilaT. Last updated: 2026-09-06.
-> **App:** **2.0.0** shipped (2026-09-06) · MaktabOCR + Shahid LIVE. **Next cut:** **2.1.0 Sanad Arabic** (FT-7).
-> **Ship checkpoints:** `nassila-sanad-9b` **FT-6** (Qwen 3.5 9B, sole Sanad tier on Hub; v119) · `nassila-sanad-4b` **S15** and `nassila-sanad-12b` **S14** retired (abstract-era). **v1.13 NO-GO.** **Tier 3 + multimodal 2.0.0 gates PASS** (2026-09-06). Operator map: NassilaT [`training/OUROBOROS_OPERATOR_MAP.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/OUROBOROS_OPERATOR_MAP.md). Sign-off: [`training/EVAL_GONOGO_TIER3_MEMO.md`](https://github.com/jamalesam93/NassilaT/blob/main/training/EVAL_GONOGO_TIER3_MEMO.md).
+> **For agents.** Single entry point for Nassila + NassilaT. Last updated: 2026-09-18.
+> **App:** **2.1.0** shipped (2026-09-18) · Maktab Arabic LIVE (production Paddle AR OCR + Arabic-aware mapping). **Next cut:** **2.2.0 Sanad Arabic** (FT-7) paused for budget.
+> **Ship checkpoints:** `nassila-sanad-9b` **FT-6** (sole Hub tier until FT-7 GO) · 4B S15 / 12B S14 retired. **v1.13 NO-GO.** Operator map: NassilaT `OUROBOROS_OPERATOR_MAP.md`. FT-7 memo: `EVAL_GONOGO_FT7_MEMO.md` (NOT YET GO; Vast paused).
 > Training pack: [`TRAINING.md`](./TRAINING.md) → NassilaT repo. Do not read every historical walkthrough — use this brief, then drill into linked paths only.
 
 ## 1. Mission
 
 **Nassila** — Windows-first Electron app for bibliography quality (offline validate, format, dedup, registry verify, predatory flags).
 
-**Ouroboros** — one local GGUF identity in LM Studio over time; **seven workers** are **loop stages** and product modules, each forged one trainable facet at a time, then merged. **v1 trains worker 1 only: Sanad** (Tier 2 manual bridge in app; full loop requires Maktab/Masdar at Tier 3).
+**Ouroboros** — one product identity in LM Studio over time; **seven workers** are **loop stages** and product modules, each with a deterministic core plus an optional independently gated LLM facet. **Do not merge facets into one GGUF** (5.0.0 non-goal). **v1 trains worker 1 only: Sanad.** Deterministic Maktab/Masdar ingest is live in **2.0.0**; production Arabic OCR is **2.1.0**.
 
 **Rule:** Workers assist where LLM helps; **deterministic core** (APIs, citeproc, lists, parsers) stays authoritative and **lives inside worker boundaries** — never LLM-replaced.
 
@@ -33,7 +33,7 @@ Do **not** read “no LLM facet yet” as “not part of Ouroboros.” Registry 
 
 **Agent warning:** Future UI work must **not** recreate seven disconnected mini-apps (Hydra). Sanad must ultimately consume **Maktab** + **Masdar** outputs automatically; manual passage/excerpt paste remains a Tier 2 fallback and model test panel only.
 
-**Today:** Maktab manuscript extraction is live with Firecrawl native pdf-inspector + selective OCR fallback (bundled Tesseract EN/AR/FR + pretrained Arabic adapter). Shahid table and figure evidence extraction is live. Masdar-lite deterministically fetches and extracts OA source text; per-reference local PDF attach and folder scan are live. Optional `doc_extract` / `source_pdf_extract` LLM facets remain planned only if deterministic fails. **Target:** loop-first UI per [`DESIGN.md`](./DESIGN.md); no peer-worker Hydra.
+**Today:** Maktab manuscript extraction is live with Firecrawl native pdf-inspector + selective OCR fallback (bundled Tesseract **EN/FR**; Arabic via **Paddle adapter when packaged** — otherwise DOCX prefer for Arabic-heavy / reverse-font). Shahid table and figure **deterministic** evidence extraction is live. Masdar-lite deterministically fetches and extracts OA source text; per-reference local PDF attach and folder scan are live. Optional `doc_extract` / `source_pdf_extract` LLM facets remain planned only if deterministic fails. **Target:** loop-first UI per [`DESIGN.md`](./DESIGN.md); no peer-worker Hydra.
 
 ```
 Ingest (Maktab) → Sources (Masdar) → Ground (Sanad) → Evidence (Shahid)
@@ -49,7 +49,7 @@ Codenames: `docs/BRAND.md`, `src/shared/nassila-agent-tasks.ts`. Forge **one LLM
 | # | Worker | Arabic | `task` id | Future module (user-facing) | Deterministic core (no LLM replacement) | LLM facet | Phase | Status |
 |---|--------|--------|-----------|----------------------------|----------------------------------------|-----------|-------|--------|
 | 1 | **Sanad** | سند | `l3_grounding` | Ground claims to sources | JSON repair, quote substring checks, caps | Passage vs excerpt → grounding JSON | 1 | **PASS** (9B FT-6 ship; sole tier — 4B S15 / 12B S14 retired) |
-| 2 | **Maktab** | مكتب | `doc_extract` | Bring in the manuscript | File I/O, DOCX/PDF routing, native pdf-inspector + selective OCR fallback | Structured text/chunks from PDF/DOCX | 2 | **LIVE in 2.0.0** (native + Arabic adapter) |
+| 2 | **Maktab** | مكتب | `doc_extract` | Bring in the manuscript | File I/O, DOCX/PDF routing, native pdf-inspector + selective OCR fallback | Structured text/chunks from PDF/DOCX | 2 | **LIVE** native/Latin OCR; Arabic adapter **production → 2.1.0 Maktab Arabic** |
 | 3 | **Masdar** | مصدر | `source_pdf_extract` | Get source text for citations | OA fetch, PDF extraction, chunking, secure desktop I/O, per-reference local PDF attach | Cited OA PDF → text for Sanad | 2 | **Deterministic live** with local PDF attach; `source_pdf_extract` LLM facet planned |
 | 4 | **Shahid** | شاهد | `table_figure_grounding` | Tables & figures as evidence | Region detection (pdf-inspector / anydoc) | Claims vs table/figure regions | 3+ | **LIVE in 2.0.0** (table/figure evidence extraction) |
 | 5 | **Raqim** | رقيم | `webpage_metadata` | Build & fix reference **records** | **L1/L2 verify**, import parsers (BibTeX/RIS/Zotero), metadata merge, **citeproc export** | Webpage → CSL field suggestions | 2+ | Planned |

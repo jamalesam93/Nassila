@@ -34,31 +34,80 @@ export function embeddedArabicLooksReversed(warnings: string[]): boolean {
   return warnings.some((w) => /character-reversed|broken font encoding/i.test(w))
 }
 
+export type ArabicDeferOptions = {
+  /** When true, Arabic-heavy (non-reversed) PDFs may escalate to the Paddle Arabic adapter. */
+  arabicAdapterAvailable?: boolean
+}
+
 /**
- * Tesseract Arabic is not reliable enough for shipping theses/body text.
- * Defer Arabic-heavy and character-reversed PDFs to DOCX (LLM/vision OCR later).
+ * Prefer DOCX when Arabic ToUnicode is character-reversed (always).
+ * Arabic-heavy embedded text also defers unless a Paddle Arabic adapter is available
+ * (never re-enable Tesseract `ara` as the primary path).
  */
 export function shouldDeferArabicToDocx(
   textSample: string,
-  warnings: readonly string[] = []
+  warnings: readonly string[] = [],
+  options: ArabicDeferOptions = {}
 ): boolean {
   if (embeddedArabicLooksReversed([...warnings])) return true
+  if (options.arabicAdapterAvailable) return false
   const ara = (textSample.match(/[\u0600-\u06FF]/g) ?? []).length
   const lat = (textSample.match(/[A-Za-z]/g) ?? []).length
   return ara > 200 && ara >= lat
 }
 
+/** Reverse-font / no Arabic adapter — prefer DOCX. */
 export const ARABIC_OCR_DEFERRED_WARNING =
-  'Arabic PDF OCR via Tesseract is disabled for now. Prefer importing the DOCX; vision/LLM OCR is planned.'
+  'Arabic PDF text looks unreliable for OCR (broken font encoding or no Arabic adapter). Prefer importing the DOCX.'
 
-/** OCR language packs for Tesseract — Latin only until Maktab LLM/vision OCR ships. */
+/**
+ * PP-OCR Arabic CTC often emits visual (display) order. For Arabic-dominant
+ * lines, reverse code points to logical order. For mixed AR/Latin, use Paddle's
+ * segment `pred_reverse` (keep Latin/digit runs contiguous).
+ */
+export function logicalOrderArabicOcrText(pred: string): string {
+  if (!pred) return pred
+  const arabic = (pred.match(/[\u0600-\u06FF]/g) ?? []).length
+  if (arabic === 0) return pred
+  const latin = (pred.match(/[A-Za-z]/g) ?? []).length
+
+  // Pure / Arabic-heavy: full reverse recovers logical reading order.
+  if (latin === 0 || arabic >= latin * 2) {
+    return [...pred].reverse().join('')
+  }
+
+  const latinOrDigitRun = /[a-zA-Z0-9 :*./%+-]/
+  const out: string[] = []
+  let cur = ''
+  for (const c of pred) {
+    if (!latinOrDigitRun.test(c)) {
+      if (cur) {
+        out.push(cur)
+        cur = ''
+      }
+      out.push(c)
+    } else {
+      cur += c
+    }
+  }
+  if (cur) out.push(cur)
+  return out.reverse().join('')
+}
+
+/** OCR language packs — Latin Tesseract by default; include `ara` only when Arabic adapter is live. */
 export function chooseOcrLanguages(
   textSample: string,
-  fallback: readonly MaktabLanguage[] = ['eng', 'fra']
+  fallback: readonly MaktabLanguage[] = ['eng', 'fra'],
+  options: ArabicDeferOptions = {}
 ): MaktabLanguage[] {
-  void textSample
   const latinOnly = fallback.filter((l) => l === 'eng' || l === 'fra')
-  return latinOnly.length > 0 ? [...latinOnly] : ['eng', 'fra']
+  const base: MaktabLanguage[] = latinOnly.length > 0 ? [...latinOnly] : ['eng', 'fra']
+  if (!options.arabicAdapterAvailable) return base
+  const ara = (textSample.match(/[\u0600-\u06FF]/g) ?? []).length
+  if (ara > 40) {
+    return base.includes('ara') ? base : [...base, 'ara']
+  }
+  return base
 }
 
 /**

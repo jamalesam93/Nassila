@@ -1,5 +1,6 @@
 import type { CslItem } from '../types'
 import type { ParsedInTextCitation } from './intext'
+import { foldArabicIndicDigits } from './intext'
 import { splitReferenceEntries } from '../parser/document'
 import { parsePlainText } from '../parser/plain-text'
 
@@ -174,7 +175,7 @@ export function mapInTextToBibliography(
 ): CitationMapping[] {
   const byNumber = new Map<number, BibEntry>()
   for (const entry of bibEntries) {
-    const n = Number.parseInt(entry.key.replace(/[^\d]/g, ''), 10)
+    const n = Number.parseInt(foldArabicIndicDigits(entry.key).replace(/[^\d]/g, ''), 10)
     if (Number.isFinite(n)) byNumber.set(n, entry)
   }
 
@@ -220,7 +221,7 @@ export async function buildBibEntriesFromReferencesText(referencesText: string):
   entries: BibEntry[]
   errors: string[]
 }> {
-  const cleaned = stripLeadingReferencesHeader(referencesText)
+  const cleaned = stripLeadingReferencesHeader(foldArabicIndicDigits(referencesText))
   const rawEntries = splitReferenceEntries(cleaned)
   if (rawEntries.length === 0) return { entries: [], errors: ['No reference entries found'] }
 
@@ -248,6 +249,19 @@ function stripLeadingReferencesHeader(text: string): string {
   if (/^(references?|bibliography|works cited|literature cited)$/i.test(first)) {
     return lines.slice(firstNonEmptyIdx + 1).join('\n')
   }
+  // Arabic / bilingual bibliography headings (same family as segments.ts)
+  if (/المصطلحات|الاختصارات|اختصارات/.test(first)) {
+    return text
+  }
+  if (
+    /academic\s*bibliography/i.test(first) ||
+    /قائمة\s+ال?\S{0,4}مراجع/.test(first) ||
+    /ال?\S{0,4}مراجع\s+وال?\S{0,4}مصادر/.test(first) ||
+    /^(?:أولا|ثانيا|ثالثا)[ًا]?\s*[:：.]?\s*ال?\S{0,4}مراجع\b/u.test(first) ||
+    /^ال?\S{0,4}مراجع\s*[:.،]?\s*$/u.test(first)
+  ) {
+    return lines.slice(firstNonEmptyIdx + 1).join('\n')
+  }
   return text
 }
 
@@ -256,7 +270,7 @@ function normalize(s: string): string {
     .toLowerCase()
     .normalize('NFKD')
     .replace(/\p{Diacritic}/gu, '')
-    .replace(/[^a-z0-9\s]+/g, ' ')
+    .replace(/[^\p{Script=Arabic}a-z0-9\s]+/gu, ' ')
     .replace(/\s+/g, ' ')
     .trim()
 }

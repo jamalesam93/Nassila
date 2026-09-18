@@ -1,6 +1,7 @@
 import { extractManuscriptFromPdf } from '../manuscript/pdf-extract'
 import { MaktabExtractError, MaktabOcrUnavailableError } from './errors'
 import { getMaktabOcrBackend } from './ocr/backend'
+import { getArabicRecognizerAdapter } from './ocr/arabic-adapter'
 import {
   ARABIC_OCR_DEFERRED_WARNING,
   chooseOcrLanguages,
@@ -20,6 +21,15 @@ import {
 } from './types'
 
 const DEFAULT_OCR_DPI = 300
+
+function arabicAdapterReady(): boolean {
+  try {
+    const avail = getArabicRecognizerAdapter().isAvailable()
+    return typeof avail === 'boolean' ? avail : true
+  } catch {
+    return false
+  }
+}
 
 function toResult(
   partial: Omit<MaktabExtractionResult, 'languages'> & { languages?: MaktabLanguage[] },
@@ -76,7 +86,9 @@ async function extractOcrTier(
   if (!backend.isAvailable()) {
     throw new MaktabOcrUnavailableError()
   }
-  const ocrLanguages = chooseOcrLanguages(textHint, languages)
+  const ocrLanguages = chooseOcrLanguages(textHint, languages, {
+    arabicAdapterAvailable: arabicAdapterReady()
+  })
   // Always copy — upstream pdf.js may have detached the caller's ArrayBuffer.
   const pdfBytes = buffer.slice(0)
   const result = await backend.extractFromPdf(pdfBytes, { languages: ocrLanguages, dpi })
@@ -125,8 +137,9 @@ async function extractOcrTier(
  * Maktab PDF ingest — tier A (pdf.js) with optional tier B (OCR).
  * Canonical entry for manuscript and bibliography PDF extraction.
  *
- * Arabic Tesseract is deferred: character-reversed / Arabic-dominant PDFs keep
- * embedded text and warn to prefer DOCX until LLM/vision OCR ships.
+ * Character-reversed Arabic ToUnicode always prefers DOCX.
+ * Arabic-heavy PDFs escalate to the Paddle Arabic adapter when registered;
+ * otherwise they keep embedded text and warn to prefer DOCX (never Tesseract `ara`).
  */
 export async function extractFromPdf(
   buffer: ArrayBuffer,
@@ -135,6 +148,7 @@ export async function extractFromPdf(
   const mode = options.mode ?? 'auto'
   const languages = options.languages ?? [...MAKTAB_DEFAULT_LANGUAGES]
   const dpi = options.ocrDpi ?? DEFAULT_OCR_DPI
+  const deferOpts = { arabicAdapterAvailable: arabicAdapterReady() }
 
   if (mode === 'ocr_preferred') {
     // Prefer OCR for Latin scans, but use embedded when it is already good.
@@ -147,7 +161,7 @@ export async function extractFromPdf(
     if (embedded && !embedded.needsReview && embedded.text.length > 0) {
       return embedded
     }
-    if (embedded && shouldDeferArabicToDocx(embedded.text, embedded.warnings)) {
+    if (embedded && shouldDeferArabicToDocx(embedded.text, embedded.warnings, deferOpts)) {
       return withArabicOcrDeferred(embedded)
     }
     return extractOcrTier(buffer, languages, dpi, embedded?.text ?? '', embedded)
@@ -162,13 +176,13 @@ export async function extractFromPdf(
     }
   }
 
-  // auto: tier A first; escalate to tier B for sparse Latin / true scans — not Arabic Tesseract
+  // auto: tier A first; escalate to tier B for sparse / scans when not Arabic-deferred
   try {
     const embedded = await extractEmbeddedTier(buffer, languages, options.engine)
     if (!embedded.needsReview && embedded.text.length > 0) {
       return embedded
     }
-    if (shouldDeferArabicToDocx(embedded.text, embedded.warnings)) {
+    if (shouldDeferArabicToDocx(embedded.text, embedded.warnings, deferOpts)) {
       return withArabicOcrDeferred(embedded)
     }
     const backend = getMaktabOcrBackend()

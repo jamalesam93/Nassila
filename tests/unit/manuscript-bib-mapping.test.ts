@@ -58,6 +58,31 @@ References
     })
     expect(selectMappedBibliographyEntries(bib.entries, mapped)).toEqual([])
   })
+
+  it('maps Arabic author-year cites onto Arabic bibliography entries', async () => {
+    const refs = `قائمة المراجع
+الكتاب، أحمد. عنوان البحث. دار النشر. 2020.
+Smith J. Example paper. Journal. 2019.`
+    const bib = await buildBibEntriesFromReferencesText(refs)
+    expect(bib.entries.length).toBeGreaterThanOrEqual(2)
+
+    const inText = parseInTextCitations('أكدت الدراسات (الكتاب، 2020) وكذلك Smith (2019).')
+    const mapped = mapInTextToBibliography(inText.citations, bib.entries)
+    const keys = mapped.flatMap((m) => m.matchedBibKeys)
+    expect(keys.length).toBeGreaterThanOrEqual(2)
+    expect(summarizeCitationMappings(mapped).unmatched).toBe(0)
+  })
+
+  it('maps Arabic-Indic numbered cites to ASCII bibliography keys', async () => {
+    const bib = await buildBibEntriesFromReferencesText(
+      `[١] الكتاب، أحمد. عنوان. 2020.
+[٢] Smith J. Example. 2019.`
+    )
+    expect(bib.entries.map((e) => e.key)).toEqual(['1', '2'])
+    const inText = parseInTextCitations('انظر [١] ثم [٢].')
+    const mapped = mapInTextToBibliography(inText.citations, bib.entries)
+    expect(mapped.map((m) => m.matchedBibKeys.join(','))).toEqual(['1', '2'])
+  })
 })
 
 describe('bibliography dedupe (#19)', () => {

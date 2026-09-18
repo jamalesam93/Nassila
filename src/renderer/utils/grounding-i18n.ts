@@ -4,7 +4,7 @@ const PDF_WARNING_SCAN_PREFIX = 'This PDF contains no extractable text'
 const PDF_WARNING_LITTLE_PREFIX = 'Very little text was extracted'
 const PDF_WARNING_OCR_LOW_PREFIX = 'OCR confidence was low on'
 const PDF_WARNING_REVERSED_ARABIC = 'Arabic text from this PDF looks character-reversed'
-const PDF_WARNING_ARABIC_OCR_DEFERRED = 'Arabic PDF OCR via Tesseract is disabled'
+const PDF_WARNING_ARABIC_OCR_DEFERRED = 'Arabic PDF text looks unreliable for OCR'
 
 /** Map engine PDF extraction warnings to localized UI strings. */
 export function translatePdfImportWarnings(warnings: string[]): string {

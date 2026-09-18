@@ -57,7 +57,7 @@ const BRACKET_BIB_LINE = /^\s*\[\d{1,4}\]\s*\S/
 const DOT_NUMBERED_LINE = /^\s*\d{1,4}\.\s+\S/
 
 const SECTION_TITLE_WORDS =
-  /^(introduction|abstract|methods?|materials?|results?|discussion|conclusion|background|references?|bibliography|literature\s+review|acknowledgements?|appendix)(?:\s|$)/i
+  /^(introduction|abstract|methods?|materials?|results?|discussion|conclusion|background|references?|bibliography|literature\s+review|acknowledgements?|appendix|مقدمة|الملخص|الخلاصة|الطرق|المنهجية|المواد\s+والطرق|النتائج|المناقشة|الخاتمة|الخلاصات|خلفية)(?:\s|$)/i
 
 function isNumberedSectionHeading(line: string): boolean {
   const t = line.trim()

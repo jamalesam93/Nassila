@@ -57,7 +57,7 @@ Upload → Maktab (extract) → Masdar (sources) → Raqim/Tasnif (refs)
 |------|-----------|-----|
 | **Tier 2 model** | Sanad abstract harness §10 | NassilaT `OUROBOROS_CONTEXT` §10 |
 | **Tier 2b product** | No false `pass` on invalid quotes | `grounding-llm.ts` |
-| **Tier 3 product** | Maktab ingest + Masdar body-text in loop | Operator map § F |
+| **Tier 3 product** | Maktab ingest + Masdar body-text in loop | Operator map § D / `EVAL_GONOGO_TIER3_MEMO.md` (GO 2.0.0) |
 | **Maktab OCR v1** | pdf.js path + OCR interface; Tesseract backend optional | `docs/MAKTAB_OCR.md` |
 | **SEC** | New IPC validated in tests | `docs/SECURITY-FIX-PLAN.md` |
 

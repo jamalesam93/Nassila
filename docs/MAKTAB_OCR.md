@@ -2,7 +2,8 @@
 
 **Worker:** Maktab (مكتب) · **Task:** `doc_extract` (LLM facet planned)  
 **Policy:** on-device only for v1 / 2.0 scaffolding; cloud optional later.  
-**Languages:** English and French via Tesseract (`eng`, `fra`) and native PP-OCRv6 Small when routed. Arabic PDF OCR remains **deferred** behind an adapter seam (prefer DOCX); Tesseract `ara` is not enabled.
+**Languages (OCR ingest):** English and French via Tesseract (`eng`, `fra`) and native PP-OCRv6 Small when routed; Arabic production via Paddle PP-OCRv5. **Sanad L3 trains English and Arabic only** — `fra` is not a Sanad language target.  
+**Arabic (honest 2026-09-18):** **2.1.0 shipped** production Paddle PP-OCRv5 pack (`resources/arabic-ocr/`). Tesseract `ara` is **not** the primary path. Character-reversed ToUnicode always prefers DOCX.
 
 ---
 
@@ -19,15 +20,15 @@ Maktab is the **first deterministic stage** after upload. It produces canonical 
 ```
 Upload PDF/DOCX
     → Maktab.extractFromPdf
-         (native pdf-inspector → WASM → pdf.js | tier B: Tesseract)
+         (native pdf-inspector → WASM → pdf.js | tier B: Tesseract Latin / Paddle Arabic when registered)
     → segments + cites
     → Masdar (source PDFs, same extract API)
     → Sanad grounding
 ```
 
 Operator map: NassilaT [`training/OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) § Maktab OCR.  
-**2.0 execution:** NassilaT [`2.0_OPERATOR_INDEX.md`](../../NassilaT/training/2.0_OPERATOR_INDEX.md) · packaged smoke [`PACKAGED_OCR_SMOKE.md`](./PACKAGED_OCR_SMOKE.md) · Arabic [`ARABIC_OCR_ADAPTER.md`](./ARABIC_OCR_ADAPTER.md)
-
+**2.1 execution:** NassilaT [`2.1_2.2_ARABIC_OPERATOR_INDEX.md`](../../NassilaT/training/2.1_2.2_ARABIC_OPERATOR_INDEX.md) · packaged smoke [`PACKAGED_OCR_SMOKE.md`](./PACKAGED_OCR_SMOKE.md) · Arabic [`ARABIC_OCR_ADAPTER.md`](./ARABIC_OCR_ADAPTER.md) · pack [`resources/arabic-ocr/README.md`](../resources/arabic-ocr/README.md)  
+**2.0 historical:** NassilaT [`2.0_OPERATOR_INDEX.md`](../../NassilaT/training/2.0_OPERATOR_INDEX.md) (stub → archive)
 ---
 
 ## Firecrawl-first extraction (2.0 scaffolding)
@@ -48,6 +49,8 @@ Operator map: NassilaT [`training/OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/tra
 **Engine pin** (`engine?: 'native' | 'inspector' | 'pdfjs'`): test / emergency fallback. Default order still degrades gracefully.
 
 OCR language packs for Tesseract are **`eng`/`fra` only**. Soft page budget for OCR is **200** pages (matches manuscript PDF extract).
+
+**Arabic (2.1 Track A):** when languages include `ara` and `resources/arabic-ocr/` is packed, main-process **`ppu-paddle-ocr` + official Arabic PP-OCRv5 ONNX** runs instead of Tesseract. Never ship Tesseract `ara` as primary.
 
 ---
 

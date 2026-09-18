@@ -181,8 +181,19 @@ const api = {
     error?: string
   }> => ipcRenderer.invoke('url:fetchHtml', url),
 
-  // ── Maktab OCR (main-process Tesseract) ─────────────────────────────────
+  // ── Maktab OCR (main-process Tesseract / Arabic Paddle) ─────────────────
   maktabOcrAvailable: (): Promise<boolean> => ipcRenderer.invoke('maktab:ocrAvailable'),
+
+  maktabArabicOcrAvailable: (): Promise<boolean> =>
+    ipcRenderer.invoke('maktab:arabicOcrAvailable'),
+
+  maktabArabicOcrRecognize: (payload: {
+    bytes: ArrayBuffer
+    width?: number
+    height?: number
+    dpi?: number
+  }): Promise<{ text: string; confidence: number; needsReview: boolean }> =>
+    ipcRenderer.invoke('maktab:arabicOcrRecognize', payload),
 
   maktabOcrExtract: (
     pdfBytes: ArrayBuffer,

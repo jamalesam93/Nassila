@@ -10,8 +10,10 @@ import * as pdfExtract from '@engine/manuscript/pdf-extract'
 import { ARABIC_OCR_DEFERRED_WARNING } from '../../src/engine/maktab/ocr/post-process'
 
 describe('maktab extractFromPdf', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     resetMaktabOcrBackend()
+    const { resetArabicRecognizerAdapter } = await import('@engine/maktab/ocr/arabic-adapter')
+    resetArabicRecognizerAdapter()
     vi.restoreAllMocks()
   })
 
@@ -79,28 +81,77 @@ describe('maktab extractFromPdf', () => {
     )
   })
 
-  it('ocr_preferred keeps reversed Arabic embedded and skips Tesseract', async () => {
-    vi.spyOn(pdfExtract, 'extractManuscriptFromPdf').mockResolvedValue({
-      text: 'يف حتقيق االستقرار '.repeat(40),
-      pageCount: 2,
-      warnings: [
-        'Arabic text from this PDF looks character-reversed (broken font encoding). Prefer the DOCX.'
-      ]
-    })
+  it('ocr_preferred keeps reversed Arabic embedded and skips OCR even with adapter', async () => {
+    const { setArabicRecognizerAdapter, createCandidateArabicAdapter, resetArabicRecognizerAdapter } =
+      await import('@engine/maktab/ocr/arabic-adapter')
+    setArabicRecognizerAdapter(
+      createCandidateArabicAdapter({
+        runner: async () => ({ text: 'should-not-run', confidence: 0.9, needsReview: false })
+      })
+    )
+    try {
+      vi.spyOn(pdfExtract, 'extractManuscriptFromPdf').mockResolvedValue({
+        text: 'يف حتقيق االستقرار '.repeat(40),
+        pageCount: 2,
+        warnings: [
+          'Arabic text from this PDF looks character-reversed (broken font encoding). Prefer the DOCX.'
+        ]
+      })
 
-    const extractSpy = vi.fn()
-    setMaktabOcrBackend({
-      id: 'test-ocr',
-      isAvailable: () => true,
-      extractFromPdf: extractSpy
-    })
+      const extractSpy = vi.fn()
+      setMaktabOcrBackend({
+        id: 'test-ocr',
+        isAvailable: () => true,
+        extractFromPdf: extractSpy
+      })
 
-    const result = await extractFromPdf(new ArrayBuffer(8), { mode: 'ocr_preferred', ocrDpi: 200 })
+      const result = await extractFromPdf(new ArrayBuffer(8), { mode: 'ocr_preferred', ocrDpi: 200 })
 
-    expect(result.tier).toBe('embedded_text')
-    expect(result.needsReview).toBe(true)
-    expect(result.warnings).toContain(ARABIC_OCR_DEFERRED_WARNING)
-    expect(extractSpy).not.toHaveBeenCalled()
+      expect(result.tier).toBe('embedded_text')
+      expect(result.needsReview).toBe(true)
+      expect(result.warnings).toContain(ARABIC_OCR_DEFERRED_WARNING)
+      expect(extractSpy).not.toHaveBeenCalled()
+    } finally {
+      resetArabicRecognizerAdapter()
+    }
+  })
+
+  it('auto escalates Arabic-heavy sparse text when Arabic adapter is available', async () => {
+    const { setArabicRecognizerAdapter, createCandidateArabicAdapter, resetArabicRecognizerAdapter } =
+      await import('@engine/maktab/ocr/arabic-adapter')
+    setArabicRecognizerAdapter(
+      createCandidateArabicAdapter({
+        runner: async () => ({ text: 'نص مسترد', confidence: 0.9, needsReview: false })
+      })
+    )
+    try {
+      vi.spyOn(pdfExtract, 'extractManuscriptFromPdf').mockResolvedValue({
+        text: 'دور التنمية في تحقيق الاستقرار ومكافحة التطرف '.repeat(20),
+        pageCount: 1,
+        warnings: ['Very little text was extracted. The PDF may be partially scanned.']
+      })
+
+      const extractSpy = vi.fn(async () => ({
+        text: 'نص عربي من المحول',
+        pageCount: 1,
+        warnings: [],
+        tier: 'ocr' as const,
+        languages: ['ara' as const],
+        needsReview: false
+      }))
+      setMaktabOcrBackend({
+        id: 'test-ocr',
+        isAvailable: () => true,
+        extractFromPdf: extractSpy
+      })
+
+      const result = await extractFromPdf(new ArrayBuffer(8), { mode: 'auto' })
+      expect(result.tier).toBe('ocr')
+      expect(extractSpy).toHaveBeenCalled()
+      expect(result.warnings).not.toContain(ARABIC_OCR_DEFERRED_WARNING)
+    } finally {
+      resetArabicRecognizerAdapter()
+    }
   })
 
   it('ocr_preferred keeps good embedded text without calling OCR', async () => {

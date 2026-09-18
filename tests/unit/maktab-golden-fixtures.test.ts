@@ -33,6 +33,11 @@ import {
   setArabicRecognizerAdapter,
   type ArabicPageImage
 } from '../../src/engine/maktab/ocr/arabic-adapter'
+
+/** Simulate PP-OCR Arabic CTC visual (display) order; adapter restores logical order. */
+function ctcVisualOrder(logical: string): string {
+  return [...logical].reverse().join('')
+}
 import {
   buildArabicTextPdf,
   buildEmbeddedTextPdf,
@@ -307,7 +312,9 @@ describe('maktab golden fixtures — Arabic OCR adapter candidate (Tiers A–F)'
       id: 'paddleocr-arabic-ppocrv5',
       revision: '2026.09-v5',
       runner: async () => ({
-        text: 'دراسة ميدانية حول مقاومة مضادات الميكروبات في المستشفيات وأهمية المراقبة المستمرة لمكافحة العدوى.',
+        text: ctcVisualOrder(
+          'دراسة ميدانية حول مقاومة مضادات الميكروبات في المستشفيات وأهمية المراقبة المستمرة لمكافحة العدوى.'
+        ),
         confidence: 0.96,
         needsReview: false
       })
@@ -345,7 +352,7 @@ describe('maktab golden fixtures — Arabic OCR adapter candidate (Tiers A–F)'
 
     const candidateAdapter = new CandidatePaddleOcrArabicAdapter({
       runner: async () => ({
-        text: rawHypothesis,
+        text: ctcVisualOrder(rawHypothesis),
         confidence: 0.92,
         needsReview: false
       })
@@ -398,7 +405,7 @@ describe('maktab golden fixtures — Arabic OCR adapter candidate (Tiers A–F)'
         ].join('\n')
 
         return {
-          text: `${rightColumn}\n\n${leftColumn}`,
+          text: ctcVisualOrder(`${rightColumn}\n\n${leftColumn}`),
           confidence: 0.93,
           needsReview: false
         }
@@ -433,7 +440,7 @@ describe('maktab golden fixtures — Arabic OCR adapter candidate (Tiers A–F)'
       runner: async (img: ArabicPageImage) => {
         const isDegradedDpi = Boolean(img.dpi && img.dpi < 150)
         return {
-          text: 'نص مشوش غير واضح من مسح منخفض الجودة',
+          text: ctcVisualOrder('نص مشوش غير واضح من مسح منخفض الجودة'),
           confidence: isDegradedDpi ? 0.42 : 0.90,
           needsReview: isDegradedDpi
         }
@@ -464,7 +471,7 @@ describe('maktab golden fixtures — Arabic OCR adapter candidate (Tiers A–F)'
 
     const candidateAdapter = new CandidatePaddleOcrArabicAdapter({
       runner: async () => ({
-        text: tableOcrText,
+        text: ctcVisualOrder(tableOcrText),
         confidence: 0.95,
         needsReview: false
       })

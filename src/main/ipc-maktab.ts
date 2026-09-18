@@ -11,6 +11,11 @@ import {
 } from './maktab/native-pdf-inspector'
 import { extractPdfWithTesseract, isTesseractOcrAvailable } from './maktab/tesseract-ocr'
 import {
+  extractPdfWithArabicPaddle,
+  isArabicPaddleOcrAvailable,
+  recognizeArabicPageImage
+} from './maktab/arabic-paddle-ocr'
+import {
   assertMaktabPdfBuffer,
   clampMaktabDpi
 } from './maktab/pdf-buffer-sanitize'
@@ -48,6 +53,8 @@ export function registerMaktabIpcHandlers(): void {
 
   ipcMain.handle('maktab:ocrAvailable', async () => isTesseractOcrAvailable())
 
+  ipcMain.handle('maktab:arabicOcrAvailable', async () => isArabicPaddleOcrAvailable())
+
   ipcMain.handle('maktab:nativeAvailable', async () => isNativePdfInspectorAvailable())
 
   ipcMain.handle('maktab:nativeClassify', async (_event, payload: unknown) => {
@@ -78,19 +85,47 @@ export function registerMaktabIpcHandlers(): void {
     }
   })
 
+  ipcMain.handle('maktab:arabicOcrRecognize', async (_event, payload: unknown) => {
+    const opts = payload && typeof payload === 'object' ? (payload as Record<string, unknown>) : {}
+    const raw = opts.bytes
+    let bytes: Uint8Array | null = null
+    if (raw instanceof ArrayBuffer) {
+      bytes = new Uint8Array(raw)
+    } else if (ArrayBuffer.isView(raw) && raw.buffer instanceof ArrayBuffer) {
+      bytes = new Uint8Array(raw.buffer, raw.byteOffset, raw.byteLength)
+    }
+    if (!bytes || bytes.length === 0 || bytes.length > 40 * 1024 * 1024) {
+      throw new Error('Invalid Arabic OCR page image')
+    }
+    const dpi = clampMaktabDpi(opts.dpi, 72, 400, 300) ?? 300
+    return recognizeArabicPageImage({
+      bytes,
+      width: typeof opts.width === 'number' ? opts.width : undefined,
+      height: typeof opts.height === 'number' ? opts.height : undefined,
+      dpi
+    })
+  })
+
   ipcMain.handle('maktab:ocrExtract', async (event, payload: unknown, options: unknown) => {
     const buffer = assertMaktabPdfBuffer(payload, 'OCR')
 
     const opts = options && typeof options === 'object' ? (options as Record<string, unknown>) : {}
     const languages = parseLanguages(opts.languages) ?? ['eng', 'fra']
     const dpi = clampMaktabDpi(opts.dpi, 150, 400, 300) ?? 300
+    const useArabic = languages.includes('ara')
 
     try {
-      const result = await extractPdfWithTesseract(buffer, { languages, dpi }, (progress) => {
-        if (!event.sender.isDestroyed()) {
-          event.sender.send(MAKTAB_OCR_PROGRESS_CHANNEL, progress)
-        }
-      })
+      const result = useArabic
+        ? await extractPdfWithArabicPaddle(buffer, { languages, dpi }, (progress) => {
+            if (!event.sender.isDestroyed()) {
+              event.sender.send(MAKTAB_OCR_PROGRESS_CHANNEL, progress)
+            }
+          })
+        : await extractPdfWithTesseract(buffer, { languages, dpi }, (progress) => {
+            if (!event.sender.isDestroyed()) {
+              event.sender.send(MAKTAB_OCR_PROGRESS_CHANNEL, progress)
+            }
+          })
       // Structured-cloneable plain object for IPC (no class instances / Buffers).
       return {
         text: String(result.text ?? ''),

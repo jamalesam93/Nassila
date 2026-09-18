@@ -84,7 +84,9 @@ export const IPC_POLICY: readonly IpcPolicyEntry[] = [
 
   // ── Maktab OCR (local Tesseract) + native pdf-inspector ───────────────────
   { channel: 'maktab:ocrAvailable', direction: 'renderer-to-main', handler: 'ipc-maktab.ts', networkScope: 'none', input: 'none', notes: 'no renderer input' },
-  { channel: 'maktab:ocrExtract', direction: 'renderer-to-main', handler: 'ipc-maktab.ts', networkScope: 'none', input: 'sanitized', notes: 'buffer size cap + language/dpi clamps' },
+  { channel: 'maktab:arabicOcrAvailable', direction: 'renderer-to-main', handler: 'ipc-maktab.ts', networkScope: 'none', input: 'none', notes: 'Arabic PP-OCRv5 pack probe' },
+  { channel: 'maktab:arabicOcrRecognize', direction: 'renderer-to-main', handler: 'ipc-maktab.ts', networkScope: 'none', input: 'sanitized', notes: 'page PNG bytes + dpi clamp' },
+  { channel: 'maktab:ocrExtract', direction: 'renderer-to-main', handler: 'ipc-maktab.ts', networkScope: 'none', input: 'sanitized', notes: 'buffer size cap + language/dpi clamps; ara → Paddle' },
   { channel: 'maktab:nativeAvailable', direction: 'renderer-to-main', handler: 'ipc-maktab.ts', networkScope: 'none', input: 'none', notes: 'soft-load @firecrawl/pdf-inspector napi' },
   { channel: 'maktab:nativeClassify', direction: 'renderer-to-main', handler: 'ipc-maktab.ts', networkScope: 'none', input: 'sanitized', notes: 'buffer size cap; offline classifyPdf' },
   { channel: 'maktab:nativeExtract', direction: 'renderer-to-main', handler: 'ipc-maktab.ts', networkScope: 'none', input: 'sanitized', notes: 'buffer size cap; offline processPdfWithOcr Auto' },

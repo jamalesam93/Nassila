@@ -18,6 +18,9 @@ files:
   - node_modules/@firecrawl/pdf-inspector-*/**/*
   - node_modules/@firecrawl/anydoc/**/*
   - node_modules/@firecrawl/anydoc-*/**/*
+  - node_modules/onnxruntime-node/**/*
+  - node_modules/ppu-paddle-ocr/**/*
+  - node_modules/ppu-ocv/**/*
 # Native .node, worker scripts, and WASM must load from a real filesystem path (not asar).
 asarUnpack:
   - node_modules/canvas/**/*
@@ -29,6 +32,9 @@ asarUnpack:
   - node_modules/@firecrawl/pdf-inspector-*/**/*
   - node_modules/@firecrawl/anydoc/**/*
   - node_modules/@firecrawl/anydoc-*/**/*
+  - node_modules/onnxruntime-node/**/*
+  - node_modules/ppu-paddle-ocr/**/*
+  - node_modules/ppu-ocv/**/*
 extraResources:
   - from: resources/tesseract
     to: tesseract
@@ -38,6 +44,10 @@ extraResources:
       - README.md
   - from: resources/pdf-inspector
     to: pdf-inspector
+    filter:
+      - '**/*'
+  - from: resources/arabic-ocr
+    to: arabic-ocr
     filter:
       - '**/*'
   # Real filesystem paths — nativeImage often cannot load .ico from inside asar.

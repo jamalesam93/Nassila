@@ -1,11 +1,11 @@
 /**
- * Arabic recognizer adapter seam (Nassila 2.0 MaktabOCR).
+ * Arabic recognizer adapter seam (Nassila 2.1.0 Maktab Arabic / MaktabOCR).
  *
- * PP-OCRv5 Arabic (or a future dedicated Arabic pack) is planned behind this
- * adapter — it is NOT a drop-in into the PP-OCRv6 Small Latin model directory
- * used by native `@firecrawl/pdf-inspector` selective OCR.
+ * PP-OCRv5 Arabic packs live under `resources/arabic-ocr/` (not inside the
+ * Firecrawl PP-OCRv6 Latin model directory).
  *
- * Do not enable Tesseract `ara` or lift DOCX deferral from this module yet.
+ * Never enable Tesseract `ara` as the primary path. Character-reversed
+ * ToUnicode PDFs still prefer DOCX even when this adapter is available.
  */
 
 export interface ArabicPageImage {
@@ -29,7 +29,7 @@ export interface ArabicRecognizerAdapter {
   recognize(pageImage: ArabicPageImage): Promise<ArabicRecognizeResult>
 }
 
-/** Default stub — Arabic OCR remains deferred until weights ship. */
+/** Default stub — Arabic OCR deferred until a packaged adapter is registered. */
 export const unavailableArabicAdapter: ArabicRecognizerAdapter = {
   id: 'arabic-unavailable',
   revision: '0',
@@ -57,7 +57,29 @@ export function resetArabicRecognizerAdapter(): void {
   activeAdapter = unavailableArabicAdapter
 }
 
+/** Marker file written by `npm run ocr:arabic-adapter` when weights are present. */
+export const ARABIC_OCR_READY_MARKER = '.nassila-arabic-ocr-ready'
+
+/**
+ * True when `modelDirectory` contains the ready marker (packaged PP-OCRv5 Arabic).
+ * Does not load ONNX by itself — callers still supply a `runner` for recognition.
+ */
+export function isArabicOcrModelDirectoryReady(modelDirectory: string | undefined): boolean {
+  if (!modelDirectory) return false
+  try {
+    // Lazy require so engine stays browser-safe when fs is unavailable.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const fs = require('node:fs') as typeof import('node:fs')
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const path = require('node:path') as typeof import('node:path')
+    return fs.existsSync(path.join(modelDirectory, ARABIC_OCR_READY_MARKER))
+  } catch {
+    return false
+  }
+}
+
 import {
+  logicalOrderArabicOcrText,
   stripSpuriousDigitNoiseInArabic,
   stripSpuriousLatinInArabic
 } from './post-process'
@@ -103,7 +125,8 @@ export class CandidatePaddleOcrArabicAdapter implements ArabicRecognizerAdapter 
   }
 
   isAvailable(): boolean {
-    return typeof this.runner === 'function' || Boolean(this.modelDirectory)
+    if (typeof this.runner === 'function') return true
+    return isArabicOcrModelDirectoryReady(this.modelDirectory)
   }
 
   async recognize(pageImage: ArabicPageImage): Promise<ArabicRecognizeResult> {
@@ -115,7 +138,8 @@ export class CandidatePaddleOcrArabicAdapter implements ArabicRecognizerAdapter 
 
     if (this.runner) {
       const raw = await this.runner(pageImage)
-      const cleaned = stripSpuriousDigitNoiseInArabic(stripSpuriousLatinInArabic(raw.text))
+      const ordered = logicalOrderArabicOcrText(raw.text)
+      const cleaned = stripSpuriousDigitNoiseInArabic(stripSpuriousLatinInArabic(ordered))
       const confidence = isDegraded ? Math.min(raw.confidence, 0.45) : raw.confidence
       const needsReview = Boolean(raw.needsReview || isDegraded || confidence < this.minConfidence)
       return {

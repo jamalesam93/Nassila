@@ -11,15 +11,21 @@ Import or paste your bibliography, fix common errors, verify rows against Crossr
 
 | | |
 |---|---|
-| **Download (Windows)** | [**v2.0.0**](https://github.com/jamalesam93/Nassila/releases/tag/v2.0.0) · [Latest release](https://github.com/jamalesam93/Nassila/releases/latest) |
+| **Download (Windows)** | [**v2.1.0**](https://github.com/jamalesam93/Nassila/releases/tag/v2.1.0) · [Latest release](https://github.com/jamalesam93/Nassila/releases/latest) |
 | **Sanad model (HF)** | [`nassila-sanad-9b`](https://huggingface.co/QinEmPeRoR93/nassila-sanad-9b) (**FT-6** / v119 — sole tier; 6 default + 6 MTP GGUFs) — setup on the [website](https://nassila-web.vercel.app/en/docs/manuscript) |
 | **Website & docs** | [nassila-web.vercel.app](https://nassila-web.vercel.app) — [How-to](https://nassila-web.vercel.app/en/docs/how-to) · [User guide](https://nassila-web.vercel.app/en/docs/user-guide) · [Changelog](https://nassila-web.vercel.app/en/changelog) |
 | **Documentation (repo)** | [How-to guide](docs/HOW_TO_GUIDE.md) · [User guide](docs/USER_GUIDE.md) · [Brand](docs/BRAND.md) · [Changelog](CHANGELOG.md) |
 | **License** | [MIT](LICENSE) |
 
-> End users: install from **Releases** ([**v2.0.0**](https://github.com/jamalesam93/Nassila/releases/tag/v2.0.0)) or visit the [**website**](https://nassila-web.vercel.app). Developers: clone this repo and see [Getting started](#getting-started).
+> End users: install from **Releases** ([**v2.1.0**](https://github.com/jamalesam93/Nassila/releases/tag/v2.1.0)) or visit the [**website**](https://nassila-web.vercel.app). Developers: clone this repo and see [Getting started](#getting-started).
 
 The name **Nassila** is coined, inspired by the idea of a **sanad** (سند): a clear chain from what you write to where it came from.
+
+## What's new in v2.1.0 — Maktab Arabic
+
+- **Production Arabic scan OCR** — scanned Arabic PDFs use the packaged Paddle PP-OCRv5 adapter (not Tesseract `ara`). Broken font-encoding Arabic PDFs still need **DOCX**.
+- **Arabic-aware citation mapping** — Arabic bibliography headings, Arabic-Indic numbers, and Arabic author-year cites map to bibliography keys.
+- **Arabic L3 still unvalidated** — do not treat Sanad verdicts on Arabic manuscripts as a 2.1.0 claim; that is **2.2.0**.
 
 ## What's new in v2.0.0 — MaktabOCR + Shahid
 
@@ -36,7 +42,7 @@ The name **Nassila** is coined, inspired by the idea of a **sanad** (سند): a 
 - **DOI lookup, Autocorrect's online step, and the input-bar "Resolve" work in installed builds** — all three used the same blocked renderer path; all three now resolve through the main process.
 - **"Update list" (predatory-journal banner) reports failure** with a toast instead of failing silently.
 
-Full notes: [CHANGELOG.md](CHANGELOG.md) · [v2.0.0 release](https://github.com/jamalesam93/Nassila/releases/tag/v2.0.0).
+Full notes: [CHANGELOG.md](CHANGELOG.md) · [v2.1.0 release](https://github.com/jamalesam93/Nassila/releases/tag/v2.1.0).
 
 ## Who is this for?
 

@@ -95,7 +95,7 @@ The figure above shows **L1/L2 pass** summaries after a successful verify run; w
 
 ### Manuscript audit and source coverage
 
-Upload or paste a manuscript with a References section, then choose **Run audit**. Maktab extracts manuscript text (prefer **DOCX**; PDF via pdf.js; **Enhanced OCR** with bundled **eng/fra** for Latin scans). Arabic PDFs with broken font encoding should use **DOCX** — Tesseract Arabic is deferred. Masdar resolves OA and attached source PDFs when available; Sanad performs optional L3 grounding.
+Upload or paste a manuscript with a References section, then choose **Run audit**. Maktab extracts manuscript text (prefer **DOCX** for Arabic reliability; PDF via pdf.js; **Enhanced OCR** with bundled **eng/fra** for Latin scans). Arabic scanned PDFs use the Paddle Arabic adapter when packaged (**2.1.0**); broken font-encoding Arabic PDFs still need **DOCX**. Masdar resolves OA and attached source PDFs when available; Sanad performs optional L3 grounding.
 
 ---
 
@@ -147,7 +147,7 @@ Theme (light/dark) follows your preference where the app exposes it; use the the
 | **Verify** does nothing or shows errors | Check internet, VPN/firewall, and retry; verification is capped to a batch of rows per run. |
 | Wrong **item type** (e.g. webpage vs article) | Ensure a **DOI** is present or use **Resolve**; run **Verify** to reclassify from Crossref/PubMed when possible. |
 | **Mismatch** after verify | Open the card, jump to the row, compare fields; accept patches already applied or edit manually. |
-| Import from **PDF** is empty, garbled, or reversed Arabic | Prefer **DOCX**; for Latin scans enable **Enhanced OCR**. Arabic Tesseract is deferred — broken ToUnicode PDFs are not fixed by OCR. |
+| Import from **PDF** is empty, garbled, or reversed Arabic | Prefer **DOCX**; for Latin scans enable **Enhanced OCR**. Broken ToUnicode Arabic is not fixed by OCR. Scanned Arabic needs the packaged Paddle adapter (2.1). |
 | Export looks wrong | Confirm the chosen **CSL style** matches your venue; check missing fields in Issues. |
 
 ---

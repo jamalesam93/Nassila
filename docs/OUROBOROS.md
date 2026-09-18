@@ -95,9 +95,10 @@ Training pack: [`TRAINING.md`](./TRAINING.md) → [NassilaT `training/`](https:/
 |-------|----------|------|-------|
 | **Sanad (sole tier)** | `nassila-sanad-9b` | Qwen 3.5 9B | 6 default + 6 MTP quants; **checkpoint FT-6** on model card |
 | **Sanad legacy** | `nassila-sanad-12b` / `nassila-sanad-4b` / `nassila-sanad-e4b` | Gemma 4 12B / Qwen 3.5 4B / Gemma 4 E4B | Retired — abstract-era trains; download only |
-| **Merged Ouroboros (future)** | `nassila-agent-e12b-v1` | 12B+ | Multi-worker + multimodal when ready |
 
-**Rule:** Prefer **one GGUF in LM Studio** with task routing. Separate adapters per worker during R&D; merge before marketing a unified Ouroboros bundle.
+**Non-goal (5.0.0):** merged Ouroboros GGUF (`nassila-agent-e12b-v1`). One Nassila is a **routed pack** of independently gated artifacts — do not merge workers into one weight file.
+
+**Rule:** Prefer independently gated artifacts in LM Studio (Sanad today; other facets only if they pass a task gate). Do **not** merge workers into a unified GGUF.
 
 **Single-tier policy (recorded June 2026; sole published Hub tier = 9B FT-6 as of 2026-08-21):**
 

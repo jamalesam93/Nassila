@@ -146,4 +146,30 @@ Author A. Paper. 2020.`
     expect(seg.referencesText).toContain('Author A')
     expect(seg.bodyText).toContain('المصطلحات')
   })
+
+  it('recognizes Arabic IMRAD-style numbered section headings', () => {
+    const text = `1. مقدمة
+النص.
+
+2. الطرق
+الطريقة.
+
+قائمة المراجع
+[1] Author. Title. 2020.`
+    const seg = segmentManuscriptText(text)
+    expect(seg.bodyText).toContain('مقدمة')
+    expect(seg.referencesText).toContain('Author')
+  })
+
+  it('maps Arabic numeric in-text cites after bilingual bibliography heading', () => {
+    const body = 'أظهرت النتائج [1] أن الترصد فعال. '.repeat(20)
+    const refs = `[1] الكتاب، أحمد. عنوان. 2020.
+[2] Smith J. Example paper. Journal. 2019.`
+    const text = `${body}\n\nقائمة المراجع والمصادر\n${refs}`
+    const seg = segmentManuscriptText(text)
+    expect(seg.bodyText).toContain('[1]')
+    expect(seg.referencesText).toContain('الكتاب')
+    const cites = parseInTextCitations(seg.bodyText)
+    expect(cites.citations.some((c) => c.numbers?.includes(1))).toBe(true)
+  })
 })

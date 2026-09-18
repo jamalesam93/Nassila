@@ -1,6 +1,6 @@
 # Ouroboros loop state
 
-**Last updated:** 2026-09-06  
+**Last updated:** 2026-09-18  
 **Operator:** Nassila maintainer
 
 Read this at the start of every agent session. Update when focus, blockers, or ship gates change.
@@ -11,8 +11,9 @@ Read this at the start of every agent session. Update when focus, blockers, or s
 
 | Priority | Track | Status |
 |----------|-------|--------|
-| **P0** | **2.0.0 MaktabOCR + Shahid** | **Shipped 2026-09-06** — `FEATURES-AND-TWEAKS.md` #22: Firecrawl native pdf-inspector + pretrained Arabic adapter; Shahid table/figure evidence live; Tier 3 full-text + multimodal holdouts pass; installer `Nassila Setup 2.0.0.exe` |
-| **P0** | **2.1.0 Sanad Arabic** | **Next planned cut** — FT-7 Arabic train slice + holdout; Arabic-aware mapping; separate AR metrics |
+| **P0** | **2.1.0 Maktab Arabic** | **Shipped 2026-09-18** — Track A production Maktab Arabic OCR (Paddle PP-OCRv5) **+** Track C Arabic-aware mapping. No GPU. Do not claim Arabic L3. |
+| **P0** | **2.2.0 Sanad Arabic** | **Paused (budget)** — Track B FT-7; v120 + AR holdout **frozen**; Vast QLoRA when cash returns. |
+| **P0** | **2.0.0 MaktabOCR + Shahid** | **Shipped 2026-09-06** — native pdf-inspector + selective OCR; Shahid table/figure **deterministic** live; Tier 3 GO. Arabic adapter goldens PASS; **Track A runner landed in tree** (pack via `npm run ocr:arabic-adapter`). |
 | **P0** | **1.10.1 Packaged network parity** | **Shipped 2026-08-23** — `FEATURES-AND-TWEAKS.md` #21: Keep-my-title/DOI-lookup/autocorrect-online/input-Resolve routed through main IPC; renderer network-boundary guard; predatory "Update list" failure toast |
 | **P0** | **1.10.0 Masdar Papers** | **Shipped 2026-08-22** — installer `Nassila Setup 1.10.0.exe`; Wayback gating; papers dedupe + folder-scan attach; Raqim Resolve fixes |
 | **P0** | **1.8.0 Sanad 9B** | **Shipped 2026-08-13** — sole-tier `nassila-sanad-9b` (4B/12B hard-cut) + Qwen3.5 thinking stripper |
@@ -21,9 +22,11 @@ Read this at the start of every agent session. Update when focus, blockers, or s
 | **P1** | Infrastructure hygiene | Windows CI packaging job, dead-code cleanup, agent rule refresh |
 | **P1∥** | NassilaT corpus / eval | Tier 3 gates completed; Docling clean holdout 419 claims / 175 DOIs; retrieval 100/100 DOIs; E2E 32 manuscripts; Shahid multimodal 150 pilot + 210 holdout; Sanad Hub = **9B FT-6** (`nassila-sanad-9b` v119) |
 
-**Latest app:** **2.0.0** (MaktabOCR + Shahid) — shipped 2026-09-06. **Next:** **2.1.0 Sanad Arabic** (FT-7).
+**Latest app:** **2.1.0** (Maktab Arabic) — shipped 2026-09-18. **Next:** **2.2.0 Sanad Arabic** (FT-7) paused.
 
 **2.0.0 gate (2026-09-06):** **GO** — NassilaT `training/EVAL_GONOGO_TIER3_MEMO.md`. All hard gates satisfied across all 6 tracks. Release cut approved.
+
+**Honesty (2026-09-18):** **2.1.0 shipped.** Production Arabic scan OCR via PP-OCRv5 when the pack is present; reverse-font still DOCX. Arabic L3 remains unvalidated until **2.2.0 / FT-7**. **Sanad trains English + Arabic only** — do not add French (or any third language) as a gate or prospective cut.
 
 **IA:** Manuscript loop vs Bibliography only — old seven-worker navigation is gone.
 
@@ -63,9 +66,9 @@ Read this at the start of every agent session. Update when focus, blockers, or s
 | Tests/lint/typecheck gates (107 files, 528 tests) | **PASS** |
 | Version bump + CHANGELOG + STATE/future-map/web-train syncs | **PASS** |
 
-**Locked train:** 1.4.0 Raqim Statute → 1.5.0 Raqim Web → **1.6.0 Maktab Loop** (shipped) → **1.7.0 Integrity Bundle** (shipped) → **1.8.0 Sanad 9B** (shipped; Shahid **not** included) → (**FT-6 Hub-only**, no 1.9.0 installer) → **1.10.0 Masdar Papers** (shipped) → **1.10.1 Packaged network parity** (shipped) → **2.0.0 MaktabOCR + Shahid** (shipped 2026-09-06)
+**Locked train:** 1.4.0 Raqim Statute → 1.5.0 Raqim Web → **1.6.0 Maktab Loop** (shipped) → **1.7.0 Integrity Bundle** (shipped) → **1.8.0 Sanad 9B** (shipped; Shahid **not** included) → (**FT-6 Hub-only**, no 1.9.0 installer) → **1.10.0 Masdar Papers** (shipped) → **1.10.1 Packaged network parity** (shipped) → **2.0.0 MaktabOCR + Shahid** (shipped 2026-09-06) → **2.1.0 Maktab Arabic** (shipped 2026-09-18)
 
-**Next map:** 2.1.0 Sanad Arabic (FT-7) — see `docs/Nassila-Ouroboros-Future.md` §5
+**Next map:** 2.2.0 Sanad Arabic (paused) → 2.3.0–5.0.0 — see `docs/Nassila-Ouroboros-Future.md` §5. Merged GGUF is a **5.0.0 non-goal**; M01/Md01 stay gated.
 
 ---
 
@@ -132,12 +135,16 @@ Committed and verified in the 2.0.0 release:
 
 ## Blockers
 
-- **Arabic Sanad grounding:** unvalidated — zero Arabic-script rows in Sanad training JSONL; UI AR ≠ model AR. **FT-7** targets **2.1.0** (see `Nassila-Ouroboros-Future.md` §3.6). (Note: Maktab OCR scan fallback, Shahid multimodal table/figure evidence, and Tier 3 full-text grounding are all SHIPPED in 2.0.0).
+- **2.1.0 Maktab Arabic (Tracks A+C):** **SHIPPED 2026-09-18** — Paddle pack + IPC `ara` + mapping fixtures; reverse-font still DOCX; `probe:arabic-ocr` PASS. Arabic L3 unvalidated.
+- **2.2.0 Sanad Arabic (Track B):** **Paused (budget).** Data frozen (v120, 56 AR holdout, contamination 0). Arabic L3 unvalidated until Vast FT-7 GO. UI AR ≠ model AR.
+- DOCX remains a supported Arabic ingest path; scanned Arabic PDF uses Paddle when the pack is present.
 
 ---
 
 ## Next actions (ordered)
 
+0. **2.2.0 Track B (paused):** Vast FT-7 when budget returns; sign `EVAL_GONOGO_FT7_MEMO.md`; Hub FT-7. No laptop substitute.
+0b. Cut GitHub **v2.1.0** + installer `Nassila Setup 2.1.0.exe` if not yet attached.
 1. Fix agent infrastructure: refresh stale cursor rules, clean dead-code references.
 2. Add **Windows packaging CI job** (`windows-latest` → `build:unpack` → `probe-ocr-bundled`).
 3. Wire Tier-4 dead features: **structure template picker UI** + **`manuscriptSourceFormat` badge** in loop. ✅ done — shipped in 1.5.0/1.6.0 tree; see rules §2 live structure.

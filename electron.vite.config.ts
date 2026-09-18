@@ -11,7 +11,10 @@ export const MAIN_NATIVE_EXTERNALS = [
   'tesseract.js',
   'tesseract.js-core',
   '@firecrawl/pdf-inspector',
-  '@firecrawl/anydoc'
+  '@firecrawl/anydoc',
+  'onnxruntime-node',
+  'ppu-paddle-ocr',
+  'ppu-ocv'
 ] as const
 
 function copyAppIcons(): Plugin {

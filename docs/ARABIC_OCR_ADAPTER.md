@@ -1,8 +1,10 @@
-# Arabic OCR adapter — eval plan (Step 4)
+# Arabic OCR adapter — eval plan (Step 4) + 2.1 production track
 
 **Purpose:** Close the PP-OCRv6 Small **non-Arabic** gap without custom OCR training by default.  
-**Index:** NassilaT [`2.0_OPERATOR_INDEX.md`](../../NassilaT/training/2.0_OPERATOR_INDEX.md)  
-**Maktab context:** [`MAKTAB_OCR.md`](./MAKTAB_OCR.md)
+**Index:** NassilaT [`2.1_2.2_ARABIC_OPERATOR_INDEX.md`](../../NassilaT/training/2.1_2.2_ARABIC_OPERATOR_INDEX.md) (2.0 stub → archive)  
+**Maktab context:** [`MAKTAB_OCR.md`](./MAKTAB_OCR.md) · pack [`resources/arabic-ocr/README.md`](../resources/arabic-ocr/README.md)
+
+**Honesty (2026-09-18):** **2.1.0 shipped.** Official Arabic PP-OCRv5 ONNX pack + main-process `ppu-paddle-ocr` runner + IPC `ara` route. Operator: `npm run ocr:arabic-adapter` then `npm run probe:arabic-ocr`. Reverse-font ToUnicode **always** prefers DOCX. Sanad FT-7 is **2.2.0** (paused).
 
 ---
 
@@ -10,10 +12,11 @@
 
 | In scope | Out of scope |
 |----------|----------------|
-| Pretrained Arabic recognizer behind `src/engine/maktab/ocr/arabic-adapter.ts` | FT-7 Arabic **L3** validation → **2.1.0** |
+| Pretrained Arabic recognizer behind `src/engine/maktab/ocr/arabic-adapter.ts` | Claiming FT-7 Arabic **L3** without 2.2.0 GO |
 | Page images routed by native pdf-inspector | Custom QLoRA OCR train (last resort) |
 | Same Maktab page contract (text, provenance, `needsReview`) | Enabling Tesseract `ara` as ship path |
-| Golden PDF fixtures + pass bars | Claiming validated Arabic grounding |
+| Golden PDF fixtures + pass bars | Shipping 2.2.0 before Track B PASS |
+| Pack `resources/arabic-ocr/` + lift scan deferral (shipped 2.1.0) | Waiting on FT-7 / Vast to ship 2.2.0 |
 
 ---
 
@@ -35,10 +38,11 @@ IPC stays in main — renderer uses `maktab:native*` only.
 
 Evaluate in this order; record in `reports/arabic_ocr_benchmark_YYYYMMDD.md`:
 
-1. **PaddleOCR Arabic PP-OCRv5** (or latest Arabic family) — preferred if adapter can consume routed page bitmaps
-2. Other vetted pretrained Arabic models **only** if they accept the same input/output contract
+1. **Official Paddle Arabic PP-OCRv5 ONNX** (locked for 2.1) — [`arabic_PP-OCRv5_mobile_rec_onnx`](https://huggingface.co/PaddlePaddle/arabic_PP-OCRv5_mobile_rec_onnx) + [`PP-OCRv5_mobile_det_onnx`](https://huggingface.co/PaddlePaddle/PP-OCRv5_mobile_det_onnx). Fetch via `npm run ocr:arabic-adapter`.
+2. **Not** multilingual PP-OCRv5/v6 from the [PP-OCRv6 collection](https://huggingface.co/collections/PaddlePaddle/pp-ocrv6) (CJK/EN/Latin — no Arabic).
+3. **Not** community [`medyas/arabic_PP-OCRv6_small_rec`](https://huggingface.co/medyas/arabic_PP-OCRv6_small_rec) for the first ship (optional later A/B only).
 
-**Do not assume** PP-OCRv5 weights drop into pdf-inspector's fixed PP-OCRv6 model directory — confirm API compatibility or contribute upstream configurability.
+**Do not assume** Arabic weights drop into pdf-inspector's fixed PP-OCRv6 Latin model directory — pack under `resources/arabic-ocr/` and run behind `ArabicRecognizerAdapter`.
 
 ---
 
@@ -74,7 +78,7 @@ npm test -- tests/unit/maktab-golden-fixtures.test.ts
 npm test -- tests/unit/native-pdf-inspector.test.ts
 ```
 
-Add focused `tests/unit/arabic-ocr-adapter.test.ts` when adapter is real (not stub).
+Focused pack tests: `tests/unit/arabic-paddle-ocr-pack.test.ts`. Golden fixtures: `tests/unit/maktab-golden-fixtures.test.ts`.
 
 ### 3. Score
 

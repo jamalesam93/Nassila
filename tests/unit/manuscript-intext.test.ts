@@ -49,4 +49,34 @@ describe('parseInTextCitations', () => {
     expect(ay?.yearSuffix).toBe('a')
     expect(ay?.authorFamilyNames?.[0]).toBe('smith')
   })
+
+  it('parses Arabic-Indic numeric brackets as ASCII numbers', () => {
+    const res = parseInTextCitations('أظهرت الدراسات [١] و[٢-٣] ذلك.')
+    const nums = res.citations.filter((c) => c.kind === 'numeric')
+    expect(nums.map((c) => c.numbers?.join(','))).toEqual(['1', '2,3'])
+  })
+
+  it('parses Arabic parenthetical author-year with Arabic comma and وآخرون', () => {
+    const res = parseInTextCitations('أكدت الدراسات (الكتاب وآخرون، 2020) ذلك.')
+    const ay = res.citations.find((c) => c.kind === 'author-year')
+    expect(ay?.year).toBe(2020)
+    expect(ay?.authorFamilyNames?.[0]).toBe('الكتاب')
+  })
+
+  it('parses Arabic narrative author-year', () => {
+    const res = parseInTextCitations('ويرى الكتاب (2019) أن الترصد ضروري.')
+    const ay = res.citations.find((c) => c.kind === 'author-year')
+    expect(ay?.year).toBe(2019)
+    expect(ay?.authorFamilyNames?.[0]).toBe('الكتاب')
+    expect(res.citations.some((c) => c.kind === 'numeric' && c.numbers?.includes(2019))).toBe(false)
+  })
+
+  it('rejects Arabic objectives-list markers while keeping a Vancouver cite', () => {
+    const text =
+      'تهدف هذه المراجعة إلى: (1) تقديم نظرة عامة؛ (2) مقارنة النظم. انظر أيضاً الدراسات السابقة [3].'
+    const res = parseInTextCitations(text)
+    const nums = res.citations.filter((c) => c.kind === 'numeric')
+    expect(nums.some((c) => c.raw === '(1)' || c.raw === '(2)')).toBe(false)
+    expect(nums.some((c) => c.raw === '[3]' && c.numbers?.join(',') === '3')).toBe(true)
+  })
 })

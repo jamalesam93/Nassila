@@ -74,10 +74,10 @@ Seven workers map to stages in the loop. Maturity varies; honest gaps only — n
 
 | Worker | Arabic | Loop stage | End-state role | Current status |
 |--------|--------|------------|----------------|----------------|
-| **Maktab** | مكتب | Ingest | Manuscript upload and segmentation | **Deterministic live:** DOCX/text + pdf.js; Enhanced OCR (**eng/fra** bundled) for Latin scans; Arabic PDF OCR → **2.0.0** (native pdf-inspector + pretrained Arabic adapter); `doc_extract` LLM facet only if deterministic fails |
+| **Maktab** | مكتب | Ingest | Manuscript upload and segmentation | **Deterministic live:** DOCX/text + pdf.js; Enhanced OCR (**eng/fra** bundled) for Latin scans; Arabic PDF OCR production packaging → **2.1.0 Maktab Arabic**; `doc_extract` LLM facet only if deterministic fails |
 | **Masdar** | مصدر | Sources | Cited-paper text (user PDF or OA fetch) | **Deterministic live:** OA fetch + PDF extraction + per-reference local attach + folder scan; `source_pdf_extract` LLM facet planned |
 | **Sanad** | سند | Ground | Passage vs source excerpt → verdicts | Live in loop (Tier 2 bridge + automated path); **9B FT-6/v119** sole Hub tier |
-| **Shahid** | شاهد | Evidence | Tables and figures as evidence | Disabled — gated to **2.0.0** (did not ship in 1.8.0) |
+| **Shahid** | شاهد | Evidence | Tables and figures as evidence | **LIVE in 2.0.0** (deterministic table/figure extract; LLM facet still stubbed) |
 | **Raqim** | رقيم | Records | Import, verify, export | Live — bibliography mode + loop feed |
 | **Tasnif** | تصنيف | Risk | Dedupe, predatory, issue triage | Live — feeds loop + Raqim filters |
 | **Sharh** | شرح | Explain | Issue and mismatch explanations | Partial — deterministic copy |
@@ -99,7 +99,7 @@ Seven workers map to stages in the loop. Maturity varies; honest gaps only — n
 1. User opens **Manuscript** (default) or switches to **Bibliography** (Raqim) — loop vs bibliography only.
 2. In the loop: upload/paste manuscript → **Run audit** → L1/L2 per cite, OA/abstract fetch, L3 Sanad when Passage grounding is enabled.
 3. **Tasnif** / **Sharh** copy appears inline in loop detail; bibliography drawer opens Raqim filters.
-4. **Maktab** and **Masdar-lite** deterministic stages are live, including Masdar local-PDF attach and folder scan; their LLM facets remain planned. **Shahid** remains gated to **2.0.0** — not a peer tab.
+4. **Maktab** and **Masdar-lite** deterministic stages are live, including Masdar local-PDF attach and folder scan; their LLM facets remain planned. **Shahid** deterministic evidence is **live in 2.0.0** — not a peer tab. Production Arabic PDF OCR is **live in 2.1.0**. Auto cited-PDF ingest is **2.3.0**.
 5. Engine applies JSON repair + quote-substring guardrails; LLM is advisory.
 
 **Target (full Ouroboros):**

@@ -73,7 +73,7 @@ export const NASSILA_MODEL_ARTIFACTS = {
   sanad12b: 'nassila-sanad-12b',
   /** @deprecated Legacy tier — Gemma 4 E4B Q6_K (~5.8 GB). Kept for legacy constants. */
   sanadE4b: 'nassila-sanad-e4b',
-  /** Future unified multi-task model. */
+  /** Legacy id — merged seven-task GGUF is a 5.0.0 non-goal; kept for catalog only. */
   agentE12bV1: 'nassila-agent-e12b-v1',
   /** Optional legacy webpage-only adapter name. */
   webciteE4bV1: 'nassila-webcite-e4b-v1'

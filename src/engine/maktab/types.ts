@@ -14,9 +14,9 @@ export const MAKTAB_DEFAULT_LANGUAGES: readonly MaktabLanguage[] = ['eng', 'fra'
 export type MaktabExtractionTier = 'embedded_text' | 'ocr'
 
 /**
- * - auto: native → WASM → pdf.js; OCR when embedded text missing or very sparse (Latin); Arabic deferred to DOCX
+ * - auto: native → WASM → pdf.js; OCR when embedded text missing or sparse; Arabic-heavy defers to DOCX unless Paddle Arabic adapter is registered; reversed ToUnicode always prefers DOCX
  * - embedded_only: tier A only (native / WASM / pdf.js per `engine`)
- * - ocr_preferred: try embedded first; OCR when sparse/empty for Latin; Arabic-heavy / reversed → DOCX warning
+ * - ocr_preferred: try embedded first; OCR when sparse/empty; same Arabic deferral rules as auto
  */
 export type MaktabExtractionMode = 'auto' | 'embedded_only' | 'ocr_preferred'
 

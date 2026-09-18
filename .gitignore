@@ -30,6 +30,13 @@ resources/pdf-inspector/pp-ocrv6-small/
 resources/pdf-inspector/runtime/
 resources/pdf-inspector/checksums.sha256
 
+# Arabic PP-OCRv5 ONNX pack (operator-fetched; see resources/arabic-ocr/README.md)
+resources/arabic-ocr/*.onnx
+resources/arabic-ocr/*.yml
+resources/arabic-ocr/ppocrv5_arabic_dict.txt
+resources/arabic-ocr/checksums.sha256
+resources/arabic-ocr/.nassila-arabic-ocr-ready
+
 # TypeScript incremental build cache (machine-specific)
 *.tsbuildinfo
 

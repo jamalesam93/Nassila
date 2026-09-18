@@ -6,6 +6,7 @@ import type {
 import { createRequire } from 'node:module'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
+import { rasterizePdfPage } from './pdf-page-raster'
 
 const MAX_OCR_PAGES = 200
 const MIN_PAGE_CHARS = 40
@@ -29,38 +30,6 @@ export function resolveTesseractWorkerPaths(appPath: string): {
   return {
     workerPath: require.resolve('tesseract.js/src/worker-script/node/index.js'),
     corePath: require.resolve('tesseract.js-core/tesseract-core.wasm.js')
-  }
-}
-
-async function rasterizePdfPage(
-  pdf: import('pdfjs-dist').PDFDocumentProxy,
-  page: import('pdfjs-dist').PDFPageProxy,
-  dpi: number
-): Promise<Buffer> {
-  const scale = dpi / 72
-  const viewport = page.getViewport({ scale })
-  const width = Math.ceil(viewport.width)
-  const height = Math.ceil(viewport.height)
-  // pdf.js v5 NodeCanvasFactory uses @napi-rs/canvas — must render via pdf.canvasFactory,
-  // not node-canvas, or embedded images throw "Image or Canvas expected".
-  const canvasFactory = pdf.canvasFactory as {
-    create: (
-      width: number,
-      height: number
-    ) => { canvas: { toBuffer: (mime: string) => Buffer }; context: unknown }
-    destroy: (entry: { canvas: unknown; context: unknown }) => void
-  }
-  const canvasEntry = canvasFactory.create(width, height)
-
-  try {
-    await page.render({
-      canvas: null,
-      canvasContext: canvasEntry.context as CanvasRenderingContext2D,
-      viewport
-    }).promise
-    return canvasEntry.canvas.toBuffer('image/png')
-  } finally {
-    canvasFactory.destroy(canvasEntry)
   }
 }
 
