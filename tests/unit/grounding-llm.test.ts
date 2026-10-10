@@ -10,6 +10,7 @@ import {
   extractCiteKeysFromClaim,
   filterClaimsForActiveBibKey,
   findInvalidSourceQuotes,
+  foldArabicOrthography,
   GROUNDING_PROMPT_CONTRACT_VERSION,
   hasContradictoryNumbers,
   isVerbatimQuoteSubstring,
@@ -404,5 +405,40 @@ describe('filterClaimsForActiveBibKey', () => {
     const scoped = filterClaimsForActiveBibKey(claims, '1')
     expect(scoped.filteredCount).toBe(0)
     expect(scoped.claims).toHaveLength(1)
+  })
+})
+
+describe('isVerbatimQuoteSubstring — Arabic orthographic folding (FT-7)', () => {
+  // Mirrors the FT-7 corpus: tashkeel-bearing Arabic body text.
+  const arExcerpt = 'ويصف العديد من الاقتصاديين خططَ التقاعد الحكومية بأنها معيبة وذات نتائج ضعيفة.'
+
+  it('matches when the model drops tashkeel', () => {
+    expect(isVerbatimQuoteSubstring('خطط التقاعد الحكومية', arExcerpt)).toBe(true)
+  })
+
+  it('matches alef / ta-marbuta variants', () => {
+    expect(isVerbatimQuoteSubstring('المكتبه الوطنيه', 'المكتبة الوطنية')).toBe(true)
+  })
+
+  it('matches Arabic-Indic digits against ASCII', () => {
+    expect(isVerbatimQuoteSubstring('في عام 2020', 'في عام ٢٠٢٠ الميلادي')).toBe(true)
+  })
+
+  it('ignores bidi control marks', () => {
+    expect(isVerbatimQuoteSubstring('\u200fخطط التقاعد\u200e', arExcerpt)).toBe(true)
+  })
+
+  it('still rejects unrelated Arabic text', () => {
+    expect(isVerbatimQuoteSubstring('القطط تنام على السطح في الصيف', arExcerpt)).toBe(false)
+  })
+
+  it('treats whitespace-only quotes as invalid', () => {
+    expect(isVerbatimQuoteSubstring('   ', arExcerpt)).toBe(false)
+  })
+
+  it('is identity for Latin text', () => {
+    expect(foldArabicOrthography('Nausea was reported by 30% of patients.')).toBe(
+      'Nausea was reported by 30% of patients.'
+    )
   })
 })

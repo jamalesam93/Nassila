@@ -262,15 +262,40 @@ export function normalizeForQuoteMatch(text: string): string {
     .trim()
 }
 
-/** True when quote appears verbatim in excerpt (raw, whitespace-, or extraction-normalized). */
+/**
+ * Collapse Arabic orthographic variants that do not change the words: tashkeel
+ * (diacritics), tatweel (kashida), bidi control marks, alef / ya / ta-marbuta /
+ * hamza forms, and Arabic-Indic digits. Ruleset mirrors Lucene's ArabicNormalizer
+ * and MUST stay in lockstep with NassilaT
+ * `training/scripts/validate_dataset.py :: fold_arabic_orthography`.
+ *
+ * Rationale (FT-7 / 2.2.0 Sanad Arabic): Arabic source text carries tashkeel and a
+ * model that renders the same words without it is still quoting the source. Without
+ * this, `downgradeInvalidSupportedClaims` silently demoted correct Arabic
+ * `supported` verdicts to `weak` for a purely orthographic reason.
+ */
+export function foldArabicOrthography(text: string): string {
+  return text
+    .replace(/[\u064b-\u065f\u0670\u06d6-\u06ed\u0640]/g, '')
+    .replace(/[\u061c\u200e\u200f\u202a-\u202e\u2066-\u2069]/g, '')
+    .replace(/[\u0622\u0623\u0625\u0671]/g, '\u0627')
+    .replace(/[\u0624]/g, '\u0648')
+    .replace(/[\u0626]/g, '\u064a')
+    .replace(/[\u0629]/g, '\u0647')
+    .replace(/[\u0649]/g, '\u064a')
+    .replace(/[\u0660-\u0669]/g, (d) => String(d.charCodeAt(0) - 0x0660))
+    .replace(/[\u06f0-\u06f9]/g, (d) => String(d.charCodeAt(0) - 0x06f0))
+}
+
+/** True when quote appears verbatim in excerpt (raw, whitespace-, extraction-, or Arabic-normalized). */
 export function isVerbatimQuoteSubstring(quote: string, excerpt: string): boolean {
   if (!quote.trim()) return false
   if (excerpt.includes(quote)) return true
   const nq = normalizeWhitespaceForQuoteMatch(quote)
   const ne = normalizeWhitespaceForQuoteMatch(excerpt)
   if (nq.length > 0 && ne.includes(nq)) return true
-  const eq = normalizeForQuoteMatch(quote)
-  const ee = normalizeForQuoteMatch(excerpt)
+  const eq = foldArabicOrthography(normalizeForQuoteMatch(quote))
+  const ee = foldArabicOrthography(normalizeForQuoteMatch(excerpt))
   return eq.length > 0 && ee.includes(eq)
 }
 
