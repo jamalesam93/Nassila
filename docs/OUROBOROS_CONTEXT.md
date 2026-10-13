@@ -212,7 +212,7 @@ Used to decide whether to run the next hyperparam phase (e.g. v1.4b): JSON parse
 
 Manual Sanad paste does **not** satisfy Tier 3 product ship; it is a bridge until the loop feeds Sanad automatically.
 
-**Vast (NassilaT):** `PHASE=4a|4b|5 bash training/scripts/run_vast_pipeline.sh` · llama.cpp **b9608** · port **1234**
+**Vast (NassilaT):** `PHASE=4a|4b|5 bash training/scripts/run_vast_pipeline.sh` · llama.cpp **latest release tag** · port **1234**
 
 ## 11. Model tier policy (A/B pilot — recorded)
 
