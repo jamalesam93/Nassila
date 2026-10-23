@@ -23,35 +23,12 @@ The name **Nassila** is coined, inspired by the idea of a **sanad** (سند): a 
 
 ## What's new in v2.1.1 — Arabic OCR fidelity
 
-- **Arabic lines stay in reading order.** Scan OCR used to reverse a whole page, which put lines bottom-to-top. Each line is reversed on its own.
-- **Legacy Arabic fonts are sent to OCR.** A text layer that decodes to the wrong characters is flagged instead of being parsed as bibliography text.
-- **Optional Indra download.** Settings → Local models fetches about 14 MB of Arabic OCR weights. Once installed, Indra reads Arabic scans inside the app (no Python). PaddleOCR covers any page Indra cannot. Without the download, Arabic scans stay on the packaged Paddle adapter.
-- **Arabic quotes tolerate orthography.** Diacritics, alef/ya variants, and edge punctuation (`.` vs `،`) no longer demote a supported quote to weak.
-- **Smaller Windows package.** Unused native libraries for other operating systems are no longer shipped.
-- **Arabic L3 still unvalidated** — Sanad Arabic (**2.2.0**) stays paused.
+- **Arabic scans.** Settings → Local models can download Indra (about 14 MB, no Python). Once installed, Indra reads Arabic scan pages. Paddle PP-OCRv5, packaged with the app, re-reads a page Indra cannot. Without that download, Arabic scans stay on Paddle.
+- **Latin scans still use Tesseract.** Bundled English and French packs (`eng` / `fra`) cover Enhanced OCR. Arabic does not use Tesseract.
+- **Reading order and legacy fonts.** Arabic OCR lines stay in reading order. A text layer that decodes to the wrong characters is sent to OCR instead of being parsed as bibliography text. Character-reversed font PDFs still need **DOCX**.
+- **Arabic L3 is still unvalidated.** Sanad Arabic (**2.2.0**) stays paused.
 
-## What's new in v2.1.0 — Maktab Arabic
-
-- **Production Arabic scan OCR** — scanned Arabic PDFs use the packaged Paddle PP-OCRv5 adapter (not Tesseract `ara`). Broken font-encoding Arabic PDFs still need **DOCX**.
-- **Arabic-aware citation mapping** — Arabic bibliography headings, Arabic-Indic numbers, and Arabic author-year cites map to bibliography keys.
-- **Arabic L3 still unvalidated** — do not treat Sanad verdicts on Arabic manuscripts as a 2.1.0 claim; that is **2.2.0**.
-
-## What's new in v2.0.0 — MaktabOCR + Shahid
-
-- **Maktab OCR (embedded + scan fallback)** — Native PDF layout inspection (`@firecrawl/pdf-inspector`) with selective scan OCR fallback. Born-digital PDFs extract vector text instantly, while scanned pages or degraded raster documents route automatically to bundled offline OCR (Tesseract English/French/Arabic) or the pretrained Arabic adapter.
-- **Shahid Multimodal (table & figure evidence)** — Deterministic extraction and binding of target Markdown tables, data cells, and figure captions from complex literature to verify data-driven claims with cell-level precision and visual proximity protection.
-- **End-to-End Grounding Verification** — Full Tier 3 validation across full-text manuscripts with verbatim citation evidence matching, zero false-supported hallucinations, and independent claim scoring decoupled from UI triage pills.
-- **Two-Tier UX Decoupling** — Finding-level triage status (pill color: pass/warn/fail) is cleanly separated from individual claim scientific verdicts (supported/weak/contradicted/not_in_source/insufficient_evidence).
-- **Abstract-Only Caution Chips** — Clear UI caution chips display on paywalled or closed-access citations evaluated only from abstracts, alerting authors when full-text inspection is recommended.
-- **Offline Stability & Packaged Parity** — Verified zero-network installation and execution on Windows workstations with bundled language resources, full local privacy, and strict security boundaries.
-
-## What's new in v1.10.1 — Packaged network parity
-
-- **"Keep my title — find correct DOI" works in installed builds** — the DOI↔title repair searched Crossref / PubMed / OpenAlex from the sandboxed renderer, which the production security policy blocks, so the button silently did nothing in the installed app (dev runs were unaffected). The registry search now runs in the main process with the same semantics: your title is the trusted anchor, the replacement DOI must genuinely belong to it, and only empty fields fill from the new record.
-- **DOI lookup, Autocorrect's online step, and the input-bar "Resolve" work in installed builds** — all three used the same blocked renderer path; all three now resolve through the main process.
-- **"Update list" (predatory-journal banner) reports failure** with a toast instead of failing silently.
-
-Full notes: [CHANGELOG.md](CHANGELOG.md) · [v2.1.1 release](https://github.com/jamalesam93/Nassila/releases/tag/v2.1.1).
+Earlier releases: [CHANGELOG.md](CHANGELOG.md) · [v2.1.1 release](https://github.com/jamalesam93/Nassila/releases/tag/v2.1.1).
 
 ## Who is this for?
 
@@ -122,10 +99,15 @@ Nassila is built on top of incredible open-source tools, libraries, and specific
 
 | Project | Role in Nassila | License |
 |---------|-----------------|---------|
-| [**pdf-inspector**](https://github.com/firecrawl/pdf-inspector) | Fast Rust PDF classification, layout recovery, and Markdown text/table extraction (Maktab Tier A) | MIT |
-| [**citeproc-js**](https://github.com/juris-m/citeproc-js) | CSL citation formatting engine powering APA, IEEE, Vancouver, Chicago, and custom styles | AGPL-2.0 / CPAL-1.0 |
-| [**Tesseract.js**](https://github.com/naptha/tesseract.js) | Pure JS OCR engine for offline document scan text extraction (Maktab Tier B) | Apache-2.0 |
-| [**PDF.js**](https://github.com/mozilla/pdf.js) | Fallback PDF rendering and text content extraction | Apache-2.0 |
-| [**Citation-js**](https://github.com/citation-js/citation-js) | Parsing BibTeX, RIS, and CSL-JSON reference formats | MIT |
-| [**Mammoth**](https://github.com/mwilliamson/mammoth.js) | Converting DOCX manuscript documents for reference section ingest | BSD-2-Clause |
-| [**CSL Styles**](https://github.com/citation-style-language/styles) | Citation Style Language (CSL) repository powering 10,000+ academic styles | CC-BY-SA 3.0 |
+| [**pdf-inspector**](https://github.com/firecrawl/pdf-inspector) | PDF text layer, layout, and Markdown tables. Born-digital pages are read here before any OCR | MIT |
+| [**PaddleOCR**](https://github.com/PaddlePaddle/PaddleOCR) PP-OCRv5 | Packaged Arabic scan OCR. Also the page-level fallback when Indra cannot read a page | Apache-2.0 |
+| [**ppu-paddle-ocr**](https://github.com/PT-Perkasa-Pilar-Utama/ppu-paddle-ocr) | Runs the Paddle ONNX models inside the app | MIT |
+| [**ONNX Runtime**](https://github.com/microsoft/onnxruntime) | Runs the Paddle and Indra models on this machine | MIT |
+| [**OpenCV.js**](https://github.com/TechStark/opencv-js) | Page resize and deskew for the Indra reader | Apache-2.0 |
+| [**Indra OCR**](https://github.com/datalab-to/indra-ocr) | Optional Arabic reader. About 14 MB, downloaded from Settings, not shipped in the installer | Modified OpenRAIL-M (weights) |
+| [**Tesseract.js**](https://github.com/naptha/tesseract.js) and [tessdata_fast](https://github.com/tesseract-ocr/tessdata_fast) | English and French scan OCR only (`eng`, `fra`). Arabic does not use Tesseract | Apache-2.0 |
+| [**PDF.js**](https://github.com/mozilla/pdf.js) | Fallback PDF text and page raster for OCR | Apache-2.0 |
+| [**Citation-js**](https://github.com/citation-js/citation-js) | Parsing BibTeX, RIS, and CSL-JSON | MIT |
+| [**citeproc-js**](https://github.com/juris-m/citeproc-js) | CSL formatting for APA, IEEE, Vancouver, Chicago, and custom styles | AGPL-2.0 / CPAL-1.0 |
+| [**Mammoth**](https://github.com/mwilliamson/mammoth.js) | DOCX manuscript ingest | BSD-2-Clause |
+| [**CSL Styles**](https://github.com/citation-style-language/styles) | The style repository behind 10,000+ academic styles | CC-BY-SA 3.0 |
