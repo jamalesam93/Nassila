@@ -45,3 +45,10 @@ docs/pdf/
 
 # Generated codebase dump (Repomix) — regenerate locally, keep out of git
 codebase.txt
+
+# Indra OCR (fetched on first run; weights are OpenRAIL-M and never committed)
+resources/indra-ocr/models/
+resources/indra-ocr/venv/
+resources/indra-ocr/checksums.sha256
+resources/indra-ocr/.nassila-indra-ocr-ready
+.eval-arabic-ocr/

@@ -227,6 +227,7 @@ Per-page OCR cache (`sha256 + page + dpi + lang pack`) stays **deferred**
 
 ## Related
 
+- [`scripts/eval-arabic-ocr.mjs`](../scripts/eval-arabic-ocr.mjs) — Arabic OCR evaluation harness (`npm run eval:ocr:arabic -- all --corpus <dir>`); Indra is fetched with `npm run ocr:indra-fetch`, never bundled.
 - [`LOOP.md`](../LOOP.md) — engineering loop
 - [`docs/OUROBOROS.md`](./OUROBOROS.md) — worker map
 - [`patterns/ouroboros-registry.yaml`](../patterns/ouroboros-registry.yaml) — stage registry

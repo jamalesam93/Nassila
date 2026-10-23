@@ -23,6 +23,8 @@
     "ocr:langpacks": "node scripts/download-tesseract-langpacks.mjs",
     "ocr:arabic-adapter": "node scripts/download-arabic-ocr-adapter.mjs",
     "ocr:pdf-inspector-runtime": "node scripts/download-pdf-inspector-runtime.mjs",
+    "ocr:indra-fetch": "node scripts/fetch-indra-ocr.mjs",
+    "eval:ocr:arabic": "node scripts/eval-arabic-ocr.mjs",
     "skills:install": "node scripts/install-cursor-skills.mjs",
     "skills:install:antigravity": "node scripts/install-antigravity-skills.mjs",
     "skills:scan": "node scripts/scan-skills.mjs",
