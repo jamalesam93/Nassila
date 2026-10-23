@@ -155,3 +155,4 @@ Attach summary path to [`EVAL_GONOGO_TIER3_MEMO.md`](../../NassilaT/training/EVA
 | DLL load error on clean VM | `asarUnpack` / `resourcesPath` misconfigured |
 | WASM works, native fails | Expected until operator runtime fetch — document as partial |
 | Tesseract slow/hang | Worker path — see `tesseract-worker-path.test.ts` |
+| Indra runtime missing after install | Expected — it is fetched on first use from Settings → Local models (or `npm run ocr:indra-fetch`); never bundled |

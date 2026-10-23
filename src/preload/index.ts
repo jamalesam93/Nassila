@@ -21,6 +21,13 @@ import {
   MAKTAB_OCR_PROGRESS_CHANNEL,
   type MaktabOcrProgressEvent
 } from '../shared/maktab-ocr-progress'
+import {
+  INDRA_RUNTIME_FETCH_CHANNEL,
+  INDRA_RUNTIME_PROGRESS_CHANNEL,
+  INDRA_RUNTIME_STATUS_CHANNEL,
+  type IndraFetchProgress,
+  type IndraRuntimeStatus
+} from '../shared/indra-runtime'
 import type { RaqimLookupRequest, RaqimResolveCandidate } from '../shared/raqim-resolve'
 
 export type ThemeMode = 'light' | 'dark' | 'system'
@@ -238,6 +245,20 @@ const api = {
 
   clearExtractionCache: (): Promise<{ clearedCount: number; freedBytes: number }> =>
     ipcRenderer.invoke('maktab:clearExtractionCache'),
+
+  indraRuntimeStatus: (): Promise<IndraRuntimeStatus> =>
+    ipcRenderer.invoke(INDRA_RUNTIME_STATUS_CHANNEL),
+
+  fetchIndraRuntime: (): Promise<IndraRuntimeStatus> =>
+    ipcRenderer.invoke(INDRA_RUNTIME_FETCH_CHANNEL),
+
+  onIndraFetchProgress: (callback: (progress: IndraFetchProgress) => void): (() => void) => {
+    const listener = (_event: Electron.IpcRendererEvent, progress: IndraFetchProgress): void => {
+      callback(progress)
+    }
+    ipcRenderer.on(INDRA_RUNTIME_PROGRESS_CHANNEL, listener)
+    return () => ipcRenderer.removeListener(INDRA_RUNTIME_PROGRESS_CHANNEL, listener)
+  },
 
   // ── Secrets / LLM (main-process only) ───────────────────────────────────
   isEncryptionAvailable: (): Promise<boolean> =>

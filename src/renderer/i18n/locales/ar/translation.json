@@ -162,6 +162,25 @@
       "clearCache": "مسح ذاكرة الاستخراج المؤقتة",
       "clearing": "جارٍ المسح…",
       "cacheCleared": "تم مسح ذاكرة الاستخراج المؤقتة."
+    },
+    "indra": {
+      "title": "محرك OCR عربي تجريبي (Indra)",
+      "subtitle": "يُجلب عند أول استخدام ولا يُضمَّن مع التطبيق. يُستخدم في اختبارات تقييم OCR.",
+      "statusReady": "جاهز · {{version}} · {{size}}",
+      "statusMissing": "غير مثبَّت",
+      "statusChecking": "جارٍ التحقق…",
+      "fetch": "جلب المحرك",
+      "fetching": "جارٍ الجلب…",
+      "license": "أوزان النموذج بترخيص OpenRAIL-M معدَّل — تُجلب عند الطلب ولا تُوزَّع مع التطبيق.",
+      "directory": "المسار: {{dir}}",
+      "phase": {
+        "models": "تنزيل النماذج",
+        "venv": "إنشاء بيئة بايثون",
+        "package": "تثبيت indra-ocr",
+        "verify": "التحقق"
+      },
+      "progress": "{{completed}}/{{total}}",
+      "failed": "فشل الجلب: {{message}}"
     }
   },
   "sanadSetup": {

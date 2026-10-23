@@ -19,9 +19,35 @@ import {
   assertMaktabPdfBuffer,
   clampMaktabDpi
 } from './maktab/pdf-buffer-sanitize'
+import {
+  fetchIndraRuntimeOnce,
+  getIndraRuntimeStatus,
+  resolveIndraRuntimeDirectory
+} from './maktab/indra-runtime'
+import {
+  INDRA_RUNTIME_FETCH_CHANNEL,
+  INDRA_RUNTIME_PROGRESS_CHANNEL,
+  INDRA_RUNTIME_STATUS_CHANNEL
+} from '../shared/indra-runtime'
 import { MAKTAB_OCR_PROGRESS_CHANNEL } from '../shared/maktab-ocr-progress'
 
 const ALLOWED_LANGS = new Set<MaktabLanguage>(['eng', 'fra', 'ara'])
+
+function resolveIndraDirectoryFromApp(): string {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { app } = require('electron') as typeof import('electron')
+    return resolveIndraRuntimeDirectory({
+      userDataPath: app.getPath('userData'),
+      envDir: process.env.NASSILA_INDRA_DIR
+    })
+  } catch {
+    return resolveIndraRuntimeDirectory({
+      userDataPath: process.cwd(),
+      envDir: process.env.NASSILA_INDRA_DIR
+    })
+  }
+}
 
 function resolvePdfInspectorModelDirectoryFromApp(): string | undefined {
   try {
@@ -54,6 +80,22 @@ export function registerMaktabIpcHandlers(): void {
   ipcMain.handle('maktab:ocrAvailable', async () => isTesseractOcrAvailable())
 
   ipcMain.handle('maktab:arabicOcrAvailable', async () => isArabicPaddleOcrAvailable())
+
+  // Optional Indra candidate runtime: fetched on first use, never bundled.
+  ipcMain.handle(INDRA_RUNTIME_STATUS_CHANNEL, async () =>
+    getIndraRuntimeStatus(resolveIndraDirectoryFromApp())
+  )
+
+  ipcMain.handle(INDRA_RUNTIME_FETCH_CHANNEL, async (event) => {
+    const directory = resolveIndraDirectoryFromApp()
+    return fetchIndraRuntimeOnce(directory, {
+      onProgress: (progress) => {
+        if (!event.sender.isDestroyed()) {
+          event.sender.send(INDRA_RUNTIME_PROGRESS_CHANNEL, progress)
+        }
+      }
+    })
+  })
 
   ipcMain.handle('maktab:nativeAvailable', async () => isNativePdfInspectorAvailable())
 

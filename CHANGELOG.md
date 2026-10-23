@@ -4,6 +4,11 @@ All notable changes to **Nassila** are documented here.
 
 ## [Unreleased]
 
+### Added
+
+- **Optional Indra OCR runtime, fetched on first use.** Settings → Local models → *Arabic OCR candidate (Indra)* downloads the 17 Indra model files (~92 MB) to `userData/indra-ocr` and provisions a pinned `indra-ocr==1.1.2` environment (`uv` preferred, `pip` fallback), with progress on `maktab:indraFetchProgress` and status on `maktab:indraStatus`. The weights are a modified OpenRAIL-M license: they are **fetched, never bundled or redistributed** (see `resources/indra-ocr/README.md`). The runtime is not yet wired into `extractFromPdf` — Arabic extraction still uses PP-OCRv5.
+- **Arabic OCR evaluation harness in-repo.** `npm run eval:ocr:arabic -- all --corpus <dir>` selects gold pages from clean Arabic text layers, rasterizes scan pages, runs PP-OCRv5 and the fetched Indra runtime on the same images, and writes a CER / 6-gram report. Operator setup: `npm run ocr:indra-fetch`. Harness guide: `scripts/eval-arabic-ocr/README.md`; evidence: `reports/arabic_ocr_real_holdout_20261023.md`.
+
 ### Fixed
 
 - **Arabic OCR line order** — `logicalOrderArabicOcrText` reversed the whole page string. PP-OCR emits each line in visual order but the lines themselves top-to-bottom, so the whole-string reversal restored characters while flipping the order of lines. It now reverses per line; measured on real Arabic book pages against the PDF text layer (normalized CER): **0.037 per-line** vs 0.76 whole-string. Mixed AR/Latin line handling is unchanged.

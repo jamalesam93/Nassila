@@ -162,6 +162,25 @@
       "clearCache": "Clear extraction cache",
       "clearing": "Clearing…",
       "cacheCleared": "Extraction cache cleared."
+    },
+    "indra": {
+      "title": "Arabic OCR candidate (Indra)",
+      "subtitle": "Fetched on first use — never bundled with the app. Used by the OCR evaluation harness.",
+      "statusReady": "Ready · {{version}} · {{size}}",
+      "statusMissing": "Not installed",
+      "statusChecking": "Checking…",
+      "fetch": "Fetch runtime",
+      "fetching": "Fetching…",
+      "license": "Model weights use a modified OpenRAIL-M license — fetched on demand, not redistributed with the app.",
+      "directory": "Installed in {{dir}}",
+      "phase": {
+        "models": "Downloading models",
+        "venv": "Creating Python environment",
+        "package": "Installing indra-ocr",
+        "verify": "Verifying"
+      },
+      "progress": "{{completed}}/{{total}}",
+      "failed": "Fetch failed: {{message}}"
     }
   },
   "sanadSetup": {
@@ -948,7 +967,7 @@
     "exportDiagnostic": "Export diagnostic bundle…",
     "diagnosticExported": "Diagnostic bundle saved",
     "mappingCoverage": "Citation mapping coverage: {{percent}}%",
-  "mappingBreakdown": "Matched {{matched}} · ambiguous {{ambiguous}} · unmatched {{unmatched}}",
+    "mappingBreakdown": "Matched {{matched}} · ambiguous {{ambiguous}} · unmatched {{unmatched}}",
     "dedupeSummary": "Duplicate references merged: {{merged}} · ambiguous pairs kept separate: {{ambiguous}}",
     "exportSubmissionBundle": "Export submission integrity bundle…",
     "submissionBundleExported": "Submission integrity bundle saved"

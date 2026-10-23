@@ -87,6 +87,8 @@ Cited **local PDF attach** is available for cited sources in the manuscript loop
 
 For scanned **Latin** PDFs, turn on **Enhanced OCR** in Settings (offline **eng/fra** packs). For **Arabic** manuscripts, import **DOCX** when the PDF text looks reversed or garbled.
 
+**Arabic OCR candidate (optional).** Settings → Local models → **Arabic OCR candidate (Indra)** fetches the Indra runtime on first use: about 92 MB of model files into your user-data folder plus a local Python environment (it uses `uv` when installed, otherwise Python 3.10+). Nothing is bundled with the app, and the model weights stay under their own OpenRAIL-M license. This runtime is currently used for OCR evaluation, not by the import pipeline — Arabic PDFs still go through the packaged PP-OCRv5 recognizer.
+
 ## L1 and L2 (bibliography mode)
 
 - **L1 (registry resolution)** — Whether the app could anchor the reference to a trusted catalog entry (DOI/PMID resolution, OpenAlex match, or explicit “grey / insufficient” outcomes).

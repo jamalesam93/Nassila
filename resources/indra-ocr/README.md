@@ -37,11 +37,27 @@ app itself does not depend on this folder.
 ## Commands
 
 ```bash
-npm run ocr:indra-fetch                 # idempotent; --force to redo
+npm run ocr:indra-fetch                 # operator CLI; idempotent, --force to redo
 node scripts/fetch-indra-ocr.mjs --force
 ```
 
 Environment overrides:
 
-- `NASSILA_INDRA_DIR` — destination (default `resources/indra-ocr`)
+- `NASSILA_INDRA_DIR` — destination (default for the CLI: `resources/indra-ocr`)
 - `INDRA_OCR_MODEL_DIR` — used by the harness to point at `models/`
+
+## In the app (first run)
+
+`Settings → Local models → Arabic OCR candidate (Indra)` triggers the same
+fetch from the main process:
+
+- destination: `userData/indra-ocr` (or `NASSILA_INDRA_DIR`), never the
+  installer directory;
+- `maktab:indraStatus` — readiness, model size, package version, license;
+- `maktab:indraFetch` — downloads the 17 files and provisions the pinned
+  `indra-ocr==1.1.2` environment (`uv` preferred, `pip` fallback);
+- `maktab:indraFetchProgress` — phase/count stream for the settings card.
+
+The runtime does **not** feed `extractFromPdf` yet; Arabic extraction still
+uses PP-OCRv5. It exists for the evaluation harness and the planned Tauri 2
+port, where `det.onnx` + `rec_rtl.onnx` move to `onnxruntime-node`.

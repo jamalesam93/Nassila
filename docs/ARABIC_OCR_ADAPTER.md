@@ -44,6 +44,15 @@ Evaluate in this order; record in `reports/arabic_ocr_benchmark_YYYYMMDD.md`:
 
 **Do not assume** Arabic weights drop into pdf-inspector's fixed PP-OCRv6 Latin model directory — pack under `resources/arabic-ocr/` and run behind `ArabicRecognizerAdapter`.
 
+### Indra OCR (evaluated, fetched on demand, not shipped in extraction)
+
+Indra (`datalab-to/indra-ocr`, ONNX CPU, 80+ languages including `rec_rtl`) is the leading candidate from the 2026-10 evaluation: on 84 reference-valid pages it beat PP-OCRv5 (median CER 0.067 vs 0.120) at ~8× speed, but it has a heavier tail (dark/designed pages, historical handwriting fails on both) and a modified OpenRAIL-M license.
+
+- **App wiring:** Settings → Local models → **Arabic OCR candidate (Indra)** (`maktab:indraFetch`, `maktab:indraStatus`, progress on `maktab:indraFetchProgress`). It fetches 17 model files (~92 MB) to `userData/indra-ocr` and provisions `indra-ocr==1.1.2`; nothing is bundled. Operator equivalent: `npm run ocr:indra-fetch`.
+- **Not wired into `extractFromPdf`.** Arabic extraction remains PP-OCRv5 until the router + plausibility guards and the Tauri 2 ONNX port land.
+- **Harness:** `npm run eval:ocr:arabic -- all --corpus <dir>` scores both engines on the same rasters; see [`scripts/eval-arabic-ocr/README.md`](../scripts/eval-arabic-ocr/README.md).
+- **Evidence:** [`reports/arabic_ocr_real_holdout_20261023.md`](../reports/arabic_ocr_real_holdout_20261023.md).
+
 ---
 
 ## Golden fixture tiers

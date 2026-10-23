@@ -78,7 +78,8 @@ describe('IPC policy table', () => {
       expect(entry.channel).toMatch(/^[a-zA-Z][a-zA-Z0-9]*:[a-zA-Z0-9_-]+$/)
       expect(['renderer-to-main', 'main-to-renderer']).toContain(entry.direction)
       expect([
-        'none', 'registry', 'oa_fetch', 'llm', 'predatory_sync', 'probe', 'composite_audit'
+        'none', 'registry', 'oa_fetch', 'llm', 'predatory_sync', 'probe', 'composite_audit',
+        'indra_fetch'
       ]).toContain(entry.networkScope)
       expect(['sanitized', 'typed', 'none']).toContain(entry.input)
       expect(entry.notes.trim().length).toBeGreaterThan(0)

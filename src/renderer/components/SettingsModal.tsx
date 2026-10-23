@@ -6,6 +6,7 @@ import { Tabs } from './ui/tabs'
 import PredatoryListSettings from './settings/PredatoryListSettings'
 import NotificationSettings from './settings/NotificationSettings'
 import LocalModelsSettings from './settings/LocalModelsSettings'
+import IndraRuntimeSettings from './settings/IndraRuntimeSettings'
 import SourceFetchSettings from './settings/SourceFetchSettings'
 import StorageSettings from './settings/StorageSettings'
 import { useShellStore } from '../stores/shell-store'
@@ -63,7 +64,12 @@ export default function SettingsModal() {
               <StorageSettings />
             </div>
           ) : null}
-          {tab === 'localModels' ? <LocalModelsSettings /> : null}
+          {tab === 'localModels' ? (
+            <div className="space-y-6">
+              <LocalModelsSettings />
+              <IndraRuntimeSettings />
+            </div>
+          ) : null}
         </div>
 
         <div className="mt-6 flex justify-end gap-2 rtl:flex-row-reverse">

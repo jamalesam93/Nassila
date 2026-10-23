@@ -8,6 +8,12 @@
  * ship without a policy entry.
  */
 
+import {
+  INDRA_RUNTIME_FETCH_CHANNEL,
+  INDRA_RUNTIME_PROGRESS_CHANNEL,
+  INDRA_RUNTIME_STATUS_CHANNEL
+} from './indra-runtime'
+
 export type IpcPolicyDirection = 'renderer-to-main' | 'main-to-renderer'
 
 export type IpcPolicyNetworkScope =
@@ -18,6 +24,7 @@ export type IpcPolicyNetworkScope =
   | 'predatory_sync'
   | 'probe'
   | 'composite_audit'
+  | 'indra_fetch'
 
 export type IpcPolicyInput =
   | 'sanitized'
@@ -92,6 +99,8 @@ export const IPC_POLICY: readonly IpcPolicyEntry[] = [
   { channel: 'maktab:nativeExtract', direction: 'renderer-to-main', handler: 'ipc-maktab.ts', networkScope: 'none', input: 'sanitized', notes: 'buffer size cap; offline processPdfWithOcr Auto' },
   { channel: 'maktab:extractionCacheInfo', direction: 'renderer-to-main', handler: 'ipc-handlers.ts', networkScope: 'none', input: 'none', notes: 'no renderer input; counts sha256.json in userData/source-artifacts' },
   { channel: 'maktab:clearExtractionCache', direction: 'renderer-to-main', handler: 'ipc-handlers.ts', networkScope: 'none', input: 'none', notes: 'no renderer input; deletes only pinned cache files (SEC-01)' },
+  { channel: INDRA_RUNTIME_STATUS_CHANNEL, direction: 'renderer-to-main', handler: 'ipc-maktab.ts', networkScope: 'none', input: 'none', notes: 'no renderer input; reads userData/indra-ocr marker + model sizes' },
+  { channel: INDRA_RUNTIME_FETCH_CHANNEL, direction: 'renderer-to-main', handler: 'ipc-maktab.ts', networkScope: 'indra_fetch', input: 'none', notes: 'no renderer input; fixed Hugging Face repo + fixed destination dir; spawns uv/pip (SEC-01)' },
 
   // ── Secrets / LLM (main-process only) ─────────────────────────────────────
   { channel: 'secrets:isEncryptionAvailable', direction: 'renderer-to-main', handler: 'ipc-llm.ts', networkScope: 'none', input: 'none', notes: 'no renderer input' },
@@ -124,5 +133,6 @@ export const IPC_POLICY: readonly IpcPolicyEntry[] = [
   { channel: 'app:close-requested', direction: 'main-to-renderer', handler: 'app-close-guard.ts', networkScope: 'none', input: 'none', notes: 'window close intercepted; renderer decides based on session dirty state' },
   { channel: 'menu:command', direction: 'main-to-renderer', handler: 'app-menu.ts', networkScope: 'none', input: 'none', notes: 'menu action dispatch' },
   { channel: 'maktab:ocrProgress', direction: 'main-to-renderer', handler: 'ipc-maktab.ts', networkScope: 'none', input: 'none', notes: 'OCR progress push' },
+  { channel: INDRA_RUNTIME_PROGRESS_CHANNEL, direction: 'main-to-renderer', handler: 'ipc-maktab.ts', networkScope: 'none', input: 'none', notes: 'Indra runtime fetch progress push' },
   { channel: 'manuscriptAudit:progress', direction: 'main-to-renderer', handler: 'ipc-manuscript-audit.ts', networkScope: 'none', input: 'none', notes: 'audit run progress push' }
 ]

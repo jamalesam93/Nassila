@@ -1,6 +1,6 @@
 # Features & Tweaks — Nassila app
 
-**Status:** 2026-09-18 — **2.1.0 Maktab Arabic shipped**; next cut **2.2.0 Sanad Arabic** (FT-7) paused for budget. Companion to NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) and the [website docs](https://nassila-web.vercel.app/en/docs/sanad-setup) (now canonical). Scope is the **desktop app** ([Nassila](https://github.com/jamalesam93/Nassila)). Items are grouped by priority and each has an effort, a blast radius, and acceptance checks so they can be picked off independently.
+**Status:** 2026-10-16 — **2.1.0 Maktab Arabic shipped**; next cut **2.2.0 Sanad Arabic** **NO-GO** (FT-7 2026-10-14; FT-7b 2026-10-16 — Arabic gate 0.776 vs 0.90; FT-7c next). Companion to NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) and the [website docs](https://nassila-web.vercel.app/en/docs/sanad-setup) (now canonical). Scope is the **desktop app** ([Nassila](https://github.com/jamalesam93/Nassila)). Items are grouped by priority and each has an effort, a blast radius, and acceptance checks so they can be picked off independently.
 
 > **Version streams:** App releases (**Nassila 2.1.0** shipped; next planned cut **2.2.0 Sanad Arabic** paused) and Sanad checkpoints **SNN** / **FT-N** (**9B FT-6/v119** sole published Hub tier until FT-7 GO; 4B S15 / 12B S14 retired) are independent — see NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) § App release train.
 
@@ -448,11 +448,15 @@ These were identified in the cross-repo review and confirmed by the 2026-06-28 s
 
 **Shahid evidence** (per claim/cite site): claim ↔ cite-site linkage; table or figure region; page; caption/cell evidence; extraction method; confidence; review state (`supported` evidence / `needs-review` / abstain). Failure → honest **unsupported** / **needs-review**; never auto-accept or fake progress.
 
-#### Performance / package budgets (frozen 2026-09-06 for 2.0.0 GO)
+#### Performance / package budgets (2.0.0 frozen 2026-09-06; 2.1.0 measured, not yet frozen)
 
 | Budget | Measured Value |
 |--------|----------------|
 | Installer size (2.0.0 NSIS) | **~158.97 MB** (166,696,244 bytes, SHA256: `A51F2AC122D663598425C04610A67AB6BB1570BCDA3836A2873B4C184FC0CF58`); baseline 1.10.1 was 166,692,148 bytes |
+| Installer size (**2.1.0** NSIS, **before** the native/packaging prune) | **~250.9 MB** — `dist/Nassila.Setup.2.1.0.exe`, the shipped 2.1.0 artifact (2026-09-18). Retained for comparison. |
+| Installer size (**2.1.0** NSIS, **after** the native/packaging prune) | **191.68 MB** (200,990,780 bytes, SHA256: `D9BFA845C10B50002328A93040DD98AD06CACC569321227475AF2645326DC307`) — **−59.2 MB / −23.6%**. Local verification build (`--prepackaged dist/win-unpacked`, artifact `Nassila Setup 2.1.0.exe`); re-cut and re-record at the next real release. The unpacked drop (−255 MB) compresses to a smaller installer drop because the pruned `onnxruntime-node` slices are near-duplicate DLLs. |
+| Unpacked footprint (**2.1.0**, `dist/win-unpacked`) | **718.8 MB** after the native/packaging prune (was **973.8 MB**). Chromium runtime ~345 MB; `resources/app.asar` 167.0 MB; `resources/app.asar.unpacked` **189.7 MB**. |
+| Native/packaging prune (2.1.0 tree) | **−255.0 MB** unpacked. `onnxruntime-node` shipped all five prebuilt slices (~282 MB) while a Windows x64 build can only load `win32/x64` (63.2 MB) → **−219 MB**, pruned in `beforePack`/`afterPack` via `scripts/prune-native-platforms.mjs`. Script-only `canvas` moved to `devDependencies` (`tests/smoke/setup-pdfjs-node.ts` only) → **−35 MB**. `@napi-rs/canvas` stays — pdf.js requires it at runtime. **Do not** re-implement the slice prune as a `win.files` negation: that leaves electron-builder's `defaultMatcher` holding only ignore patterns, trips `containsOnlyIgnore()` in `app-builder-lib/out/fileMatcher.js`, and prepends a match-everything glob that packs the entire repository (+174.6 MB) into `app.asar`. |
 | Unpacked executable (`Nassila.exe`) | **~213.73 MB** (224,107,520 bytes) |
 | Main app archive (`app.asar`) | **~153.42 MB** (160,874,594 bytes) |
 | Bundled Tesseract langpacks (`eng` + `fra`) | **5.00 MB** (5,243,453 bytes) under `resources/tesseract/` |
@@ -544,7 +548,7 @@ The HF model cards already publish `89.27% / 92.98% / 3.81%` (E4B) and `90.43% /
 ## Explicitly out of scope (research tracks — not small)
 
 Do not pull these into a tweak batch outside the **2.0.0 freeze contract** (`#22`):
-- **MaktabOCR + Shahid** beyond the locked 2.0 slice (full multimodal → **4.0.0**; custom OCR train) — see NassilaT `PHASE3_TIER3_GROUNDWORK.md`.
+- **MaktabOCR + Shahid** beyond the locked 2.0 slice (full multimodal → **4.2.0**; custom OCR train) — see NassilaT `PHASE3_TIER3_GROUNDWORK.md`.
 - **Institutional login webview** — **5.0.0** last resort; library proxy prefixes → **2.3.0**. Needs SEC-06 security review.
 - **Merged Ouroboros GGUF** (`nassila-agent-e12b-v1`) — **5.0.0 non-goal**; routed pack instead.
 - **Maktab M01 / Masdar Md01** — gated; train only if deterministic ingest fails.
@@ -573,7 +577,7 @@ Do not pull these into a tweak batch outside the **2.0.0 freeze contract** (`#22
 16. **P1 #21 → 1.10.1 Packaged network parity** — Keep-my-title / DOI lookup / autocorrect online / input-Resolve through main IPC + renderer network-boundary guard. ✅ **Shipped 2026-08-23.**
 17. **P1 #22 → 2.0.0 MaktabOCR + Shahid** — Firecrawl native pdf-inspector + pretrained Arabic adapter; Shahid table/figure evidence; Tier 3 + multimodal gates (see #22 freeze contract). ✅ **Shipped 2026-09-06** — installer `Nassila Setup 2.0.0.exe`.
 18. **P0 #23 → 2.1.0 Maktab Arabic** — production Maktab AR OCR + Arabic-aware mapping (see #23). ✅ **Shipped 2026-09-18.**
-19. **P0 #24 → 2.2.0 Sanad Arabic** — Sanad FT-7 (see #24). **Paused (budget).** Data frozen.
+19. **P0 #24 → 2.2.0 Sanad Arabic** — Sanad FT-7 (see #24). FT-7 **NO-GO 2026-10-14**; FT-7b **NO-GO 2026-10-16**; FT-7c train-data fixes next.
 
 **Red-line check before each merge:** no training/corpus/eval content surfaces in app UI or copy (see top of file).
 
@@ -599,9 +603,9 @@ Do not pull these into a tweak batch outside the **2.0.0 freeze contract** (`#22
 
 **Problem.** Sanad train JSONL has ~zero Arabic rows in published FT-6. UI AR ≠ model AR.
 
-**Ship rule:** Do not bump to 2.2.0, publish FT-7 Hub sole-tier, or claim Arabic L3 until Track B GO. **Paused for budget.** No laptop 9B QLoRA substitute. **Sanad languages:** English and Arabic **only** — do not add French (or any third language) as a train track, eval gate, or later cut.
+**Ship rule:** Do not bump to 2.2.0, publish FT-7 Hub sole-tier, or claim Arabic L3 until Track B GO. FT-7 **NO-GO 2026-10-14** (invalid AR holdout); FT-7b **NO-GO 2026-10-16** (AR verdict 0.776 vs 0.90; EN v2 0.945 vs 0.950) — see NassilaT `EVAL_GONOGO_FT7_MEMO.md` §8. Next: FT-7c train-data fixes, same gates. No laptop 9B QLoRA substitute. **Sanad languages:** English and Arabic **only** — do not add French (or any third language) as a train track, eval gate, or later cut.
 
-**Track B — Sanad:** `FT7_ARABIC_PLAN.md`; v120 already merged (1719 EN + 240 AR); `eval_holdout_grounding_ar_v1.jsonl` (56 rows) frozen; contamination 0. Remaining: Vast QLoRA + 3-seed EN + AR.
+**Track B — Sanad:** `FT7_ARABIC_PLAN.md`; FT-7b train v121 (1,719 EN + 953 AR) and owner-reviewed `eval_holdout_grounding_ar_v2.jsonl` (165 rows) frozen in `reports/ft7b_freeze_manifest.json`; contamination 0. Remaining: FT-7c train-data fixes + one Vast run.
 
 **Acceptance.**
 - [ ] FT-7 AR + EN gates PASS; contamination 0
@@ -610,3 +614,24 @@ Do not pull these into a tweak batch outside the **2.0.0 freeze contract** (`#22
 - [ ] Cross-repo docs agree
 
 **Index:** NassilaT `2.1_2.2_ARABIC_OPERATOR_INDEX.md`.
+
+### 25. 2.1.x — Indra OCR candidate runtime (fetched, evaluated)
+
+**Problem.** The 2026-10 Arabic evaluation found Indra better than PP-OCRv5 on typical pages (median CER 0.067 vs 0.120, ~8× faster) but with a heavier tail (dark/designed pages) and a modified OpenRAIL-M weight license. It must not be bundled, and it is not yet an extraction backend.
+
+**Ship rule.** Fetch on first use, never in the installer; keep the extraction path on PP-OCRv5 until the router + plausibility guards and the Tauri 2 ONNX port land.
+
+**What shipped.**
+- `src/main/maktab/indra-runtime.ts` — fetch 17 model files (~92 MB) to `userData/indra-ocr`, provision pinned `indra-ocr==1.1.2` (`uv` preferred, `pip` fallback), marker + checksums.
+- IPC `maktab:indraStatus` / `maktab:indraFetch` / `maktab:indraFetchProgress` (policy row, network scope `indra_fetch`, no renderer input).
+- Settings → Local models → **Arabic OCR candidate (Indra)** card with status, size, version, progress, errors.
+- Operator CLI `npm run ocr:indra-fetch`; harness `npm run eval:ocr:arabic`.
+
+**Acceptance.**
+- [x] Runtime fetch works from the app and the CLI; destination is userData (or `NASSILA_INDRA_DIR`), never the install dir
+- [x] Weights and environment are gitignored and absent from the installer
+- [x] Status/progress/IPC covered by unit tests; policy audit green
+- [x] `extractFromPdf` unchanged (Arabic still PP-OCRv5)
+- [ ] Router (ink/contrast) + Tauri 2 ONNX port — future cut
+
+**References:** `resources/indra-ocr/README.md`, `scripts/eval-arabic-ocr/README.md`, `reports/arabic_ocr_real_holdout_20261023.md`.

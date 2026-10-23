@@ -48,6 +48,8 @@ Operator map: NassilaT [`training/OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/tra
 - `documentInfo` (title/author/subject/creator/creationDate/modDate) rides on the extraction result for future Raqim/Masdar matching — **no behavior change yet**.
 - The 2% gates are provisional; recalibrate against real files before locking them.
 
+**Indra candidate runtime (fetched on first use).** The optional Indra OCR recognizer is **not bundled** — its weights use a modified OpenRAIL-M license. **Settings → Local models → Arabic OCR candidate (Indra)** runs `maktab:indraFetch`, which downloads the 17 model files (~92 MB) to `userData/indra-ocr` and provisions a pinned `indra-ocr==1.1.2` Python env (`uv` preferred, `pip` fallback). Progress streams on `maktab:indraFetchProgress`; `maktab:indraStatus` reports readiness, size and version. It does **not** feed `extractFromPdf` yet: Arabic extraction still uses PP-OCRv5, and the runtime exists for the evaluation harness (`scripts/eval-arabic-ocr.mjs`) and the planned Tauri 2 port. Distribution obligations: [`resources/indra-ocr/README.md`](../resources/indra-ocr/README.md).
+
 **Mode** (`MaktabExtractionOptions.mode`):
 
 - `auto` (default) — try tier A (native → WASM → pdf.js); escalate to B when A fails or warns “very little text” **and** the document is not Arabic-deferred
@@ -75,7 +77,9 @@ OCR language packs for Tesseract are **`eng`/`fra` only**. Soft page budget for 
 | [`src/engine/manuscript/pdf-inspector-extract.ts`](../src/engine/manuscript/pdf-inspector-extract.ts) | Tier A1 WASM (`@firecrawl/pdf-inspector-wasm@0.1.3`) |
 | [`src/engine/manuscript/pdf-extract.ts`](../src/engine/manuscript/pdf-extract.ts) | Tier A orchestrator (native → WASM → pdf.js) |
 | [`src/main/maktab/native-pdf-inspector.ts`](../src/main/maktab/native-pdf-inspector.ts) | Model-dir resolution + main backend registration |
-| IPC | `maktab:nativeAvailable`, `maktab:nativeClassify`, `maktab:nativeExtract` (+ existing Tesseract channels) |
+| [`src/main/maktab/indra-runtime.ts`](../src/main/maktab/indra-runtime.ts) | First-run Indra runtime: fetch models + provision Python env (not used by extraction) |
+| [`src/renderer/components/settings/IndraRuntimeSettings.tsx`](../src/renderer/components/settings/IndraRuntimeSettings.tsx) | Settings → Local models card: status, fetch button, progress |
+| IPC | `maktab:nativeAvailable`, `maktab:nativeClassify`, `maktab:nativeExtract` (+ existing Tesseract channels); `maktab:indraStatus`, `maktab:indraFetch`, `maktab:indraFetchProgress` |
 
 DOCX ingest: mammoth Route C default; `engine: 'anydoc'` for optional native comparison only.
 
@@ -221,6 +225,7 @@ Per-page OCR cache (`sha256 + page + dpi + lang pack`) stays **deferred**
 | **1.3.1** | Arabic Tesseract **deferred** — `ara` pack removed; Arabic PDFs prefer DOCX |
 | **1.6.0** | OCR golden fixtures + CI probe; cache controls; needsReview banner |
 | **2.0.0** | **MaktabOCR + Shahid** — Firecrawl native pdf-inspector + pretrained Arabic adapter (replaces deferred Tesseract `ara`) + table/figure evidence path (gated on Tier 3 + multimodal eval). **Scaffolding in-tree before the 2.0.0 version bump**; Shahid UI did **not** ship in 1.8.0. |
+| **2.1.x** | Native tier on pdf-inspector 1.25.2 (Arabic layer fixes, text-layer signals); per-line Arabic ordering; legacy-encoding guard; **Indra candidate runtime fetched on first use** + in-repo OCR harness. Extraction path unchanged (PP-OCRv5). |
 | **Tier 3** | Maktab LLM `doc_extract` facet + full-text eval corpus (M01 — only if deterministic baseline fails) |
 
 ---
