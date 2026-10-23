@@ -287,6 +287,19 @@ export function foldArabicOrthography(text: string): string {
     .replace(/[\u06f0-\u06f9]/g, (d) => String(d.charCodeAt(0) - 0x06f0))
 }
 
+/**
+ * Strip leading/trailing whitespace and boundary punctuation from a quote.
+ * Models often end a span with `.` where the excerpt has `،` (or vice versa).
+ * MUST stay in lockstep with NassilaT
+ * `training/scripts/validate_dataset.py :: strip_edge_punctuation`.
+ */
+export function stripEdgePunctuationForQuoteMatch(text: string): string {
+  return text.replace(
+    /^[\s.,;:!?،؛؟"'()[\]«»\u201c\u201d\u2018\u2019\-–—…]+|[\s.,;:!?،؛؟"'()[\]«»\u201c\u201d\u2018\u2019\-–—…]+$/gu,
+    ''
+  )
+}
+
 /** True when quote appears verbatim in excerpt (raw, whitespace-, extraction-, or Arabic-normalized). */
 export function isVerbatimQuoteSubstring(quote: string, excerpt: string): boolean {
   if (!quote.trim()) return false
@@ -294,9 +307,15 @@ export function isVerbatimQuoteSubstring(quote: string, excerpt: string): boolea
   const nq = normalizeWhitespaceForQuoteMatch(quote)
   const ne = normalizeWhitespaceForQuoteMatch(excerpt)
   if (nq.length > 0 && ne.includes(nq)) return true
+  const nqEdge = stripEdgePunctuationForQuoteMatch(nq)
+  const neEdge = stripEdgePunctuationForQuoteMatch(ne)
+  if (nqEdge.length > 0 && (ne.includes(nqEdge) || neEdge.includes(nqEdge))) return true
   const eq = foldArabicOrthography(normalizeForQuoteMatch(quote))
   const ee = foldArabicOrthography(normalizeForQuoteMatch(excerpt))
-  return eq.length > 0 && ee.includes(eq)
+  if (eq.length > 0 && ee.includes(eq)) return true
+  const eqEdge = stripEdgePunctuationForQuoteMatch(eq)
+  const eeEdge = stripEdgePunctuationForQuoteMatch(ee)
+  return eqEdge.length > 0 && (ee.includes(eqEdge) || eeEdge.includes(eqEdge))
 }
 
 /**

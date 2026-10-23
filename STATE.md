@@ -1,6 +1,6 @@
 # Ouroboros loop state
 
-**Last updated:** 2026-09-18  
+**Last updated:** 2026-10-23  
 **Operator:** Nassila maintainer
 
 Read this at the start of every agent session. Update when focus, blockers, or ship gates change.
@@ -11,8 +11,9 @@ Read this at the start of every agent session. Update when focus, blockers, or s
 
 | Priority | Track | Status |
 |----------|-------|--------|
+| **P0** | **2.1.1 Arabic OCR fidelity** | **Shipped 2026-10-23** — per-line Arabic OCR reversal, legacy-encoded layers routed to OCR, pdf-inspector 1.25.2, optional Indra fetch. **PP-OCRv5 remains the extractor.** Indra is not wired into `extractFromPdf`. |
 | **P0** | **2.1.0 Maktab Arabic** | **Shipped 2026-09-18** — Track A production Maktab Arabic OCR (Paddle PP-OCRv5) **+** Track C Arabic-aware mapping. No GPU. Do not claim Arabic L3. |
-| **P0** | **2.2.0 Sanad Arabic** | **Paused (budget)** — Track B FT-7; v120 + AR holdout **frozen**; Vast QLoRA when cash returns. |
+| **P0** | **2.2.0 Sanad Arabic** | **Paused (budget) 2026-10-23.** FT-7 **NO-GO** 2026-10-14. FT-7b **NO-GO** 2026-10-16 — AR verdict 0.776 (bar 0.90), EN v2 0.945 (bar 0.950). FT-7c v122 stays **frozen** and is **not** to be trained. Vast is the only ground when cash returns. No Colab. |
 | **P0** | **2.0.0 MaktabOCR + Shahid** | **Shipped 2026-09-06** — native pdf-inspector + selective OCR; Shahid table/figure **deterministic** live; Tier 3 GO. Arabic adapter goldens PASS; **Track A runner landed in tree** (pack via `npm run ocr:arabic-adapter`). |
 | **P0** | **1.10.1 Packaged network parity** | **Shipped 2026-08-23** — `FEATURES-AND-TWEAKS.md` #21: Keep-my-title/DOI-lookup/autocorrect-online/input-Resolve routed through main IPC; renderer network-boundary guard; predatory "Update list" failure toast |
 | **P0** | **1.10.0 Masdar Papers** | **Shipped 2026-08-22** — installer `Nassila Setup 1.10.0.exe`; Wayback gating; papers dedupe + folder-scan attach; Raqim Resolve fixes |
@@ -22,11 +23,11 @@ Read this at the start of every agent session. Update when focus, blockers, or s
 | **P1** | Infrastructure hygiene | Windows CI packaging job, dead-code cleanup, agent rule refresh |
 | **P1∥** | NassilaT corpus / eval | Tier 3 gates completed; Docling clean holdout 419 claims / 175 DOIs; retrieval 100/100 DOIs; E2E 32 manuscripts; Shahid multimodal 150 pilot + 210 holdout; Sanad Hub = **9B FT-6** (`nassila-sanad-9b` v119) |
 
-**Latest app:** **2.1.0** (Maktab Arabic) — shipped 2026-09-18. **Next:** **2.2.0 Sanad Arabic** (FT-7) paused.
+**Latest app:** **2.1.1** (Arabic OCR fidelity) — shipped 2026-10-23. Production Arabic scan OCR is still Paddle PP-OCRv5 (2.1.0). **Next planned:** **2.2.0 Sanad Arabic**, paused for budget. Do not start FT-7c.
 
 **2.0.0 gate (2026-09-06):** **GO** — NassilaT `training/EVAL_GONOGO_TIER3_MEMO.md`. All hard gates satisfied across all 6 tracks. Release cut approved.
 
-**Honesty (2026-09-18):** **2.1.0 shipped.** Production Arabic scan OCR via PP-OCRv5 when the pack is present; reverse-font still DOCX. Arabic L3 remains unvalidated until **2.2.0 / FT-7**. **Sanad trains English + Arabic only** — do not add French (or any third language) as a gate or prospective cut.
+**Honesty (2026-10-23):** **2.1.1 shipped.** Production Arabic scan OCR is still PP-OCRv5 (2.1.0). 2.1.1 fixes line order, flags legacy-encoded Arabic layers, and can fetch Indra without using it for extraction. Reverse-font still prefers DOCX. Arabic L3 remains unvalidated until **2.2.0 / FT-7**, which is **paused for budget**. **Sanad trains English and Arabic only** — do not add French (or any third language) as a gate or prospective cut.
 
 **IA:** Manuscript loop vs Bibliography only — old seven-worker navigation is gone.
 
@@ -135,17 +136,19 @@ Committed and verified in the 2.0.0 release:
 
 ## Blockers
 
+- **2.1.1 Arabic OCR fidelity:** **SHIPPED 2026-10-23** — line order, legacy-encoded routing, pdf-inspector 1.25.2, optional Indra fetch. Extractor is still PP-OCRv5.
 - **2.1.0 Maktab Arabic (Tracks A+C):** **SHIPPED 2026-09-18** — Paddle pack + IPC `ara` + mapping fixtures; reverse-font still DOCX; `probe:arabic-ocr` PASS. Arabic L3 unvalidated.
-- **2.2.0 Sanad Arabic (Track B):** **Paused (budget).** Data frozen (v120, 56 AR holdout, contamination 0). Arabic L3 unvalidated until Vast FT-7 GO. UI AR ≠ model AR.
+- **2.2.0 Sanad Arabic (Track B):** **Paused for budget (2026-10-23).** FT-7 NO-GO 2026-10-14. FT-7b NO-GO 2026-10-16 — Arabic compounds never split, `weak` confused with insufficient, quotes copy paraphrase wording; EN v2 0.945 vs 0.950. FT-7c v122 is frozen and must not be trained. Quants withheld; v119 / v120 / v121 LoRA repos public, v120 and v121 cards marked NO-GO. UI AR ≠ model AR until GO. Vast is the only ground when cash returns.
 - DOCX remains a supported Arabic ingest path; scanned Arabic PDF uses Paddle when the pack is present.
 
 ---
 
 ## Next actions (ordered)
 
-0. **2.2.0 Track B (paused):** Vast FT-7 when budget returns; sign `EVAL_GONOGO_FT7_MEMO.md`; Hub FT-7. No laptop substitute.
-0b. Cut GitHub **v2.1.0** + installer `Nassila Setup 2.1.0.exe` if not yet attached.
+0. **2.2.0 Track B (paused for budget):** Do not start FT-7c. v122 stays frozen (`NassilaT/training/FT7C_VAST_RUN.md`). When cash returns, Vast is the only ground: a fresh LoRA from the base model, same gates and holdouts. No Colab. Sign GO only when every gate passes.
+0b. Cut GitHub **v2.1.1** + installer `Nassila Setup 2.1.1.exe` when publishing this patch. v2.1.0 remains the previous installer.
 1. Fix agent infrastructure: refresh stale cursor rules, clean dead-code references.
+1b. ✅ **done (2026-10-11) — packaging hygiene: −255.0 MB unpacked (973.8 → 718.8 MB).** `onnxruntime-node` shipped all five prebuilt slices (~282 MB) while only `win32/x64` can load on a Windows x64 build → **−219 MB**, pruned via `scripts/prune-native-platforms.mjs` on `beforePack`/`afterPack` (reversible: `afterPack` restores the source tree). Script-only `canvas` moved to `devDependencies` → **−35 MB**. `@napi-rs/canvas` stays — pdf.js requires it at runtime. Verified by `npm run build:unpack` + measurement (`resources/app.asar.unpacked` 443.9 → 189.7 MB; one ORT slice present). Recorded in `FEATURES-AND-TWEAKS.md` package budgets. **Do not** re-implement the slice prune as a `win.files` negation — it trips `containsOnlyIgnore()` in electron-builder and packs the whole repo (+174.6 MB). See `docs/Nassila-Ouroboros-Future.md` §4.0.0 workstream **C**.
 2. Add **Windows packaging CI job** (`windows-latest` → `build:unpack` → `probe-ocr-bundled`).
 3. Wire Tier-4 dead features: **structure template picker UI** + **`manuscriptSourceFormat` badge** in loop. ✅ done — shipped in 1.5.0/1.6.0 tree; see rules §2 live structure.
 4. Split the three loop monolith panels + add jsdom component tests. ✅ done (2026-08-03) — `LoopEditorPane`, `LoopSourcesPanel`, `LoopVerdictUi`; `SharhLitePanel` was already ~140 lines and kept as-is.

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  fixMissingClaimObjectClose,
   parseGroundingJsonWithRepair,
   repairGroundingJsonText,
   removeTrailingCommas,
@@ -36,6 +37,31 @@ describe('grounding-json-repair', () => {
     const repaired = repairGroundingJsonText('{"claims":[{"claim"?: "x", "verdict": "weak"}]}')
     const result = parseGroundingJsonWithRepair(repaired)
     expect(result.ok).toBe(true)
+  })
+})
+
+/** Shape of a real FT-7 failure (l3v1-ft1-332-numeric_overclaim-0003-0093): the `}` closing claim 1 is dropped. Keep in sync with NassilaT training/tests/unit/test_json_repair.py. */
+const MISSING_CLAIM_CLOSE_RAW =
+  '{"claims": [{"claim": "Rate rose to 0.6 from 0.45.", "verdict": "contradicted", "sourceQuotes": ["Rate rose to 0.6 from 0.3."], "rationale": ["The passage conflicts with the source."], ' +
+  '{"claim": "Filler improves conductivity.", "verdict": "supported", "sourceQuotes": ["Filler improves conductivity."], "rationale": ["Supported."]}], "overallVerdict": "contradicted"} <|im_end|>'
+
+describe('fixMissingClaimObjectClose', () => {
+  it('inserts the dropped } between claim objects', () => {
+    const fixed = fixMissingClaimObjectClose('{"claims":[{"claim":"a","rationale":["x"], {"claim":"b"}]}')
+    expect(fixed).toBe('{"claims":[{"claim":"a","rationale":["x"]}, {"claim":"b"}]}')
+  })
+
+  it('recovers the real failure shape and keeps both claims', () => {
+    const result = parseGroundingJsonWithRepair(MISSING_CLAIM_CLOSE_RAW)
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.repaired).toBe(true)
+    expect(result.parsed.claims).toHaveLength(2)
+  })
+
+  it('leaves valid multi-claim output untouched', () => {
+    const valid = '{"claims":[{"claim":"a","rationale":["x"]}, {"claim":"b","rationale":["y"]}]}'
+    expect(fixMissingClaimObjectClose(valid)).toBe(valid)
   })
 })
 

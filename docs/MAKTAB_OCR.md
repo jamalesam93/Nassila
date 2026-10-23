@@ -3,7 +3,7 @@
 **Worker:** Maktab (مكتب) · **Task:** `doc_extract` (LLM facet planned)  
 **Policy:** on-device only for v1 / 2.0 scaffolding; cloud optional later.  
 **Languages (OCR ingest):** English and French via Tesseract (`eng`, `fra`) and native PP-OCRv6 Small when routed; Arabic production via Paddle PP-OCRv5. **Sanad L3 trains English and Arabic only** — `fra` is not a Sanad language target.  
-**Arabic (honest 2026-09-18):** **2.1.0 shipped** production Paddle PP-OCRv5 pack (`resources/arabic-ocr/`). Tesseract `ara` is **not** the primary path. Character-reversed ToUnicode always prefers DOCX.
+**Arabic (honest 2026-10-23):** **2.1.0** shipped production Paddle PP-OCRv5 (`resources/arabic-ocr/`). **2.1.1** keeps that extractor and fixes line order, flags legacy-encoded layers, and can fetch Indra without using it for import. Tesseract `ara` is **not** the primary path. Character-reversed ToUnicode still prefers DOCX. Indra evidence: `reports/arabic_ocr_real_holdout_20261023.md` (raw run `E:\Antigravity Projects\NassilaAGY\ocr-ab`).
 
 ---
 

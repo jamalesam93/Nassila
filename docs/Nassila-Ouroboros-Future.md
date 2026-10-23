@@ -1,10 +1,10 @@
 # Nassila-Ouroboros Future
 
-**Date:** 2026-09-18 (header refresh for 2.1/2.2 split; original synthesis 2026-07-20)  
+**Date:** 2026-10-23 (2.1.1 Arabic OCR fidelity; FT-7 paused for budget; original synthesis 2026-07-20)  
 **Scope:** Nassila (app) · NassilaT (training) · nassila-web (docs)  
 **Sources reviewed:** `NassilaT/training/OUROBOROS_OPERATOR_MAP.md`, `Nassila/docs/FEATURES-AND-TWEAKS.md`, `STATE.md`, `PRODUCT.md`, `OUROBOROS_CONTEXT.md`, `CHANGELOG.md`, engine/renderer code, field notes, website release train
 
-**App baseline:** **2.1.0** (Maktab Arabic, 2026-09-18; 2.0.0 MaktabOCR + Shahid 2026-09-06). **Sanad model (Hub):** 9B **FT-6** (sole published tier, v119, 2026-08-21). **Next planned cut:** **2.2.0 Sanad Arabic** (FT-7) paused for budget — data frozen. **Shahid deterministic LIVE in 2.0.0**. Production Arabic scan OCR LIVE in 2.1.0. **IA:** loop vs bibliography only.
+**App baseline:** **2.1.1** (Arabic OCR fidelity, 2026-10-23; 2.1.0 Maktab Arabic 2026-09-18; 2.0.0 MaktabOCR + Shahid 2026-09-06). **Sanad model (Hub):** 9B **FT-6** (sole published tier, v119, 2026-08-21). **Next planned cut:** **2.2.0 Sanad Arabic** — FT-7 and FT-7b **NO-GO**; FT-7c frozen and **paused for budget**. Vast is the only training ground when it resumes. **Shahid deterministic LIVE in 2.0.0**. Production Arabic scan OCR LIVE in 2.1.0 (Paddle). Indra is an optional fetch in 2.1.1 and is not the extractor. **IA:** loop vs bibliography only.
 
 ---
 
@@ -24,7 +24,7 @@ However, the product must keep prioritizing **trust and production parity** over
 4. Bibliography repair and single-reference closed-loop re-audit.
 5. Project save/resume.
 6. Real full-text and Arabic evaluation.
-7. Only then trained Maktab/Masdar facets (**gated**), institutional access (**2.3 / 5.0**), or Shahid Vision (**4.0**). A merged GGUF is a **non-goal**.
+7. Only then trained Maktab/Masdar facets (**gated**), institutional access (**2.3 / 5.0**), or Shahid Vision (**4.2**). A merged GGUF is a **non-goal**.
 
 ### Key conceptual change
 
@@ -165,7 +165,7 @@ July field notes (`masdar-lite-jul13`) remain useful raw material (captured unde
 
 **Status:** **Open** — **2.2.0 Sanad Arabic** (FT-7). Production Maktab AR OCR + Arabic-aware mapping ship first as **2.1.0 Maktab Arabic**.
 
-UI AR support is live; Sanad training JSONL has **zero** Arabic-script grounding rows in published FT-6 (~18k EN). Qualify Arabic grounding as **unvalidated** until FT-7. v120 AR train + holdout are **frozen** (240 AR train / 56 AR holdout, contamination 0); Vast QLoRA paused for budget. Arabic PDF ingest: adapter goldens exist; production still DOCX-defers Arabic-heavy / reverse-font until Track A packs PP-OCRv5 in **2.1.0**.
+UI AR support is live; Sanad training JSONL has **zero** Arabic-script grounding rows in published FT-6 (~18k EN). Qualify Arabic grounding as **unvalidated** until Track B GO. FT-7 (v120) NO-GO 2026-10-14; FT-7b (v121: 953 AR train rows, owner-reviewed 165-row AR holdout v2, contamination 0) NO-GO 2026-10-16 — AR verdict 0.776 vs 0.90, EN v2 0.945 vs 0.950 (NassilaT `EVAL_GONOGO_FT7_MEMO.md` §8). FT-7c train-data fixes next. Arabic PDF ingest: adapter goldens exist; production still DOCX-defers Arabic-heavy / reverse-font until Track A packs PP-OCRv5 in **2.1.0**.
 
 ### 3.7 OCR offline first use
 
@@ -284,7 +284,8 @@ Suggested versions and worker-themed codenames. **Not dates, not public promises
 | **1.10.1** | **Packaged network parity** | **تكافؤ الشبكة المعبأة** | Raqim / main IPC | Keep-my-title / DOI lookup / autocorrect online / input-Resolve via main IPC | **Shipped 2026-08-23** — #21 |
 | **2.0.0** | **MaktabOCR + Shahid** | **مكتب OCR + شاهد** | Maktab / Shahid | Firecrawl native pdf-inspector + selective OCR; scan fallback; Shahid table/figure evidence path; Tier 3 + multimodal PASS | **Shipped 2026-09-06** |
 | **2.1.0** | **Maktab Arabic** | **مكتب عربي** | Maktab | Production Arabic scan OCR (Paddle) + Arabic-aware mapping | **Shipped 2026-09-18** |
-| **2.2.0** | **Sanad Arabic** | **سند عربي** | Sanad | FT-7 native Arabic L3 + Hub FT-7 | Planned — **paused (budget)**; data frozen |
+| **2.1.1** | **Arabic OCR fidelity** | **دقة OCR العربي** | Maktab | Per-line Arabic OCR order; legacy-encoded layers routed to OCR; optional Indra fetch (not the extractor) | **Shipped 2026-10-23** |
+| **2.2.0** | **Sanad Arabic** | **سند عربي** | Sanad | Native Arabic L3 + Hub label after GO | Planned — FT-7 and FT-7b **NO-GO**; FT-7c frozen, **paused for budget** |
 | **2.3.0** | **Masdar Auto** | **مصدر آلي** | Masdar / Maktab | Auto cited-PDF ingest; library proxy prefixes; page provenance; Zenodo/GitHub | Planned |
 | **2.4.0** | **Tasnif Risk** | **تصنيف المخاطر** | Tasnif | Retraction flags; preprint→version; citation-age / self-cite; predatory cadence | Planned |
 | **2.5.0** | **Projects Ledger** | **سجل المشروع** | Loop / projects | Action log; New Session; autosave journal; first-run checklist | Planned |
@@ -292,12 +293,12 @@ Suggested versions and worker-themed codenames. **Not dates, not public promises
 | **3.1.0** | **Sharh Explain** | **شرح موسّع** | Sharh | `issue_explain` LLM facet + annotated evidence export | Planned — GPU |
 | **3.2.0** | **Raqim Signals** | **إشارات رقيم** | Raqim / Tasnif | `webpage_metadata` + `webpage_classify` facets | Planned — GPU |
 | **3.3.0** | **Sanad Bilingual** | **سند ثنائي اللغة** | Sanad | EN+AR mixed-script quality; per-language EN vs AR reporting | Planned — GPU |
-| **4.0.0** | **Shahid Vision** | **شاهد بصري** | Shahid | Full multimodal Shahid (separate vision artifact) | Planned — GPU |
-| **4.1.0** | **Nassila CLI** | **سطر أوامر ناسيلا** | Engine | Headless batch audit; JSON report contract | Planned |
-| **4.2.0** | **Cross-platform** | **منصات متعددة** | Packaging | macOS / Linux installers; OCR pack parity; signed builds | Planned |
+| **4.0.0** | **Cross-platform** | **منصات متعددة** | Packaging | macOS / Linux installers; OCR pack parity; signed builds; Tauri v2 + Rust migration | Planned |
+| **4.1.0** | **Nassila CLI** | **سطر أوامر ناسيلا** | Engine | Headless batch audit; JSON report contract — on the 4.0.0 Rust core | Planned |
+| **4.2.0** | **Shahid Vision** | **شاهد بصري** | Shahid | Full multimodal Shahid (separate vision artifact; targets the 4.0.0 `ort` runtime) | Planned — GPU |
 | **5.0.0** | **One Nassila** | **ناسيلا واحدة** | Product | Routed multi-artifact pack; institutional webview last resort; offline review packages | Planned |
 
-**Recommended cut order:** 1.4.0 → 1.5.0 → 1.6.0 → 1.7.0 → **1.8.0 Sanad 9B** ✅ → (**FT-6 Hub-only**, no 1.9.0 installer) → **1.10.0 Masdar Papers** ✅ → **1.10.1 Packaged network parity** ✅ → **2.0.0 MaktabOCR + Shahid** ✅ → **2.1.0 Maktab Arabic** ✅ (shipped 2026-09-18) → **2.2.0 Sanad Arabic** (paused) → **2.3.0–2.5.0** → **3.0.0 Ouroboros** → **3.1–4.2** → **5.0.0 One Nassila**. GPU-gated cuts (2.2, 3.1–3.3, 4.0) may swap with deterministic ones while budget is constrained.
+**Recommended cut order:** 1.4.0 → 1.5.0 → 1.6.0 → 1.7.0 → **1.8.0 Sanad 9B** ✅ → (**FT-6 Hub-only**, no 1.9.0 installer) → **1.10.0 Masdar Papers** ✅ → **1.10.1 Packaged network parity** ✅ → **2.0.0 MaktabOCR + Shahid** ✅ → **2.1.0 Maktab Arabic** ✅ (shipped 2026-09-18) → **2.1.1 Arabic OCR fidelity** ✅ (shipped 2026-10-23) → **2.2.0 Sanad Arabic** (paused for budget) → **2.3.0–2.5.0** → **3.0.0 Ouroboros** → **3.1–4.1** → **4.2.0 Shahid Vision** → **5.0.0 One Nassila**. GPU-gated cuts (2.2, 3.1–3.3, 4.2) may swap with deterministic ones while budget is constrained; **4.0.0 is packaging work, not GPU-gated**, and its workstream **C** is unblocked today.
 
 #### 1.4.0 — Raqim Statute · رقيم تشريع
 
@@ -407,9 +408,21 @@ Trust and submission outputs — finish gaps that overlap 1.3.0 preflight but br
 | **Track C — mapping** | Arabic-aware segment / in-text fixtures green so FT-7 can later be Hub-only |
 | **Probes** | `npm run ocr:arabic-adapter` && `npm run probe:arabic-ocr` on operator machine |
 
-#### 2.2.0 — Sanad Arabic · سند عربي (paused — budget)
+#### 2.1.1 — Arabic OCR fidelity · دقة OCR العربي (Shipped 2026-10-23)
 
-**Gate:** Track B FT-7 Vast QLoRA + 3-seed EN regression + AR holdout → sign `EVAL_GONOGO_FT7_MEMO.md` → Hub FT-7 label → installer. Freeze contract: app `FEATURES-AND-TWEAKS.md` #24. **Paused for budget.** No laptop 9B QLoRA substitute.
+**Gate:** none beyond the 2.1.0 Paddle pack. This patch does not replace the extractor.
+
+| Area | What shipped |
+|------|----------------|
+| **Line order** | PP-OCRv5 output is reversed per line. Whole-page reversal scored mean CER 0.811; per-line scores 0.251 on the same pages. |
+| **Legacy fonts** | Pre-Unicode Arabic layers (no cmap gaps, high rare-letter share) raise `needsReview` and route to OCR. |
+| **pdf-inspector** | 1.17.0 → 1.25.2. Text-only PDFs do not load OCR models. Arabic layer F1 vs Indra rose sharply (one book 0.342 → 0.915). |
+| **Indra** | Optional fetch in Settings. On 84 reference-valid pages Indra won 74 (median CER 0.067 vs 0.120, ~8× faster) but the tail is heavier (p90 0.356 vs 0.344). OpenRAIL-M weights are fetched, never bundled. **Not wired into `extractFromPdf`.** |
+| **Evidence** | `reports/arabic_ocr_real_holdout_20261023.md`. Raw run: `E:\Antigravity Projects\NassilaAGY\ocr-ab`. |
+
+#### 2.2.0 — Sanad Arabic · سند عربي (NO-GO — paused for budget)
+
+**Gate:** Track B FT-7 Vast QLoRA + 3-seed EN regression + AR holdout → sign `EVAL_GONOGO_FT7_MEMO.md` → Hub FT-7 label → installer. Freeze contract: app `FEATURES-AND-TWEAKS.md` #24. FT-7 NO-GO 2026-10-14; FT-7b NO-GO 2026-10-16. FT-7c v122 is frozen and **will not be trained** until budget returns. Vast is the only ground. No Colab. No laptop 9B QLoRA substitute.
 
 **Data already frozen:** `l3_grounding_train_v120.jsonl` (1719 EN + 240 AR); `eval_holdout_grounding_ar_v1.jsonl` (56 rows); contamination 0.
 
@@ -491,17 +504,35 @@ Solidify **English and Arabic** after FT-7. Not a third language.
 
 **Non-goal:** French (or any third-language) Sanad L3 — not a gate and not a prospective slot. Bundled Tesseract `fra` is OCR ingest, not a train target.
 
-#### 4.0.0 — Shahid Vision · شاهد بصري (GPU)
+#### 4.0.0 — Cross-platform · منصات متعددة
 
-Full multimodal Shahid: separate vision artifact + multimodal holdout + hardware tier gate. Distinct from the **2.0.0** bounded tables/figures slice.
+macOS/Linux installers (`build:mac` / `build:linux` exist); OCR pack parity; signed builds; Tauri v2 + Rust backend migration to eliminate Chromium bundle overhead and rustify the Maktab native OCR/PDF pipeline.
+
+**Sequenced before 4.1.0 and 4.2.0 on purpose.** Both benefit from the Rust core rather than being built twice on the Electron stack: a headless batch-audit CLI is native to a Rust binary, and Shahid Vision needs a *new* native inference pipeline (`ort`) that must not be written against `onnxruntime-node` first.
+
+**Three separately gated workstreams** — a slip in one must not block the others:
+
+| # | Workstream | Scope | Delivers |
+|---|------------|-------|----------|
+| **A** | Tauri v2 shell | Electron main → Tauri v2 (Rust); `preload` bridge → Tauri commands; menus/i18n, close guard, LLM proxy | Removes the bundled Chromium runtime |
+| **B** | Rust native pipeline | `onnxruntime-node` → `ort`; Maktab OCR/PDF raster → Rust; drops `canvas` / `@napi-rs/canvas` | Removes the Node native dependency pile |
+| **C** | Natives + packaging prune | Pin bundled natives to the target platform; move script-only deps out of `dependencies`; re-measure | Removes dead cross-platform binaries |
+
+**Sub-50 MB is a joint claim: it needs A + B + C.** Measured 2.1.0 baseline — installer 250.9 MB, installed 973.8 MB, of which the Chromium runtime is ~345 MB and `resources/app.asar.unpacked` is ~444 MB (dominated by `onnxruntime-node`). A shell swap that leaves the native pile in place lands well short of the target.
+
+**C is done — landed ahead of 4.0.0.** Packaged footprint **973.8 MB → 718.8 MB (−255.0 MB)**: `onnxruntime-node` now ships only the target slice (219 MB of dead darwin / linux / win32-arm64 binaries removed) via `scripts/prune-native-platforms.mjs` on `beforePack`/`afterPack`, and script-only `canvas` moved to `devDependencies` (−35 MB). `@napi-rs/canvas` stays — pdf.js requires it at runtime. `resources/app.asar.unpacked` fell 443.9 → 189.7 MB with `app.asar` unchanged at 167 MB.
+
+**Constraint for whoever next edits packaging:** do **not** express the slice prune as a `win.files` negation. A platform-specific `files` block leaves electron-builder's `defaultMatcher` holding only ignore patterns, which trips `containsOnlyIgnore()` in `app-builder-lib/out/fileMatcher.js` and prepends a match-everything glob — packing the whole repository (docs/, src/, tests/, `.cursor/`) into `app.asar` at +174.6 MB. That regression is why this is a hook. `beforePack` is also the correct seam because asar integrity is computed after it.
 
 #### 4.1.0 — Nassila CLI · سطر أوامر ناسيلا
 
-Headless batch audit for editors/CI on the same engine; JSON report contract.
+Headless batch audit for editors/CI on the same engine; JSON report contract. Ships on the **4.0.0** Rust core.
 
-#### 4.2.0 — Cross-platform · منصات متعددة
+#### 4.2.0 — Shahid Vision · شاهد بصري (GPU)
 
-macOS/Linux installers (`build:mac` / `build:linux` exist); OCR pack parity; signed builds.
+Full multimodal Shahid: separate vision artifact + multimodal holdout + hardware tier gate. Distinct from the **2.0.0** bounded tables/figures slice.
+
+**Now sits after the migration, not before it.** The vision artifact's runtime contract targets `ort` (**4.0.0** workstream **B**), not `onnxruntime-node`. Building it earlier would mean writing the native vision pipeline twice; the previous 4.0.0/4.2.0 ordering carried that risk and was corrected here.
 
 #### 5.0.0 — One Nassila · ناسيلا واحدة
 
@@ -522,10 +553,10 @@ macOS/Linux installers (`build:mac` / `build:linux` exist); OCR pack parity; sig
 | Track | Status | Notes |
 |-------|--------|-------|
 | **Sanad FT-6** | **SHIPPED on Hub** | GGUF + unquant + v119-lora (2026-08-21); **no 1.9.0 installer** |
-| **Sanad FT-7** | Data frozen; Vast **paused (budget)** | v120 + AR holdout ready; ships as **2.2.0** |
+| **Sanad FT-7** | FT-7 and FT-7b **NO-GO**; FT-7c frozen | **Paused for budget.** Vast only, when cash returns. Ships as **2.2.0** after GO |
 | **NassilaT field notes / Tier 3 data** | Active curation | Never surfaces training/eval copy in app UI |
 | **nassila-web** | Ongoing | Changelog sync; roadmap aligned with this map |
-| **Website release train** | Near-term slots | **2.0.0** shipped → **2.1.0** Maktab Arabic → **2.2.0** Sanad Arabic; 2.3–5.0 on roadmap MDX |
+| **Website release train** | Near-term slots | **2.1.1** Arabic OCR fidelity is current; **2.2.0** Sanad Arabic paused; 2.3–5.0 on roadmap MDX |
 
 ### Worker maturity (direction)
 
@@ -541,7 +572,7 @@ macOS/Linux installers (`build:mac` / `build:linux` exist); OCR pack parity; sig
 
 ### Long-term (not versioned)
 
-Items below stay **unversioned** until promoted, **or** are explicit non-goals. Promoted items now live in the §5 map (Shahid Vision → 4.0.0; institutional webview last-resort → 5.0.0; routed pack → 5.0.0). Merged GGUF is a **5.0.0 non-goal**. Detail in **§11**.
+Items below stay **unversioned** until promoted, **or** are explicit non-goals. Promoted items now live in the §5 map (Shahid Vision → 4.2.0; institutional webview last-resort → 5.0.0; routed pack → 5.0.0). Merged GGUF is a **5.0.0 non-goal**. Detail in **§11**.
 
 | Item | Theme | Why still long-term / non-goal |
 |------|-------|--------------------------------|
@@ -836,8 +867,8 @@ Before retaining an unqualified Arabic model claim:
 | Window | Focus |
 |--------|--------|
 | **Shipped (2.0.0)** | Shipped 1.4.0–2.0.0. Hub Sanad = **9B FT-6** (2026-08-21). Native pdf-inspector + pretrained Arabic adapter LIVE; Shahid table/figure evidence LIVE; grey-lit confirm LIVE; Tier 3 + multimodal gates PASSED. |
-| **Next** | **2.1.0 Maktab Arabic** (production Maktab AR OCR + Arabic-aware mapping). No GPU. |
-| **Paused** | **2.2.0 Sanad Arabic** (FT-7 Vast) — data frozen; cash-gated. |
+| **Shipped (2.1.1)** | Arabic OCR fidelity on top of 2.1.0 Paddle. Indra fetched, not the extractor. |
+| **NO-GO** | **2.2.0 Sanad Arabic** — FT-7 and FT-7b NO-GO. FT-7c frozen and paused for budget. |
 | **Then** | 2.3.0–2.5.0 deterministic loop; **3.0.0 Ouroboros**; 3.1–4.2 facets/surfaces; **5.0.0 One Nassila**. |
 | **Unversioned** | Cloud-default LLM, notification center, thesis generation, fuzzy auto-apply, cloud sync — non-goals or rejected. |
 
@@ -959,12 +990,13 @@ If Sanad validation metrics appear on the site, do not publish bare “accuracy.
 
 ## 9. Implementation matrix (current vs planned)
 
-**Baseline:** app **2.1.0** (2026-09-18). Model **9B FT-6** (sole published Hub Sanad tier, Qwen 3.5 9B v119); 4B S15 / 12B S14 retired.
+**Baseline:** app **2.1.1** (2026-10-23). Model **9B FT-6** (sole published Hub Sanad tier, Qwen 3.5 9B v119); 4B S15 / 12B S14 retired.
 
 ### Shipped
 
 | Release | Codename (EN) | Codename (AR) | Status |
 |---------|---------------|---------------|--------|
+| 2.1.1 | Arabic OCR fidelity | دقة OCR العربي | **Shipped** 2026-10-23 — line order, legacy-encoded routing, optional Indra fetch; extractor stays Paddle |
 | 2.1.0 | Maktab Arabic | مكتب عربي | **Shipped** 2026-09-18 — production Paddle AR OCR + Arabic-aware mapping; L3 unvalidated |
 | 2.0.0 | MaktabOCR + Shahid | مكتب OCR + شاهد | **Shipped** 2026-09-06 — Firecrawl native + pretrained Arabic adapter; Shahid table/figure live; Tier 3 + multimodal PASS |
 | 1.10.1 | Packaged network parity | تكافؤ الشبكة المعبأة | **Shipped** 2026-08-23 |
@@ -982,7 +1014,7 @@ If Sanad validation metrics appear on the site, do not publish bare “accuracy.
 
 | Release | Codename (EN) | Codename (AR) | Status |
 |---------|---------------|---------------|--------|
-| 2.2.0 | Sanad Arabic | سند عربي | Planned — FT-7; **paused (budget)**; v120 frozen |
+| 2.2.0 | Sanad Arabic | سند عربي | Planned — FT-7 and FT-7b **NO-GO**; FT-7c frozen, **paused for budget** |
 | 2.3.0 | Masdar Auto | مصدر آلي | Planned — auto cited-PDF; proxy prefixes; provenance |
 | 2.4.0 | Tasnif Risk | تصنيف المخاطر | Planned — retraction / version / predatory cadence |
 | 2.5.0 | Projects Ledger | سجل المشروع | Planned — action log; New Session; autosave |
@@ -990,9 +1022,9 @@ If Sanad validation metrics appear on the site, do not publish bare “accuracy.
 | 3.1.0 | Sharh Explain | شرح موسّع | Planned — GPU |
 | 3.2.0 | Raqim Signals | إشارات رقيم | Planned — GPU |
 | 3.3.0 | Sanad Bilingual | سند ثنائي اللغة | Planned — GPU; EN+AR only |
-| 4.0.0 | Shahid Vision | شاهد بصري | Planned — GPU |
-| 4.1.0 | Nassila CLI | سطر أوامر ناسيلا | Planned |
-| 4.2.0 | Cross-platform | منصات متعددة | Planned |
+| 4.0.0 | Cross-platform | منصات متعددة | Planned — macOS/Linux installers; Tauri v2 + Rust migration **and** native/packaging prune (<50 MB installer needs all three; the prune is not gated on 4.0.0 — do it in the 2.2.0 pause) |
+| 4.1.0 | Nassila CLI | سطر أوامر ناسيلا | Planned — on the 4.0.0 Rust core |
+| 4.2.0 | Shahid Vision | شاهد بصري | Planned — GPU; separate vision artifact targeting the 4.0.0 `ort` runtime |
 | 5.0.0 | One Nassila | ناسيلا واحدة | Planned — routed pack; webview last resort; review packages. **Non-goal:** merged GGUF |
 
 > FT-6 shipped on Hub 2026-08-21 — **no 1.9.0 installer slot**.
@@ -1071,7 +1103,7 @@ Do not add remote manuscript telemetry by default. Prefer an explicit “Export 
 
 ## 11. Long-term (detail)
 
-Canonical table: **§5 → Long-term (remaining unversioned)**. Promoted items: Shahid Vision **4.0.0**; institutional webview last-resort + routed pack **5.0.0**; library proxy prefixes **2.3.0**. Merged GGUF is a **5.0.0 non-goal**, not a research leftover.
+Canonical table: **§5 → Long-term (remaining unversioned)**. Promoted items: Shahid Vision **4.2.0**; institutional webview last-resort + routed pack **5.0.0**; library proxy prefixes **2.3.0**. Merged GGUF is a **5.0.0 non-goal**, not a research leftover.
 
 **Do not prioritize before 2.1–2.5 + 3.0 unless promoted with acceptance criteria.**
 
@@ -1079,7 +1111,7 @@ Canonical table: **§5 → Long-term (remaining unversioned)**. Promoted items: 
 |------|-------|
 | Routed multi-artifact pack (not one GGUF) | **Promoted → 5.0.0** — prefer independently gated artifacts (§4) |
 | Merged Ouroboros GGUF (`nassila-agent-e12b-v1`) | **Non-goal under 5.0.0** — do not train, merge, or market one seven-task weight file |
-| Shahid full multimodal | **Promoted → 4.0.0** — distinct from **2.0.0** bounded tables/figures slice |
+| Shahid full multimodal | **Promoted → 4.2.0** — distinct from **2.0.0** bounded tables/figures slice; targets the **4.0.0** `ort` runtime |
 | Embedded institutional-login webviews | **Promoted → 5.0.0 last resort** after proxy prefixes in **2.3.0**; SEC-06; publisher ToS |
 | Train every worker for naming symmetry | Facets train on task gates, not worker count; M01/Md01 only if deterministic fails |
 | Cloud LLM as default | Non-goal — local Sanad path stays primary |
@@ -1113,7 +1145,7 @@ An embedded authenticated browser should be the last option (**5.0.0**) because 
 | OCR first-use network dependency | Medium | **Mitigated** | Bundled packs; warn if fallback path triggers |
 | Project persistence gaps | Medium | **Partial 1.7** | `.nassila` live; dirty-close warning shipped 2026-08-10; crash recovery / action log remain → **2.5.0** then **3.0.0** |
 | Release automation thin | Medium | Partial | CI + local smoke exist; public tag / checksums / signing → **3.0.0** |
-| FT-7 Vast cash | High | **Paused** | v120 frozen; no 2.2.0 until GPU budget; do not claim Arabic L3 |
+| FT-7 Vast cash | High | **Paused** | FT-7 and FT-7b NO-GO; FT-7c frozen, not started; Vast only when cash returns; do not claim Arabic L3 |
 | Stale docs misleading agents | Medium | Open | §8 doc pass: stubs, `POST_V114` links, vision “stub” wording |
 
 ---
@@ -1126,11 +1158,11 @@ Nassila should spend the next cycles becoming more **trustworthy on Arabic inges
 
 > Ship production Arabic OCR and mapping without GPU (**2.1.0**); park FT-7 until cash (**2.2.0**); finish deterministic reach, risk, and persistence (**2.3–2.5**); then close the repair loop (**3.0.0**) before new model facets.
 
-**Shipped in 2.1.0:** production Arabic scan OCR + Arabic-aware mapping. **Arabic L3 still unvalidated.**
+**Shipped in 2.1.1:** Arabic line order, legacy-encoded routing, pdf-inspector 1.25.2, optional Indra fetch. Extractor is still Paddle. **Arabic L3 still unvalidated.**
 
 **Next (§5 map):**
 
-1. **2.2.0 Sanad Arabic** — FT-7 Vast; data frozen; paused for budget.
+1. **2.2.0 Sanad Arabic** — paused for budget. Do not start FT-7c. Vast is the only ground when cash returns.
 2. **2.3.0–2.5.0** — auto cited-PDF, Tasnif risk, projects ledger.
 3. **3.0.0 Ouroboros** — closed loop, signed installers, SEC-02b.
 4. **3.1–5.0** — trained facets, CLI, cross-platform, routed pack — as budget and gates allow.

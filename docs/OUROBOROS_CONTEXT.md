@@ -1,8 +1,8 @@
 # Ouroboros context brief
 
-> **For agents.** Single entry point for Nassila + NassilaT. Last updated: 2026-09-18.
-> **App:** **2.1.0** shipped (2026-09-18) · Maktab Arabic LIVE (production Paddle AR OCR + Arabic-aware mapping). **Next cut:** **2.2.0 Sanad Arabic** (FT-7) paused for budget.
-> **Ship checkpoints:** `nassila-sanad-9b` **FT-6** (sole Hub tier until FT-7 GO) · 4B S15 / 12B S14 retired. **v1.13 NO-GO.** Operator map: NassilaT `OUROBOROS_OPERATOR_MAP.md`. FT-7 memo: `EVAL_GONOGO_FT7_MEMO.md` (NOT YET GO; Vast paused).
+> **For agents.** Single entry point for Nassila + NassilaT. Last updated: 2026-10-23.
+> **App:** **2.1.1** shipped (2026-10-23) · Arabic OCR fidelity. Production Arabic scan OCR is still Paddle PP-OCRv5 (2.1.0). Indra is an optional fetch and is not the extractor. Evidence: `reports/arabic_ocr_real_holdout_20261023.md` and `E:\Antigravity Projects\NassilaAGY\ocr-ab`. **Next cut:** **2.2.0 Sanad Arabic** paused for budget. Do not start FT-7c.
+> **Ship checkpoints:** `nassila-sanad-9b` **FT-6** (sole Hub tier until FT-7 GO) · 4B S15 / 12B S14 retired. **v1.13 NO-GO.** Operator map: NassilaT `OUROBOROS_OPERATOR_MAP.md`. FT-7 memo: `EVAL_GONOGO_FT7_MEMO.md` (NO-GO; paused for budget; Vast is the only ground when it resumes).
 > Training pack: [`TRAINING.md`](./TRAINING.md) → NassilaT repo. Do not read every historical walkthrough — use this brief, then drill into linked paths only.
 
 ## 1. Mission

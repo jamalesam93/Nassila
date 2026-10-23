@@ -3,13 +3,19 @@ productName: Nassila
 directories:
   buildResources: build
   output: dist
+# Prune onnxruntime-node's per-platform slices down to the one being packaged, then put them
+# back. Hooks rather than `files` negations on purpose — see the script header.
+beforePack: ./scripts/prune-native-platforms.mjs
+afterPack: ./scripts/prune-native-platforms.mjs
 files:
   - out/**/*
   - package.json
   - build/icon.png
   - build/icon.ico
   # Native / worker deps externalized from the main bundle (see electron.vite.config.ts).
-  - node_modules/canvas/**/*
+  # `canvas` (node-canvas) is deliberately NOT listed: nothing in src/ imports it, it is
+  # referenced only by scripts/probe-ocr-bundled.mjs, and it now lives in devDependencies.
+  # Runtime rasterization goes through @napi-rs/canvas via pdf.js (see pdf-page-raster.ts).
   - node_modules/@napi-rs/canvas/**/*
   - node_modules/@napi-rs/canvas-*/**/*
   - node_modules/tesseract.js/**/*
@@ -21,9 +27,29 @@ files:
   - node_modules/onnxruntime-node/**/*
   - node_modules/ppu-paddle-ocr/**/*
   - node_modules/ppu-ocv/**/*
+  # ── Repository content that must never ship in the app bundle ────────────────
+  # electron-builder sweeps the app directory, so without these negations a build
+  # packs the docs tree (incl. media), agent skills, the source tree, tests, scripts,
+  # and a second copy of resources/ that extraResources already places beside the asar.
+  # Measured on 2.1.0: 174.6 MB of app.asar was repository content, not app code.
+  # The OCR packs are read from process.resourcesPath at runtime (see
+  # src/main/maktab/{tesseract-ocr,arabic-paddle-ocr,native-pdf-inspector}.ts),
+  # never from inside the asar, so excluding resources/ here is safe.
+  - '!docs/**/*'
+  - '!.cursor/**/*'
+  - '!.github/**/*'
+  - '!.vscode/**/*'
+  - '!src/**/*'
+  - '!tests/**/*'
+  - '!scripts/**/*'
+  - '!reports/**/*'
+  - '!patterns/**/*'
+  - '!release-artifacts/**/*'
+  - '!resources/**/*'
+  - '!*.traineddata'
+  - '!codebase.txt'
 # Native .node, worker scripts, and WASM must load from a real filesystem path (not asar).
 asarUnpack:
-  - node_modules/canvas/**/*
   - node_modules/@napi-rs/canvas/**/*
   - node_modules/@napi-rs/canvas-*/**/*
   - node_modules/tesseract.js/**/*

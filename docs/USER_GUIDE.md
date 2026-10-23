@@ -83,9 +83,9 @@ Cited **local PDF attach** is available for cited sources in the manuscript loop
 - **Tasnif** (classification) and **Sharh** (explanation) appear inline in the loop detail and bibliography drawer — not as separate tabs.
 - **Raqim** (numbering) works in bibliography mode.
 - Grounding runs automatically through Sanad when the loop audit is triggered.
-- **Maktab** manuscript extraction is live through DOCX/text and pdf.js; **Enhanced OCR** (bundled **eng/fra** Tesseract) helps Latin scanned PDFs. **Arabic** theses with broken PDF encoding: prefer **DOCX** — Tesseract Arabic is deferred until vision/LLM OCR. **Masdar** OA fetch and per-reference PDF attach are live. **Shahid** evidence remains planned.
+- **Maktab** manuscript extraction is live through DOCX/text and pdf.js; **Enhanced OCR** (bundled **eng/fra** Tesseract) helps Latin scanned PDFs. **Arabic** scanned PDFs use the packaged Paddle adapter. Character-reversed font PDFs still prefer **DOCX**. Legacy-encoded Arabic layers are sent to OCR (**2.1.1**). **Masdar** OA fetch and per-reference PDF attach are live. **Shahid** table and figure evidence is live.
 
-For scanned **Latin** PDFs, turn on **Enhanced OCR** in Settings (offline **eng/fra** packs). For **Arabic** manuscripts, import **DOCX** when the PDF text looks reversed or garbled.
+For scanned **Latin** PDFs, turn on **Enhanced OCR** in Settings (offline **eng/fra** packs). For **Arabic** manuscripts, import **DOCX** when the PDF text looks character-reversed.
 
 **Arabic OCR candidate (optional).** Settings → Local models → **Arabic OCR candidate (Indra)** fetches the Indra runtime on first use: about 92 MB of model files into your user-data folder plus a local Python environment (it uses `uv` when installed, otherwise Python 3.10+). Nothing is bundled with the app, and the model weights stay under their own OpenRAIL-M license. This runtime is currently used for OCR evaluation, not by the import pipeline — Arabic PDFs still go through the packaged PP-OCRv5 recognizer.
 

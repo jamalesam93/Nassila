@@ -47,7 +47,10 @@ describe('packaged production boundaries', () => {
   it('electron-builder unpacks native OCR deps used by Maktab', () => {
     const yml = readFileSync(join(root, 'electron-builder.yml'), 'utf8')
     expect(yml).toContain('asarUnpack:')
-    expect(yml).toMatch(/node_modules\/canvas\/\*\*\/\*/)
+    // pdf.js v5 loads @napi-rs/canvas at runtime; node-canvas is dev/test-only and must
+    // not be packed (it was ~35 MB of dead weight in every Windows build).
+    expect(yml).toMatch(/node_modules\/@napi-rs\/canvas\/\*\*\/\*/)
     expect(yml).toMatch(/node_modules\/tesseract\.js\/\*\*\/\*/)
+    expect(yml).not.toMatch(/node_modules\/canvas\/\*\*\/\*/)
   })
 })

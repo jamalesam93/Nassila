@@ -4,7 +4,7 @@
 **Index:** NassilaT [`2.1_2.2_ARABIC_OPERATOR_INDEX.md`](../../NassilaT/training/2.1_2.2_ARABIC_OPERATOR_INDEX.md) (2.0 stub → archive)  
 **Maktab context:** [`MAKTAB_OCR.md`](./MAKTAB_OCR.md) · pack [`resources/arabic-ocr/README.md`](../resources/arabic-ocr/README.md)
 
-**Honesty (2026-09-18):** **2.1.0 shipped.** Official Arabic PP-OCRv5 ONNX pack + main-process `ppu-paddle-ocr` runner + IPC `ara` route. Operator: `npm run ocr:arabic-adapter` then `npm run probe:arabic-ocr`. Reverse-font ToUnicode **always** prefers DOCX. Sanad FT-7 is **2.2.0** (paused).
+**Honesty (2026-10-23):** **2.1.1 shipped.** Official Arabic PP-OCRv5 ONNX pack + main-process `ppu-paddle-ocr` runner + IPC `ara` route remain the extractor (2.1.0). 2.1.1 adds per-line reversal, legacy-encoded routing, and an optional Indra fetch. Operator: `npm run ocr:arabic-adapter` then `npm run probe:arabic-ocr`. Reverse-font ToUnicode **always** prefers DOCX. Sanad FT-7 is **2.2.0**, paused for budget.
 
 ---
 
@@ -51,7 +51,7 @@ Indra (`datalab-to/indra-ocr`, ONNX CPU, 80+ languages including `rec_rtl`) is t
 - **App wiring:** Settings → Local models → **Arabic OCR candidate (Indra)** (`maktab:indraFetch`, `maktab:indraStatus`, progress on `maktab:indraFetchProgress`). It fetches 17 model files (~92 MB) to `userData/indra-ocr` and provisions `indra-ocr==1.1.2`; nothing is bundled. Operator equivalent: `npm run ocr:indra-fetch`.
 - **Not wired into `extractFromPdf`.** Arabic extraction remains PP-OCRv5 until the router + plausibility guards and the Tauri 2 ONNX port land.
 - **Harness:** `npm run eval:ocr:arabic -- all --corpus <dir>` scores both engines on the same rasters; see [`scripts/eval-arabic-ocr/README.md`](../scripts/eval-arabic-ocr/README.md).
-- **Evidence:** [`reports/arabic_ocr_real_holdout_20261023.md`](../reports/arabic_ocr_real_holdout_20261023.md).
+- **Evidence:** [`reports/arabic_ocr_real_holdout_20261023.md`](../reports/arabic_ocr_real_holdout_20261023.md). Raw harness (not in this repo): `E:\Antigravity Projects\NassilaAGY\ocr-ab` — `eval-report-big.md` (103 gold + 126 scan pages; Indra wins 74/84 valid pages, median CER 0.067 vs 0.120, heavier tail), `pdf-inspector-arabic.md`, `ab-report.md`.
 
 ---
 

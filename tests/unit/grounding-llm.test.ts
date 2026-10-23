@@ -14,6 +14,7 @@ import {
   GROUNDING_PROMPT_CONTRACT_VERSION,
   hasContradictoryNumbers,
   isVerbatimQuoteSubstring,
+  stripEdgePunctuationForQuoteMatch,
   parseGroundingJson,
   passageVerdictFromGroundingClaims,
   passageVerdictWithoutParsedGrounding,
@@ -434,6 +435,14 @@ describe('isVerbatimQuoteSubstring — Arabic orthographic folding (FT-7)', () =
 
   it('treats whitespace-only quotes as invalid', () => {
     expect(isVerbatimQuoteSubstring('   ', arExcerpt)).toBe(false)
+  })
+
+  it('matches when only edge punctuation differs', () => {
+    const excerpt = 'عني بإنشاء الطرق وتعبيدها في دنقلة والخرطوم، وبناء سكة حديدية بين بربر وسواكن.'
+    expect(isVerbatimQuoteSubstring('عني بإنشاء الطرق وتعبيدها في دنقلة والخرطوم.', excerpt)).toBe(
+      true
+    )
+    expect(stripEdgePunctuationForQuoteMatch('طرق.')).toBe('طرق')
   })
 
   it('is identity for Latin text', () => {

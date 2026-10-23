@@ -2,24 +2,30 @@
 
 All notable changes to **Nassila** are documented here.
 
-## [Unreleased]
+## [2.1.1] — 2026-10-23 · Arabic OCR fidelity
+
+App version **2.1.1**. Production Arabic scan OCR stays the packaged Paddle PP-OCRv5 adapter from 2.1.0. This patch fixes how Arabic text is read and adds an optional Indra download that does not replace that adapter. Cut the Windows installer with `npm run build:win` when publishing the GitHub release.
 
 ### Added
 
-- **Optional Indra OCR runtime, fetched on first use.** Settings → Local models → *Arabic OCR candidate (Indra)* downloads the 17 Indra model files (~92 MB) to `userData/indra-ocr` and provisions a pinned `indra-ocr==1.1.2` environment (`uv` preferred, `pip` fallback), with progress on `maktab:indraFetchProgress` and status on `maktab:indraStatus`. The weights are a modified OpenRAIL-M license: they are **fetched, never bundled or redistributed** (see `resources/indra-ocr/README.md`). The runtime is not yet wired into `extractFromPdf` — Arabic extraction still uses PP-OCRv5.
+- **Optional Indra OCR runtime, fetched on first use.** Settings → Local models → *Arabic OCR candidate (Indra)* downloads the 17 Indra model files (~92 MB) to `userData/indra-ocr` and provisions a pinned `indra-ocr==1.1.2` environment (`uv` preferred, `pip` fallback), with progress on `maktab:indraFetchProgress` and status on `maktab:indraStatus`. The weights are a modified OpenRAIL-M license: they are **fetched, never bundled or redistributed** (see `resources/indra-ocr/README.md`). The runtime is **not** wired into `extractFromPdf` — Arabic extraction still uses PP-OCRv5.
 - **Arabic OCR evaluation harness in-repo.** `npm run eval:ocr:arabic -- all --corpus <dir>` selects gold pages from clean Arabic text layers, rasterizes scan pages, runs PP-OCRv5 and the fetched Indra runtime on the same images, and writes a CER / 6-gram report. Operator setup: `npm run ocr:indra-fetch`. Harness guide: `scripts/eval-arabic-ocr/README.md`; evidence: `reports/arabic_ocr_real_holdout_20261023.md`.
 
 ### Fixed
 
 - **Arabic OCR line order** — `logicalOrderArabicOcrText` reversed the whole page string. PP-OCR emits each line in visual order but the lines themselves top-to-bottom, so the whole-string reversal restored characters while flipping the order of lines. It now reverses per line; measured on real Arabic book pages against the PDF text layer (normalized CER): **0.037 per-line** vs 0.76 whole-string. Mixed AR/Latin line handling is unchanged.
 - **Legacy-encoded Arabic text layers are now flagged.** A layer decoded through a pre-Unicode Arabic font has no cmap gaps and no `hasEncodingIssues` flag — every code maps, to the wrong character — so it used to reach citation parsing as mojibake. `arabicTextLooksMisEncoded` detects it from the share of rare Arabic letters (real books: 0.0000–0.0001 clean vs 0.0796 mis-encoded) and raises `ARABIC_MISENCODED_WARNING` + `needsReview`, which routes the document to OCR instead.
+- **Arabic verbatim quotes survive edge punctuation and orthography.** `isVerbatimQuoteSubstring` strips boundary punctuation (`.` vs `،`) and folds tashkeel, tatweel, alef/ya/ta-marbuta, and Arabic-Indic digits, in lockstep with NassilaT `validate_dataset.py`. A supported Arabic quote is no longer demoted to `weak` for those differences alone.
+- **Dropped brace between grounding claims is repaired.** A model that closes a rationale array and starts the next claim without the claim object's `}` is recovered by `fixMissingClaimObjectClose` instead of failing the parse.
 
 ### Changed
 
 - **Maktab native tier: `@firecrawl/pdf-inspector` 1.17.0 → 1.25.2.** Text-only PDFs now go through `classifyPdf` → `processPdfAsync`, so they never load PDFium/ONNX/OCR models, and extraction no longer blocks the event loop. `processPdfWithOcr` runs only when a page is actually routed to OCR. The offline model directory (`resources/pdf-inspector/pp-ocrv6-small/`) is unchanged — upstream still pins PP-OCRv6 Small.
 - **Structured text-layer signals replace the `في`/`يف` heuristic on the native path.** A `cmapGaps` unmapped-code ratio above 2%, or any page flagged `invisible_text_layer`, now raises an explicit warning plus `needsReview`; the old regex survives only for the pdf.js tier. Upstream 1.23–1.25 also fixes RTL visual-order reading, Arabic ligature reversal and broken subset ToUnicode maps — the defects behind most character-reversed Arabic imports.
 - **Document info carried on native extractions** (`title`, `author`, `creator`, `creationDate`, …) for future Raqim/Masdar matching; no user-visible behavior yet.
+- **Smaller Windows package.** `onnxruntime-node` ships only the target platform slice, and script-only `canvas` is no longer packed. Unpacked footprint measured **973.8 → 718.8 MB**. Hooks live in `scripts/prune-native-platforms.mjs` (`beforePack` / `afterPack`). `@napi-rs/canvas` stays — pdf.js needs it at runtime.
 - WASM fallback stays pinned at `@firecrawl/pdf-inspector-wasm@0.1.3` (1.14+ changes the `processPdf` options surface).
+- **2.2.0 Sanad Arabic stays paused.** FT-7 and FT-7b are NO-GO. FT-7c (v122) is frozen and will not be trained until budget returns. Vast is the only training ground. No Colab path.
 
 ## [2.1.0] — 2026-09-18 · Maktab Arabic
 

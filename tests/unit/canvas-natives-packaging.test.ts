@@ -26,13 +26,36 @@ describe('canvas native packaging for Maktab OCR', () => {
 
   it('electron-builder ships and unpacks native OCR deps', () => {
     const yml = readFileSync(join(root, 'electron-builder.yml'), 'utf8')
-    expect(yml).toMatch(/node_modules\/canvas\/\*\*\/\*/)
+    // pdf.js v5 resolves @napi-rs/canvas at runtime (pdf-page-raster.ts, tesseract-ocr.ts);
+    // node-canvas is no longer part of the shipped set — see the next test.
+    expect(yml).toMatch(/node_modules\/@napi-rs\/canvas\/\*\*\/\*/)
     expect(yml).toMatch(/node_modules\/tesseract\.js\/\*\*\/\*/)
     expect(yml).toMatch(/node_modules\/tesseract\.js-core\/\*\*\/\*/)
     expect(yml).toMatch(/node_modules\/@firecrawl\/pdf-inspector\/\*\*\/\*/)
     expect(yml).toMatch(/node_modules\/@firecrawl\/anydoc\/\*\*\/\*/)
     expect(yml).toContain('asarUnpack:')
     expect(yml).toMatch(/resources\/pdf-inspector/)
+  })
+
+  it('does not ship node-canvas: the main bundle never requires it', () => {
+    const yml = readFileSync(join(root, 'electron-builder.yml'), 'utf8')
+    expect(yml).not.toMatch(/node_modules\/canvas\/\*\*\/\*/)
+    const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'))
+    expect(pkg.dependencies?.canvas).toBeUndefined()
+    // Still installed: tests/smoke/setup-pdfjs-node.ts polyfills pdf.js from it and
+    // scripts/probe-ocr-bundled.mjs imports it. Neither ships in the app.
+    expect(pkg.devDependencies?.canvas).toBeDefined()
+  })
+
+  it('prunes unused onnxruntime-node platform slices with a reversible hook', () => {
+    const yml = readFileSync(join(root, 'electron-builder.yml'), 'utf8')
+    expect(yml).toMatch(/beforePack:\s*\.\/scripts\/prune-native-platforms\.mjs/)
+    expect(yml).toMatch(/afterPack:\s*\.\/scripts\/prune-native-platforms\.mjs/)
+    // Guard the constraint: expressing the prune as a platform-specific `files` negation
+    // leaves electron-builder's defaultMatcher holding only ignore patterns, which trips
+    // containsOnlyIgnore() in app-builder-lib/out/fileMatcher.js and prepends a
+    // match-everything glob — packing the entire repository into app.asar (+174.6 MB).
+    expect(yml).not.toContain('napi-v6')
   })
 
   it('keeps tesseract and firecrawl natives external in the main Vite build', () => {

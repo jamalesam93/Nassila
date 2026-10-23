@@ -1,6 +1,6 @@
 # Arabic OCR — large-scale evaluation on the AR-Books corpus
 
-**Date:** 2026-10-23 · **Corpus:** `E:\AR-Books-to-OCR` (21 PDFs, 336 MB) · **Run:** 231 pages (105 gold, 126 scan); 103 gold pages scored after blank/short-page filters · plus 30 degradation images · 200 dpi · harness in workspace `ocr-ab/`
+**Date:** 2026-10-23 · **Corpus:** `E:\AR-Books-to-OCR` (21 PDFs, 336 MB) · **Run:** 231 pages (105 gold, 126 scan); 103 gold pages scored after blank/short-page filters · plus 30 degradation images · 200 dpi · raw harness: `E:\Antigravity Projects\NassilaAGY\ocr-ab` (`eval-report-big.md`, `pdf-inspector-arabic.md`, `ab-report.md`)
 
 Supersedes the earlier 24- and 49-page runs. Both engines read the **same raster images**. Gold = the page's own PDF text layer; scan pages have none. Paddle output is scored through Nassila's shipped postprocess (per-line, mixed-script branch); Indra is scored raw.
 

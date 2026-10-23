@@ -99,7 +99,7 @@ Seven workers map to stages in the loop. Maturity varies; honest gaps only — n
 1. User opens **Manuscript** (default) or switches to **Bibliography** (Raqim) — loop vs bibliography only.
 2. In the loop: upload/paste manuscript → **Run audit** → L1/L2 per cite, OA/abstract fetch, L3 Sanad when Passage grounding is enabled.
 3. **Tasnif** / **Sharh** copy appears inline in loop detail; bibliography drawer opens Raqim filters.
-4. **Maktab** and **Masdar-lite** deterministic stages are live, including Masdar local-PDF attach and folder scan; their LLM facets remain planned. **Shahid** deterministic evidence is **live in 2.0.0** — not a peer tab. Production Arabic PDF OCR is **live in 2.1.0**. Auto cited-PDF ingest is **2.3.0**.
+4. **Maktab** and **Masdar-lite** deterministic stages are live, including Masdar local-PDF attach and folder scan; their LLM facets remain planned. **Shahid** deterministic evidence is **live in 2.0.0** — not a peer tab. Production Arabic PDF OCR is **live in 2.1.0** (Paddle). **2.1.1** keeps that extractor, fixes Arabic line order, and can fetch Indra without using it for import. Auto cited-PDF ingest is **2.3.0**.
 5. Engine applies JSON repair + quote-substring guardrails; LLM is advisory.
 
 **Target (full Ouroboros):**

@@ -8,6 +8,7 @@ const OPTIONAL_KEY_RE = /("[\w-]+")\s*\?\s*:/g
 const TRAILING_COMMA_RE = /,\s*([\]}])/g
 const PREMATURE_ROOT_CLOSE_RE = /"\]\}\}\],\s*"overallVerdict"/g
 const UNCLOSED_RATIONALE_ARRAY_RE = /"\}\],\s*"overallVerdict"/g
+const MISSING_CLAIM_CLOSE_RE = /("\])\s*,\s*(\{\s*"claim")/g
 /** Qwen3.5 thinking template family: `thinking\n<reasoning>\n response\n\n<json>`. */
 const QWEN_THINKING_PREFIX_RE = /^\s*thinking\s*\n[\s\S]*?\n\s*response\s*\n\s*\n/
 /** Defense form for runners that emit the raw thinking tokens. */
@@ -45,6 +46,14 @@ export function fixOverallVerdictBraceErrors(text: string): string {
 }
 
 /**
+ * Model closed a claim's rationale array but dropped the claim object's `}` before
+ * starting the next claim: `..."]  , {"claim"` → `..."]}, {"claim"`.
+ */
+export function fixMissingClaimObjectClose(text: string): string {
+  return text.replace(MISSING_CLAIM_CLOSE_RE, '$1}, $2')
+}
+
+/**
  * Strip a leading Qwen3.5 thinking trace before the JSON payload.
  * Qwen3.5 Sanad GGUFs embed a thinking chat template; with default templates the
  * model emits `thinking\n<reasoning>\n response\n\n<json>`. Fires only when the
@@ -71,6 +80,7 @@ export function repairGroundingJsonText(raw: string): string {
   out = sliceOuterObject(out)
   out = removeOptionalKeyMarkers(out)
   out = fixOverallVerdictBraceErrors(out)
+  out = fixMissingClaimObjectClose(out)
   out = removeTrailingCommas(out)
   return out.trim()
 }
