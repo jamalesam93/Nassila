@@ -25,7 +25,7 @@ The name **Nassila** is coined, inspired by the idea of a **sanad** (سند): a 
 
 - **Arabic lines stay in reading order.** Scan OCR used to reverse a whole page, which put lines bottom-to-top. Each line is reversed on its own.
 - **Legacy Arabic fonts are sent to OCR.** A text layer that decodes to the wrong characters is flagged instead of being parsed as bibliography text.
-- **Optional Indra download.** Settings → Local models can fetch an Indra OCR runtime (~92 MB). It is not the extractor. Scanned Arabic PDFs still use the packaged Paddle PP-OCRv5 adapter.
+- **Optional Indra download.** Settings → Local models fetches about 14 MB of Arabic OCR weights. Once installed, Indra reads Arabic scans inside the app (no Python). PaddleOCR covers any page Indra cannot. Without the download, Arabic scans stay on the packaged Paddle adapter.
 - **Arabic quotes tolerate orthography.** Diacritics, alef/ya variants, and edge punctuation (`.` vs `،`) no longer demote a supported quote to weak.
 - **Smaller Windows package.** Unused native libraries for other operating systems are no longer shipped.
 - **Arabic L3 still unvalidated** — Sanad Arabic (**2.2.0**) stays paused.

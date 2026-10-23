@@ -1,9 +1,9 @@
 /**
- * Shared contract for the optional Indra OCR candidate runtime.
+ * Shared contract for the optional Indra OCR download.
  *
- * The runtime is fetched on first use (weights are a modified OpenRAIL-M
- * license and are never bundled). Main owns the download/install; the renderer
- * only triggers it and renders progress.
+ * Weights are a modified OpenRAIL-M license and are never bundled. Main owns
+ * the download; the renderer only triggers it and renders progress. The models
+ * run inside the app (onnxruntime-node). No Python install.
  */
 
 export const INDRA_RUNTIME_STATUS_CHANNEL = 'maktab:indraStatus'
@@ -13,7 +13,7 @@ export const INDRA_RUNTIME_PROGRESS_CHANNEL = 'maktab:indraFetchProgress'
 /** License of the Indra weights (not OSI; see resources/indra-ocr/README.md). */
 export const INDRA_LICENSE_LABEL = 'modified OpenRAIL-M'
 
-export type IndraFetchPhase = 'models' | 'venv' | 'package' | 'verify'
+export type IndraFetchPhase = 'models' | 'verify'
 
 export interface IndraFetchProgress {
   phase: IndraFetchPhase
@@ -24,14 +24,12 @@ export interface IndraFetchProgress {
 }
 
 export interface IndraRuntimeStatus {
-  /** Marker + every model file + the Python env are present. */
+  /** Every pinned model file is present and matches its checksum. */
   ready: boolean
   /** Destination directory (userData/indra-ocr unless overridden). */
   directory: string
   /** Bytes occupied by the model files (0 when not fetched). */
   modelBytes: number
-  /** `indra-ocr` package version recorded at fetch time. */
-  packageVersion: string | null
   license: string
   /** Present when the last fetch attempt failed. */
   error?: string

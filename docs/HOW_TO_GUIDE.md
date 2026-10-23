@@ -95,7 +95,7 @@ The figure above shows **L1/L2 pass** summaries after a successful verify run; w
 
 ### Manuscript audit and source coverage
 
-Upload or paste a manuscript with a References section, then choose **Run audit**. Maktab extracts manuscript text (prefer **DOCX** for Arabic reliability; PDF via pdf.js; **Enhanced OCR** with bundled **eng/fra** for Latin scans). Arabic scanned PDFs use the Paddle Arabic adapter when packaged (**2.1.0**). **2.1.1** keeps Arabic OCR lines in reading order and sends legacy-encoded text layers to OCR. Character-reversed font PDFs still need **DOCX**. An optional Indra download in Settings is not the extractor. Masdar resolves OA and attached source PDFs when available; Sanad performs optional L3 grounding.
+Upload or paste a manuscript with a References section, then choose **Run audit**. Maktab extracts manuscript text (prefer **DOCX** for Arabic reliability; PDF via pdf.js; **Enhanced OCR** with bundled **eng/fra** for Latin scans). Arabic scanned PDFs use Indra when its weights are downloaded from Settings, and the packaged Paddle adapter otherwise (**2.1.1**). **2.1.1** also keeps Arabic OCR lines in reading order and sends legacy-encoded text layers to OCR. Character-reversed font PDFs still need **DOCX**. Masdar resolves OA and attached source PDFs when available; Sanad performs optional L3 grounding.
 
 ---
 

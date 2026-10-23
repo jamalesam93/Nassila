@@ -11,10 +11,10 @@ import {
 } from './maktab/native-pdf-inspector'
 import { extractPdfWithTesseract, isTesseractOcrAvailable } from './maktab/tesseract-ocr'
 import {
-  extractPdfWithArabicPaddle,
   isArabicPaddleOcrAvailable,
   recognizeArabicPageImage
 } from './maktab/arabic-paddle-ocr'
+import { extractPdfWithArabicOcr } from './maktab/indra-ocr'
 import {
   assertMaktabPdfBuffer,
   clampMaktabDpi
@@ -158,7 +158,7 @@ export function registerMaktabIpcHandlers(): void {
 
     try {
       const result = useArabic
-        ? await extractPdfWithArabicPaddle(buffer, { languages, dpi }, (progress) => {
+        ? await extractPdfWithArabicOcr(buffer, { languages, dpi }, (progress) => {
             if (!event.sender.isDestroyed()) {
               event.sender.send(MAKTAB_OCR_PROGRESS_CHANNEL, progress)
             }

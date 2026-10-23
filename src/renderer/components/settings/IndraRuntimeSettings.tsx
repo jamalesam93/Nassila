@@ -10,8 +10,8 @@ function formatBytes(bytes: number): string {
 }
 
 /**
- * First-run fetch for the optional Indra OCR candidate runtime.
- * Nothing is bundled: the weights are fetched on demand (modified OpenRAIL-M).
+ * First-run download for optional Indra OCR.
+ * The weights are fetched on demand (modified OpenRAIL-M) and run in the app.
  */
 export default function IndraRuntimeSettings() {
   const { t } = useTranslation()
@@ -68,7 +68,6 @@ export default function IndraRuntimeSettings() {
       <p className="mt-3 text-[11px] text-muted-foreground" role="status">
         {status?.ready
           ? t('settings.indra.statusReady', {
-              version: status.packageVersion ?? '—',
               size: formatBytes(status.modelBytes)
             })
           : status

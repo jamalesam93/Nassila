@@ -33,6 +33,7 @@ describe('canvas native packaging for Maktab OCR', () => {
     expect(yml).toMatch(/node_modules\/tesseract\.js-core\/\*\*\/\*/)
     expect(yml).toMatch(/node_modules\/@firecrawl\/pdf-inspector\/\*\*\/\*/)
     expect(yml).toMatch(/node_modules\/@firecrawl\/anydoc\/\*\*\/\*/)
+    expect(yml).toMatch(/node_modules\/@techstark\/opencv-js\/\*\*\/\*/)
     expect(yml).toContain('asarUnpack:')
     expect(yml).toMatch(/resources\/pdf-inspector/)
   })

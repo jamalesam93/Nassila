@@ -1,19 +1,27 @@
-# Indra OCR — fetched at first run (not bundled)
+# Indra OCR — downloaded by the app (not bundled)
 
-This directory is intentionally empty in git. `npm run ocr:indra-fetch` populates:
+This directory is empty in git. The app downloads the Arabic-path weights into
+`userData/indra-ocr` (or `NASSILA_INDRA_DIR`). A checkout of the weights for
+local evaluation can live here, and is gitignored.
 
 ```
-resources/indra-ocr/
-  models/                 # datalab-to/indra-ocr weights (~97 MB), gitignored
-  venv/                   # Python env with the `indra-ocr` package, gitignored
-  checksums.sha256        # written by the fetch script
-  .nassila-indra-ocr-ready
+userData/indra-ocr/models/
+  det.onnx
+  script.onnx
+  rec.onnx
+  rec_rtl.onnx
+  orient.onnx
+  order.onnx
+  meta.json
+  LICENSE
 ```
 
-## Why fetched, not bundled
+About 14 MB. Revision `v1.1.0`. The CJK, math, and language-model files are
+not used by the Arabic path.
 
-Indra runs as a Python package (`pip install indra-ocr`), and its weights use a
-**modified OpenRAIL-M** license rather than an OSI one:
+## Why downloaded, not bundled
+
+The weights use a **modified OpenRAIL-M** license rather than an OSI one:
 
 - free for research, personal use, and organizations under $20M
   revenue/funding;
@@ -22,42 +30,18 @@ Indra runs as a Python package (`pip install indra-ocr`), and its weights use a
   distributes the model, and §4(b) requires shipping the license;
 - §8 applies share-a-like to the model **and to its Output**.
 
-Keeping the weights out of the installer and fetching them on demand keeps the
-distribution story clean, and the license/notice files are written next to the
-models. Bundling them into a release needs a deliberate legal decision — do not
-"just include" them in a build.
+The installer does not contain the weights. Settings → Local models downloads
+them, and the LICENSE file is stored beside the models.
 
-## Until the Tauri 2 / Rust port
+## How the app runs them
 
-The plan is to port the ONNX graphs (`det.onnx` + `rec_rtl.onnx`) to
-`onnxruntime-node` once the app moves to Tauri 2 and the runtime shrinks. Until
-then the evaluation harness uses the Python package from this directory. The
-app itself does not depend on this folder.
+`src/main/maktab/indra-ocr.ts` loads the eight files with onnxruntime-node
+(the same runtime Paddle uses) and OpenCV.js for resize and rotation. No
+Python. Arabic OCR pages go to Indra first. PaddleOCR re-reads a page when
+Indra throws or returns fewer than 40 characters.
 
-## Commands
+## Operator comparison against the Python package
 
-```bash
-npm run ocr:indra-fetch                 # operator CLI; idempotent, --force to redo
-node scripts/fetch-indra-ocr.mjs --force
-```
-
-Environment overrides:
-
-- `NASSILA_INDRA_DIR` — destination (default for the CLI: `resources/indra-ocr`)
-- `INDRA_OCR_MODEL_DIR` — used by the harness to point at `models/`
-
-## In the app (first run)
-
-`Settings → Local models → Arabic OCR candidate (Indra)` triggers the same
-fetch from the main process:
-
-- destination: `userData/indra-ocr` (or `NASSILA_INDRA_DIR`), never the
-  installer directory;
-- `maktab:indraStatus` — readiness, model size, package version, license;
-- `maktab:indraFetch` — downloads the 17 files and provisions the pinned
-  `indra-ocr==1.1.2` environment (`uv` preferred, `pip` fallback);
-- `maktab:indraFetchProgress` — phase/count stream for the settings card.
-
-The runtime does **not** feed `extractFromPdf` yet; Arabic extraction still
-uses PP-OCRv5. It exists for the evaluation harness and the planned Tauri 2
-port, where `det.onnx` + `rec_rtl.onnx` move to `onnxruntime-node`.
+`npm run ocr:indra-fetch` still installs the Python `indra-ocr` package for
+`scripts/eval-arabic-ocr/run_indra.py`. That path is not used by the app.
+The TypeScript runner is `scripts/eval-arabic-ocr/run-indra-ts.ts`.

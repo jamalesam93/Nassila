@@ -4,7 +4,7 @@
 **Index:** NassilaT [`2.1_2.2_ARABIC_OPERATOR_INDEX.md`](../../NassilaT/training/2.1_2.2_ARABIC_OPERATOR_INDEX.md) (2.0 stub → archive)  
 **Maktab context:** [`MAKTAB_OCR.md`](./MAKTAB_OCR.md) · pack [`resources/arabic-ocr/README.md`](../resources/arabic-ocr/README.md)
 
-**Honesty (2026-10-23):** **2.1.1 shipped.** Official Arabic PP-OCRv5 ONNX pack + main-process `ppu-paddle-ocr` runner + IPC `ara` route remain the extractor (2.1.0). 2.1.1 adds per-line reversal, legacy-encoded routing, and an optional Indra fetch. Operator: `npm run ocr:arabic-adapter` then `npm run probe:arabic-ocr`. Reverse-font ToUnicode **always** prefers DOCX. Sanad FT-7 is **2.2.0**, paused for budget.
+**Honesty (2026-10-24):** **2.1.1 shipped.** Official Arabic PP-OCRv5 ONNX pack + main-process `ppu-paddle-ocr` runner remain the fallback and the path when Indra is not downloaded. When the user downloads Indra, Arabic OCR pages are read by the in-app ONNX port first. 2.1.1 also adds per-line reversal and legacy-encoded routing. Operator: `npm run ocr:arabic-adapter` then `npm run probe:arabic-ocr`. Reverse-font ToUnicode **always** prefers DOCX. Sanad FT-7 is **2.2.0**, paused for budget.
 
 ---
 
@@ -44,14 +44,14 @@ Evaluate in this order; record in `reports/arabic_ocr_benchmark_YYYYMMDD.md`:
 
 **Do not assume** Arabic weights drop into pdf-inspector's fixed PP-OCRv6 Latin model directory — pack under `resources/arabic-ocr/` and run behind `ArabicRecognizerAdapter`.
 
-### Indra OCR (evaluated, fetched on demand, not shipped in extraction)
+### Indra OCR (optional download, then the Arabic reader)
 
-Indra (`datalab-to/indra-ocr`, ONNX CPU, 80+ languages including `rec_rtl`) is the leading candidate from the 2026-10 evaluation: on 84 reference-valid pages it beat PP-OCRv5 (median CER 0.067 vs 0.120) at ~8× speed, but it has a heavier tail (dark/designed pages, historical handwriting fails on both) and a modified OpenRAIL-M license.
+Indra (`datalab-to/indra-ocr`, ONNX CPU) beat PP-OCRv5 on the 2026-10 evaluation: 84 reference-valid pages, median CER 0.067 vs 0.120, with a heavier tail on dark and designed pages. The weights use a modified OpenRAIL-M license, so they stay a download.
 
-- **App wiring:** Settings → Local models → **Arabic OCR candidate (Indra)** (`maktab:indraFetch`, `maktab:indraStatus`, progress on `maktab:indraFetchProgress`). It fetches 17 model files (~92 MB) to `userData/indra-ocr` and provisions `indra-ocr==1.1.2`; nothing is bundled. Operator equivalent: `npm run ocr:indra-fetch`.
-- **Not wired into `extractFromPdf`.** Arabic extraction remains PP-OCRv5 until the router + plausibility guards and the Tauri 2 ONNX port land.
-- **Harness:** `npm run eval:ocr:arabic -- all --corpus <dir>` scores both engines on the same rasters; see [`scripts/eval-arabic-ocr/README.md`](../scripts/eval-arabic-ocr/README.md).
-- **Evidence:** [`reports/arabic_ocr_real_holdout_20261023.md`](../reports/arabic_ocr_real_holdout_20261023.md). Raw harness (not in this repo): `E:\Antigravity Projects\NassilaAGY\ocr-ab` — `eval-report-big.md` (103 gold + 126 scan pages; Indra wins 74/84 valid pages, median CER 0.067 vs 0.120, heavier tail), `pdf-inspector-arabic.md`, `ab-report.md`.
+- **App wiring:** Settings → Local models → **Arabic OCR (Indra)** (`maktab:indraFetch`, `maktab:indraStatus`, progress on `maktab:indraFetchProgress`). It fetches eight files (~14 MB) to `userData/indra-ocr`. `src/main/maktab/indra-ocr.ts` runs them on onnxruntime-node. No Python. Arabic pages call `extractPdfWithArabicOcr`: Indra first, Paddle when the page throws or returns fewer than 40 characters.
+- **Port check:** `scripts/eval-arabic-ocr/run-indra-ts.ts` on the same 231 pages matched the Python package (median CER 0.067, 76 wins vs Paddle where Python had 74, p90 0.348 vs 0.356). Median about 0.8 s/page.
+- **Python reference:** `npm run ocr:indra-fetch` still provisions the Python package for `scripts/eval-arabic-ocr/run_indra.py`. The app does not call it.
+- **Evidence:** [`reports/arabic_ocr_real_holdout_20261023.md`](../reports/arabic_ocr_real_holdout_20261023.md). Raw harness (not in this repo): `E:\Antigravity Projects\NassilaAGY\ocr-ab`.
 
 ---
 

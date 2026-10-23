@@ -8,7 +8,7 @@ vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: () => {} },
   useTranslation: () => ({
     t: (key: string, options?: Record<string, unknown>) => {
-      if (key === 'settings.indra.statusReady') return `ready ${options?.version} ${options?.size}`
+      if (key === 'settings.indra.statusReady') return `ready ${options?.size}`
       if (key === 'settings.indra.progress') return `${options?.completed}/${options?.total}`
       if (key === 'settings.indra.failed') return `failed ${options?.message}`
       if (key.startsWith('settings.indra.phase.')) return key.split('.').pop()
@@ -47,7 +47,7 @@ describe('IndraRuntimeSettings', () => {
     fireEvent.click(screen.getByRole('button', { name: 'settings.indra.fetch' }))
 
     await waitFor(() => expect(window.api.fetchIndraRuntime).toHaveBeenCalledTimes(1))
-    expect(await screen.findByText('ready 1.1.2 91.6 MB')).toBeTruthy()
+    expect(await screen.findByText('ready 91.6 MB')).toBeTruthy()
   })
 
   it('renders fetch progress from the main-process push', async () => {

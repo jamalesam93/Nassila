@@ -164,12 +164,12 @@
       "cacheCleared": "Extraction cache cleared."
     },
     "indra": {
-      "title": "Arabic OCR candidate (Indra)",
-      "subtitle": "Fetched on first use — never bundled with the app. Used by the OCR evaluation harness.",
-      "statusReady": "Ready · {{version}} · {{size}}",
+      "title": "Arabic OCR (Indra)",
+      "subtitle": "Optional download. Once installed, Indra reads Arabic scans, and PaddleOCR reads any page Indra cannot. The models are not bundled with the app.",
+      "statusReady": "Ready · {{size}}",
       "statusMissing": "Not installed",
       "statusChecking": "Checking…",
-      "fetch": "Fetch runtime",
+      "fetch": "Download",
       "fetching": "Fetching…",
       "license": "Model weights use a modified OpenRAIL-M license — fetched on demand, not redistributed with the app.",
       "directory": "Installed in {{dir}}",

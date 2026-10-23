@@ -4,11 +4,11 @@ All notable changes to **Nassila** are documented here.
 
 ## [2.1.1] — 2026-10-23 · Arabic OCR fidelity
 
-App version **2.1.1**. Production Arabic scan OCR stays the packaged Paddle PP-OCRv5 adapter from 2.1.0. This patch fixes how Arabic text is read and adds an optional Indra download that does not replace that adapter. Cut the Windows installer with `npm run build:win` when publishing the GitHub release.
+App version **2.1.1**. Arabic scan pages are read by Indra when its weights are installed, and by the packaged Paddle PP-OCRv5 adapter otherwise. This patch also fixes how Arabic text is read. Cut the Windows installer with `npm run build:win` when publishing the GitHub release.
 
 ### Added
 
-- **Optional Indra OCR runtime, fetched on first use.** Settings → Local models → *Arabic OCR candidate (Indra)* downloads the 17 Indra model files (~92 MB) to `userData/indra-ocr` and provisions a pinned `indra-ocr==1.1.2` environment (`uv` preferred, `pip` fallback), with progress on `maktab:indraFetchProgress` and status on `maktab:indraStatus`. The weights are a modified OpenRAIL-M license: they are **fetched, never bundled or redistributed** (see `resources/indra-ocr/README.md`). The runtime is **not** wired into `extractFromPdf` — Arabic extraction still uses PP-OCRv5.
+- **Indra reads Arabic scans inside the app.** Settings → Local models → *Arabic OCR (Indra)* downloads eight weight files (~14 MB) to `userData/indra-ocr`. The app runs them with the ONNX Runtime it already ships. No Python. Once installed, Indra reads each Arabic OCR page first; PaddleOCR re-reads a page only when Indra throws or returns fewer than 40 characters. Without the download, Arabic scans stay on Paddle. The weights are a modified OpenRAIL-M license: they are **fetched, never bundled or redistributed** (see `resources/indra-ocr/README.md`). The TypeScript port matched the Python package on the 84 reference-valid pages (median CER 0.067, 76 wins vs Paddle where Python had 74).
 - **Arabic OCR evaluation harness in-repo.** `npm run eval:ocr:arabic -- all --corpus <dir>` selects gold pages from clean Arabic text layers, rasterizes scan pages, runs PP-OCRv5 and the fetched Indra runtime on the same images, and writes a CER / 6-gram report. Operator setup: `npm run ocr:indra-fetch`. Harness guide: `scripts/eval-arabic-ocr/README.md`; evidence: `reports/arabic_ocr_real_holdout_20261023.md`.
 
 ### Fixed

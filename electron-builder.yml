@@ -27,6 +27,7 @@ files:
   - node_modules/onnxruntime-node/**/*
   - node_modules/ppu-paddle-ocr/**/*
   - node_modules/ppu-ocv/**/*
+  - node_modules/@techstark/opencv-js/**/*
   # ── Repository content that must never ship in the app bundle ────────────────
   # electron-builder sweeps the app directory, so without these negations a build
   # packs the docs tree (incl. media), agent skills, the source tree, tests, scripts,
@@ -61,6 +62,7 @@ asarUnpack:
   - node_modules/onnxruntime-node/**/*
   - node_modules/ppu-paddle-ocr/**/*
   - node_modules/ppu-ocv/**/*
+  - node_modules/@techstark/opencv-js/**/*
 extraResources:
   - from: resources/tesseract
     to: tesseract

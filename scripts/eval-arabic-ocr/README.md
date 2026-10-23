@@ -1,14 +1,14 @@
 # Arabic OCR evaluation harness
 
 In-repo version of the evaluation used for the 2026-10 Arabic OCR reports. It
-scores Nassila's shipped Arabic recognizer (Paddle PP-OCRv5) against an optional
-candidate (Indra OCR) on real PDFs, using each page's own text layer as the
+scores Nassila's packaged Paddle PP-OCRv5 adapter against Indra on real PDFs,
+using each page's own text layer as the
 reference where one exists.
 
 ## Quick start
 
 ```bash
-npm run ocr:indra-fetch          # once: fetch Indra models + Python env (optional)
+npm run ocr:indra-fetch          # once, only for the Python reference runner
 npm run eval:ocr:arabic -- all --corpus "E:\AR-Books-to-OCR"
 ```
 
@@ -58,11 +58,17 @@ sync); Indra is scored raw. 6-gram recall and F1 capture content coverage.
 
 ## Indra
 
-Indra is fetched on first run (`npm run ocr:indra-fetch`) and is **never
-bundled**: its weights are a modified OpenRAIL-M license. See
-`resources/indra-ocr/README.md` for the distribution constraints. The long-term
-plan is a Rust/Tauri 2 port of `det.onnx` + `rec_rtl.onnx` to
-`onnxruntime-node`; the harness will keep working with either.
+The app runs Indra itself (`src/main/maktab/indra-ocr.ts`, onnxruntime-node,
+eight files, no Python). Score that port with:
+
+```bash
+npx vite-node scripts/eval-arabic-ocr/run-indra-ts.ts -- pages.json out.json modelDir
+```
+
+`run-indra` in this harness still calls the Python package
+(`npm run ocr:indra-fetch`, then `run_indra.py`) so a checkout can be compared
+with upstream. The weights are a modified OpenRAIL-M license and are **never
+bundled**. See `resources/indra-ocr/README.md`.
 
 ## Licensing of corpora
 

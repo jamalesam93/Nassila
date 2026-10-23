@@ -23,6 +23,11 @@ declare module 'citeproc' {
   export = CSL
 }
 
+declare module '@techstark/opencv-js' {
+  const ready: Promise<unknown> | unknown
+  export default ready
+}
+
 declare module '@citation-js/core' {
   export interface CiteInstance {
     get(options: { type: string; style?: string }): unknown

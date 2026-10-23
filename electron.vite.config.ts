@@ -14,7 +14,8 @@ export const MAIN_NATIVE_EXTERNALS = [
   '@firecrawl/anydoc',
   'onnxruntime-node',
   'ppu-paddle-ocr',
-  'ppu-ocv'
+  'ppu-ocv',
+  '@techstark/opencv-js'
 ] as const
 
 function copyAppIcons(): Plugin {

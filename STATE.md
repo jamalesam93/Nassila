@@ -11,7 +11,7 @@ Read this at the start of every agent session. Update when focus, blockers, or s
 
 | Priority | Track | Status |
 |----------|-------|--------|
-| **P0** | **2.1.1 Arabic OCR fidelity** | **Shipped 2026-10-23** — per-line Arabic OCR reversal, legacy-encoded layers routed to OCR, pdf-inspector 1.25.2, optional Indra fetch. **PP-OCRv5 remains the extractor.** Indra is not wired into `extractFromPdf`. |
+| **P0** | **2.1.1 Arabic OCR fidelity** | **Shipped 2026-10-23** — per-line Arabic OCR reversal, legacy-encoded layers routed to OCR, pdf-inspector 1.25.2. Indra (onnxruntime-node, ~14 MB download, no Python) reads Arabic OCR pages when installed; Paddle is the fallback and the path when Indra is absent. |
 | **P0** | **2.1.0 Maktab Arabic** | **Shipped 2026-09-18** — Track A production Maktab Arabic OCR (Paddle PP-OCRv5) **+** Track C Arabic-aware mapping. No GPU. Do not claim Arabic L3. |
 | **P0** | **2.2.0 Sanad Arabic** | **Paused (budget) 2026-10-23.** FT-7 **NO-GO** 2026-10-14. FT-7b **NO-GO** 2026-10-16 — AR verdict 0.776 (bar 0.90), EN v2 0.945 (bar 0.950). FT-7c v122 stays **frozen** and is **not** to be trained. Vast is the only ground when cash returns. No Colab. |
 | **P0** | **2.0.0 MaktabOCR + Shahid** | **Shipped 2026-09-06** — native pdf-inspector + selective OCR; Shahid table/figure **deterministic** live; Tier 3 GO. Arabic adapter goldens PASS; **Track A runner landed in tree** (pack via `npm run ocr:arabic-adapter`). |
@@ -27,7 +27,7 @@ Read this at the start of every agent session. Update when focus, blockers, or s
 
 **2.0.0 gate (2026-09-06):** **GO** — NassilaT `training/EVAL_GONOGO_TIER3_MEMO.md`. All hard gates satisfied across all 6 tracks. Release cut approved.
 
-**Honesty (2026-10-23):** **2.1.1 shipped.** Production Arabic scan OCR is still PP-OCRv5 (2.1.0). 2.1.1 fixes line order, flags legacy-encoded Arabic layers, and can fetch Indra without using it for extraction. Reverse-font still prefers DOCX. Arabic L3 remains unvalidated until **2.2.0 / FT-7**, which is **paused for budget**. **Sanad trains English and Arabic only** — do not add French (or any third language) as a gate or prospective cut.
+**Honesty (2026-10-24):** **2.1.1 shipped.** Arabic scan OCR uses Indra when the user has downloaded its weights, and PP-OCRv5 otherwise. 2.1.1 also fixes line order and flags legacy-encoded Arabic layers. Reverse-font still prefers DOCX. Arabic L3 remains unvalidated until **2.2.0 / FT-7**, which is **paused for budget**. **Sanad trains English and Arabic only** — do not add French (or any third language) as a gate or prospective cut.
 
 **IA:** Manuscript loop vs Bibliography only — old seven-worker navigation is gone.
 
@@ -136,7 +136,7 @@ Committed and verified in the 2.0.0 release:
 
 ## Blockers
 
-- **2.1.1 Arabic OCR fidelity:** **SHIPPED 2026-10-23** — line order, legacy-encoded routing, pdf-inspector 1.25.2, optional Indra fetch. Extractor is still PP-OCRv5.
+- **2.1.1 Arabic OCR fidelity:** **SHIPPED 2026-10-23** — line order, legacy-encoded routing, pdf-inspector 1.25.2, in-app Indra (Paddle fallback).
 - **2.1.0 Maktab Arabic (Tracks A+C):** **SHIPPED 2026-09-18** — Paddle pack + IPC `ara` + mapping fixtures; reverse-font still DOCX; `probe:arabic-ocr` PASS. Arabic L3 unvalidated.
 - **2.2.0 Sanad Arabic (Track B):** **Paused for budget (2026-10-23).** FT-7 NO-GO 2026-10-14. FT-7b NO-GO 2026-10-16 — Arabic compounds never split, `weak` confused with insufficient, quotes copy paraphrase wording; EN v2 0.945 vs 0.950. FT-7c v122 is frozen and must not be trained. Quants withheld; v119 / v120 / v121 LoRA repos public, v120 and v121 cards marked NO-GO. UI AR ≠ model AR until GO. Vast is the only ground when cash returns.
 - DOCX remains a supported Arabic ingest path; scanned Arabic PDF uses Paddle when the pack is present.

@@ -1,6 +1,6 @@
 # Features & Tweaks — Nassila app
 
-**Status:** 2026-10-23 — **2.1.1 Arabic OCR fidelity shipped** (Paddle stays the extractor; Indra is an optional fetch). Next cut **2.2.0 Sanad Arabic** is **paused for budget** (FT-7 and FT-7b NO-GO; FT-7c frozen, not started). Companion to NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) and the [website docs](https://nassila-web.vercel.app/en/docs/sanad-setup) (now canonical). Scope is the **desktop app** ([Nassila](https://github.com/jamalesam93/Nassila)). Items are grouped by priority and each has an effort, a blast radius, and acceptance checks so they can be picked off independently.
+**Status:** 2026-10-24 — **2.1.1 Arabic OCR fidelity shipped** (Indra reads Arabic scans when downloaded; Paddle is the fallback). Next cut **2.2.0 Sanad Arabic** is **paused for budget** (FT-7 and FT-7b NO-GO; FT-7c frozen, not started). Companion to NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) and the [website docs](https://nassila-web.vercel.app/en/docs/sanad-setup) (now canonical). Scope is the **desktop app** ([Nassila](https://github.com/jamalesam93/Nassila)). Items are grouped by priority and each has an effort, a blast radius, and acceptance checks so they can be picked off independently.
 
 > **Version streams:** App releases (**Nassila 2.1.1** shipped; next planned cut **2.2.0 Sanad Arabic** paused for budget) and Sanad checkpoints **SNN** / **FT-N** (**9B FT-6/v119** sole published Hub tier until FT-7 GO; 4B S15 / 12B S14 retired) are independent — see NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) § App release train.
 
@@ -615,23 +615,24 @@ Do not pull these into a tweak batch outside the **2.0.0 freeze contract** (`#22
 
 **Index:** NassilaT `2.1_2.2_ARABIC_OPERATOR_INDEX.md`.
 
-### 25. 2.1.x — Indra OCR candidate runtime (fetched, evaluated)
+### 25. 2.1.1 — Indra on onnxruntime-node (shipped)
 
-**Problem.** The 2026-10 Arabic evaluation found Indra better than PP-OCRv5 on typical pages (median CER 0.067 vs 0.120, ~8× faster) but with a heavier tail (dark/designed pages) and a modified OpenRAIL-M weight license. It must not be bundled, and it is not yet an extraction backend.
+**Problem.** The 2026-10 Arabic evaluation found Indra better than PP-OCRv5 on typical pages (median CER 0.067 vs 0.120) but with a heavier tail (dark/designed pages) and a modified OpenRAIL-M weight license. The weights must not be bundled, and the app must not ask the user to install Python.
 
-**Ship rule.** Fetch on first use, never in the installer; keep the extraction path on PP-OCRv5 until the router + plausibility guards and the Tauri 2 ONNX port land.
+**Ship rule.** Download eight Arabic-path files on demand. Run them on the onnxruntime-node the app already ships. Paddle re-reads a page Indra cannot.
 
 **What shipped.**
-- `src/main/maktab/indra-runtime.ts` — fetch 17 model files (~92 MB) to `userData/indra-ocr`, provision pinned `indra-ocr==1.1.2` (`uv` preferred, `pip` fallback), marker + checksums.
-- IPC `maktab:indraStatus` / `maktab:indraFetch` / `maktab:indraFetchProgress` (policy row, network scope `indra_fetch`, no renderer input).
-- Settings → Local models → **Arabic OCR candidate (Indra)** card with status, size, version, progress, errors.
-- Operator CLI `npm run ocr:indra-fetch`; harness `npm run eval:ocr:arabic`.
+- `src/engine/maktab/ocr/indra/` — detection, recognition, deskew, reading order, RTL flip.
+- `src/main/maktab/indra-ocr.ts` — sessions on onnxruntime-node; OpenCV.js for resize and warp.
+- `src/main/maktab/indra-runtime.ts` — eight files (~14 MB) to `userData/indra-ocr`, SHA-256 pins for Hugging Face `v1.1.0`. No Python.
+- Per-page route: Indra first, Paddle below 40 characters or on throw. No Indra means Paddle only.
+- Settings → Local models → **Arabic OCR (Indra)**. The card shows ready state and size, not a package version.
 
 **Acceptance.**
-- [x] Runtime fetch works from the app and the CLI; destination is userData (or `NASSILA_INDRA_DIR`), never the install dir
-- [x] Weights and environment are gitignored and absent from the installer
-- [x] Status/progress/IPC covered by unit tests; policy audit green
-- [x] `extractFromPdf` unchanged (Arabic still PP-OCRv5)
-- [ ] Router (ink/contrast) + Tauri 2 ONNX port — future cut
+- [x] Fetch destination is userData (or `NASSILA_INDRA_DIR`), never the install dir
+- [x] Weights are gitignored and absent from the installer
+- [x] Status/progress/IPC covered by unit tests
+- [x] TypeScript port matched Python Indra on 84 reference-valid pages (median CER 0.067; 76 wins vs Paddle)
+- [x] A page Indra cannot read falls back to Paddle
 
-**References:** `resources/indra-ocr/README.md`, `scripts/eval-arabic-ocr/README.md`, `reports/arabic_ocr_real_holdout_20261023.md`. Raw run: `E:\Antigravity Projects\NassilaAGY\ocr-ab` (`eval-report-big.md`).
+**References:** `resources/indra-ocr/README.md`, `scripts/eval-arabic-ocr/run-indra-ts.ts`, `reports/arabic_ocr_real_holdout_20261023.md`. Raw run: `E:\Antigravity Projects\NassilaAGY\ocr-ab`.

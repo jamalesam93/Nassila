@@ -4,7 +4,7 @@
 **Scope:** Nassila (app) · NassilaT (training) · nassila-web (docs)  
 **Sources reviewed:** `NassilaT/training/OUROBOROS_OPERATOR_MAP.md`, `Nassila/docs/FEATURES-AND-TWEAKS.md`, `STATE.md`, `PRODUCT.md`, `OUROBOROS_CONTEXT.md`, `CHANGELOG.md`, engine/renderer code, field notes, website release train
 
-**App baseline:** **2.1.1** (Arabic OCR fidelity, 2026-10-23; 2.1.0 Maktab Arabic 2026-09-18; 2.0.0 MaktabOCR + Shahid 2026-09-06). **Sanad model (Hub):** 9B **FT-6** (sole published tier, v119, 2026-08-21). **Next planned cut:** **2.2.0 Sanad Arabic** — FT-7 and FT-7b **NO-GO**; FT-7c frozen and **paused for budget**. Vast is the only training ground when it resumes. **Shahid deterministic LIVE in 2.0.0**. Production Arabic scan OCR LIVE in 2.1.0 (Paddle). Indra is an optional fetch in 2.1.1 and is not the extractor. **IA:** loop vs bibliography only.
+**App baseline:** **2.1.1** (Arabic OCR fidelity, 2026-10-23; 2.1.0 Maktab Arabic 2026-09-18; 2.0.0 MaktabOCR + Shahid 2026-09-06). **Sanad model (Hub):** 9B **FT-6** (sole published tier, v119, 2026-08-21). **Next planned cut:** **2.2.0 Sanad Arabic** — FT-7 and FT-7b **NO-GO**; FT-7c frozen and **paused for budget**. Vast is the only training ground when it resumes. **Shahid deterministic LIVE in 2.0.0**. Arabic scan OCR: Indra when downloaded (2.1.1), Paddle otherwise (2.1.0 pack). **IA:** loop vs bibliography only.
 
 ---
 
@@ -284,7 +284,7 @@ Suggested versions and worker-themed codenames. **Not dates, not public promises
 | **1.10.1** | **Packaged network parity** | **تكافؤ الشبكة المعبأة** | Raqim / main IPC | Keep-my-title / DOI lookup / autocorrect online / input-Resolve via main IPC | **Shipped 2026-08-23** — #21 |
 | **2.0.0** | **MaktabOCR + Shahid** | **مكتب OCR + شاهد** | Maktab / Shahid | Firecrawl native pdf-inspector + selective OCR; scan fallback; Shahid table/figure evidence path; Tier 3 + multimodal PASS | **Shipped 2026-09-06** |
 | **2.1.0** | **Maktab Arabic** | **مكتب عربي** | Maktab | Production Arabic scan OCR (Paddle) + Arabic-aware mapping | **Shipped 2026-09-18** |
-| **2.1.1** | **Arabic OCR fidelity** | **دقة OCR العربي** | Maktab | Per-line Arabic OCR order; legacy-encoded layers routed to OCR; optional Indra fetch (not the extractor) | **Shipped 2026-10-23** |
+| **2.1.1** | **Arabic OCR fidelity** | **دقة OCR العربي** | Maktab | Per-line Arabic OCR order; legacy-encoded layers routed to OCR; Indra reads Arabic scans when downloaded, Paddle otherwise | **Shipped 2026-10-23** |
 | **2.2.0** | **Sanad Arabic** | **سند عربي** | Sanad | Native Arabic L3 + Hub label after GO | Planned — FT-7 and FT-7b **NO-GO**; FT-7c frozen, **paused for budget** |
 | **2.3.0** | **Masdar Auto** | **مصدر آلي** | Masdar / Maktab | Auto cited-PDF ingest; library proxy prefixes; page provenance; Zenodo/GitHub | Planned |
 | **2.4.0** | **Tasnif Risk** | **تصنيف المخاطر** | Tasnif | Retraction flags; preprint→version; citation-age / self-cite; predatory cadence | Planned |
@@ -417,7 +417,7 @@ Trust and submission outputs — finish gaps that overlap 1.3.0 preflight but br
 | **Line order** | PP-OCRv5 output is reversed per line. Whole-page reversal scored mean CER 0.811; per-line scores 0.251 on the same pages. |
 | **Legacy fonts** | Pre-Unicode Arabic layers (no cmap gaps, high rare-letter share) raise `needsReview` and route to OCR. |
 | **pdf-inspector** | 1.17.0 → 1.25.2. Text-only PDFs do not load OCR models. Arabic layer F1 vs Indra rose sharply (one book 0.342 → 0.915). |
-| **Indra** | Optional fetch in Settings. On 84 reference-valid pages Indra won 74 (median CER 0.067 vs 0.120, ~8× faster) but the tail is heavier (p90 0.356 vs 0.344). OpenRAIL-M weights are fetched, never bundled. **Not wired into `extractFromPdf`.** |
+| **Indra** | Optional ~14 MB download. Runs on onnxruntime-node (no Python). On 84 reference-valid pages the port matched Python (median CER 0.067, 76 wins vs Paddle, p90 0.348). Paddle re-reads a page Indra cannot. Weights are fetched, never bundled. |
 | **Evidence** | `reports/arabic_ocr_real_holdout_20261023.md`. Raw run: `E:\Antigravity Projects\NassilaAGY\ocr-ab`. |
 
 #### 2.2.0 — Sanad Arabic · سند عربي (NO-GO — paused for budget)
@@ -867,7 +867,7 @@ Before retaining an unqualified Arabic model claim:
 | Window | Focus |
 |--------|--------|
 | **Shipped (2.0.0)** | Shipped 1.4.0–2.0.0. Hub Sanad = **9B FT-6** (2026-08-21). Native pdf-inspector + pretrained Arabic adapter LIVE; Shahid table/figure evidence LIVE; grey-lit confirm LIVE; Tier 3 + multimodal gates PASSED. |
-| **Shipped (2.1.1)** | Arabic OCR fidelity on top of 2.1.0 Paddle. Indra fetched, not the extractor. |
+| **Shipped (2.1.1)** | Arabic OCR fidelity. Indra reads Arabic scans when downloaded; Paddle is the fallback. |
 | **NO-GO** | **2.2.0 Sanad Arabic** — FT-7 and FT-7b NO-GO. FT-7c frozen and paused for budget. |
 | **Then** | 2.3.0–2.5.0 deterministic loop; **3.0.0 Ouroboros**; 3.1–4.2 facets/surfaces; **5.0.0 One Nassila**. |
 | **Unversioned** | Cloud-default LLM, notification center, thesis generation, fuzzy auto-apply, cloud sync — non-goals or rejected. |
@@ -996,7 +996,7 @@ If Sanad validation metrics appear on the site, do not publish bare “accuracy.
 
 | Release | Codename (EN) | Codename (AR) | Status |
 |---------|---------------|---------------|--------|
-| 2.1.1 | Arabic OCR fidelity | دقة OCR العربي | **Shipped** 2026-10-23 — line order, legacy-encoded routing, optional Indra fetch; extractor stays Paddle |
+| 2.1.1 | Arabic OCR fidelity | دقة OCR العربي | **Shipped** 2026-10-23 — line order, legacy-encoded routing, Indra when downloaded, Paddle otherwise |
 | 2.1.0 | Maktab Arabic | مكتب عربي | **Shipped** 2026-09-18 — production Paddle AR OCR + Arabic-aware mapping; L3 unvalidated |
 | 2.0.0 | MaktabOCR + Shahid | مكتب OCR + شاهد | **Shipped** 2026-09-06 — Firecrawl native + pretrained Arabic adapter; Shahid table/figure live; Tier 3 + multimodal PASS |
 | 1.10.1 | Packaged network parity | تكافؤ الشبكة المعبأة | **Shipped** 2026-08-23 |
@@ -1158,7 +1158,7 @@ Nassila should spend the next cycles becoming more **trustworthy on Arabic inges
 
 > Ship production Arabic OCR and mapping without GPU (**2.1.0**); park FT-7 until cash (**2.2.0**); finish deterministic reach, risk, and persistence (**2.3–2.5**); then close the repair loop (**3.0.0**) before new model facets.
 
-**Shipped in 2.1.1:** Arabic line order, legacy-encoded routing, pdf-inspector 1.25.2, optional Indra fetch. Extractor is still Paddle. **Arabic L3 still unvalidated.**
+**Shipped in 2.1.1:** Arabic line order, legacy-encoded routing, pdf-inspector 1.25.2, in-app Indra with a Paddle fallback. **Arabic L3 still unvalidated.**
 
 **Next (§5 map):**
 

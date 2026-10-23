@@ -18,9 +18,10 @@ import {
 } from '../../engine/maktab/ocr/arabic-adapter'
 import { rasterizePdfPage } from './pdf-page-raster'
 import { logicalOrderArabicOcrText } from '../../engine/maktab/ocr/post-process'
+import { MIN_ARABIC_PAGE_CHARS } from '../../engine/maktab/ocr/indra/route'
 
 const MAX_OCR_PAGES = 200
-const MIN_PAGE_CHARS = 40
+const MIN_PAGE_CHARS = MIN_ARABIC_PAGE_CHARS
 
 export const ARABIC_OCR_REC_ONNX = 'arabic_ppocrv5_mobile_rec.onnx'
 export const ARABIC_OCR_DET_ONNX = 'ppocrv5_mobile_det.onnx'

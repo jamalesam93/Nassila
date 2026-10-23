@@ -1,17 +1,16 @@
 /**
- * Indra OCR candidate runtime (main process).
+ * Indra OCR model download (main process).
  *
- * Fetched on first use, never bundled: the weights use a modified OpenRAIL-M
- * license (see resources/indra-ocr/README.md). Download + Python provisioning
- * mirror scripts/fetch-indra-ocr.mjs so the operator CLI and the app agree.
+ * The weights use a modified OpenRAIL-M license, so they are fetched on
+ * demand and never bundled. The app runs them with onnxruntime-node; nothing
+ * here installs Python or the `indra-ocr` package.
  *
- * SEC: the destination is fixed (userData/indra-ocr or NASSILA_INDRA_DIR); the
- * renderer never supplies a path, a URL or command arguments.
+ * SEC: the destination is fixed (userData/indra-ocr or NASSILA_INDRA_DIR).
+ * The renderer never supplies a path or a URL.
  */
 import { createHash } from 'node:crypto'
-import { spawn } from 'node:child_process'
-import { existsSync } from 'node:fs'
-import { mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises'
+import { existsSync, readFileSync } from 'node:fs'
+import { mkdir, rename, rm, stat, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
 import {
@@ -21,34 +20,31 @@ import {
 } from '../../shared/indra-runtime'
 
 export const INDRA_OCR_REPO = 'datalab-to/indra-ocr'
-export const INDRA_PACKAGE_VERSION = '1.1.2'
+/** Tag the in-app port was checked against. `main` moves; this tag does not. */
+export const INDRA_MODEL_REVISION = 'v1.1.0'
 export const INDRA_MARKER_FILE = '.nassila-indra-ocr-ready'
 
-/** Files the `indra-ocr` package needs; `model.safetensors` and assets are not used. */
-export const INDRA_MODEL_FILES: readonly string[] = [
-  'det.onnx',
-  'lm.npz',
-  'lm_cjk.npz',
-  'lm_world.npz',
-  'math_dec_init.onnx',
-  'math_dec_step.onnx',
-  'math_enc.onnx',
-  'mathcls.onnx',
-  'meta.json',
-  'order.onnx',
-  'orient.onnx',
-  'rec.onnx',
-  'rec_cjk.onnx',
-  'rec_rtl.onnx',
-  'rec_world.onnx',
-  'script.onnx',
-  'LICENSE'
-]
+/**
+ * Files the Arabic path runs. SHA-256 pins match Hugging Face `v1.1.0`
+ * (onnx files via their LFS oid; meta.json and LICENSE hashed from that tag).
+ * The CJK, math, and language-model files are not used.
+ */
+export const INDRA_MODEL_SHA256 = {
+  'det.onnx': 'f2bd4cba23e9c328cf7ec824634e423e191a2c6aacbbf35c62bd79dd70f62f59',
+  'script.onnx': 'b6ce4e926e19c243faaf37bd46880398bf2cb4ae56a29e1177a3b017c1280e36',
+  'rec.onnx': '475972a2710be4a3cbfeb2bc7f3624ffd563de07de42476fc7a290d4e1ece484',
+  'rec_rtl.onnx': '468796bd684486a8388c30c8b4ed2a26e3eeb1f8ff02831c24c2e12c79a2a834',
+  'orient.onnx': '20eaf670f55a7cf9facfe1bdd6c7b8e40be75bbf4d48a3df43f66aa3bbd874fd',
+  'order.onnx': 'a42db2e8b536ad3d84045a4b7f9b0a72667cf8be4aa02d63f7b38004719fb180',
+  'meta.json': '4ce4c94b46f5d644033c02e718322014ff4081270f385038c571912b56696339',
+  LICENSE: '50c88a018a7ee322e89f6b09401b237beb0cd331685879405b3db48993950a5f'
+} as const
+
+export const INDRA_MODEL_FILES: readonly string[] = Object.keys(INDRA_MODEL_SHA256)
 
 export interface IndraRuntimePaths {
   directory: string
   models: string
-  venv: string
   marker: string
 }
 
@@ -64,25 +60,37 @@ export function indraRuntimePaths(directory: string): IndraRuntimePaths {
   return {
     directory,
     models: join(directory, 'models'),
-    venv: join(directory, 'venv'),
     marker: join(directory, INDRA_MARKER_FILE)
   }
 }
 
-export function indraVenvPython(directory: string): string {
-  return process.platform === 'win32'
-    ? join(directory, 'venv', 'Scripts', 'python.exe')
-    : join(directory, 'venv', 'bin', 'python')
+function sha256(bytes: Buffer | Uint8Array): string {
+  return createHash('sha256').update(bytes).digest('hex')
 }
 
-async function readMarker(directory: string): Promise<Record<string, unknown> | null> {
-  try {
-    const raw = await readFile(indraRuntimePaths(directory).marker, 'utf8')
-    const parsed = JSON.parse(raw) as unknown
-    return parsed && typeof parsed === 'object' ? (parsed as Record<string, unknown>) : null
-  } catch {
-    return null
-  }
+export function indraFileMatches(path: string, expected: string): boolean {
+  if (!existsSync(path)) return false
+  return sha256(readFileSync(path)) === expected
+}
+
+const readyCache = new Set<string>()
+
+/** True when every pinned model file is present and unmodified. */
+export function isIndraModelReady(
+  modelsDirectory: string,
+  hashes: Readonly<Record<string, string>> = INDRA_MODEL_SHA256
+): boolean {
+  const production = hashes === INDRA_MODEL_SHA256
+  if (production && readyCache.has(modelsDirectory)) return true
+  const ready = Object.entries(hashes).every(([file, expected]) =>
+    indraFileMatches(join(modelsDirectory, file), expected)
+  )
+  if (ready && production) readyCache.add(modelsDirectory)
+  return ready
+}
+
+export function resetIndraReadyCache(): void {
+  readyCache.clear()
 }
 
 async function modelsBytes(modelsDirectory: string): Promise<number> {
@@ -91,7 +99,7 @@ async function modelsBytes(modelsDirectory: string): Promise<number> {
     try {
       total += (await stat(join(modelsDirectory, file))).size
     } catch {
-      // missing file: contributes nothing
+      // A missing file contributes nothing.
     }
   }
   return total
@@ -99,46 +107,19 @@ async function modelsBytes(modelsDirectory: string): Promise<number> {
 
 export async function getIndraRuntimeStatus(directory: string): Promise<IndraRuntimeStatus> {
   const paths = indraRuntimePaths(directory)
-  const marker = await readMarker(directory)
-  const python = indraVenvPython(directory)
-  const filesPresent = INDRA_MODEL_FILES.every((file) => existsSync(join(paths.models, file)))
   return {
-    ready: Boolean(marker) && filesPresent && existsSync(python),
+    ready: isIndraModelReady(paths.models),
     directory,
     modelBytes: await modelsBytes(paths.models),
-    packageVersion:
-      marker && typeof marker.packageVersion === 'string' ? marker.packageVersion : null,
     license: INDRA_LICENSE_LABEL
   }
-}
-
-export type IndraCommandRunner = (
-  command: string,
-  args: string[],
-  options?: { cwd?: string }
-) => Promise<boolean>
-
-function defaultRunner(): IndraCommandRunner {
-  return (command, args, options) =>
-    new Promise((resolve) => {
-      try {
-        const child = spawn(command, args, {
-          cwd: options?.cwd,
-          stdio: 'ignore',
-          windowsHide: true
-        })
-        child.on('error', () => resolve(false))
-        child.on('close', (code) => resolve(code === 0))
-      } catch {
-        resolve(false)
-      }
-    })
 }
 
 export interface FetchIndraOptions {
   force?: boolean
   fetchImpl?: typeof fetch
-  run?: IndraCommandRunner
+  /** Test override. Production uses `INDRA_MODEL_SHA256`. */
+  hashes?: Readonly<Record<string, string>>
   onProgress?: (progress: IndraFetchProgress) => void
 }
 
@@ -154,7 +135,7 @@ async function download(
   await writeFile(temporary, data)
   await rm(destination, { force: true })
   await rename(temporary, destination)
-  return { sha256: createHash('sha256').update(data).digest('hex'), bytes: data.length }
+  return { sha256: sha256(data), bytes: data.length }
 }
 
 export async function fetchIndraRuntime(
@@ -163,68 +144,36 @@ export async function fetchIndraRuntime(
 ): Promise<IndraRuntimeStatus> {
   const paths = indraRuntimePaths(directory)
   const fetchImpl = options.fetchImpl ?? fetch
-  const run = options.run ?? defaultRunner()
+  const hashes = options.hashes ?? INDRA_MODEL_SHA256
+  const files = Object.keys(hashes)
   const progress = (update: IndraFetchProgress): void => options.onProgress?.(update)
 
   await mkdir(paths.models, { recursive: true })
 
-  // ---- model files ---------------------------------------------------------
   const checksums: string[] = []
-  for (const [index, file] of INDRA_MODEL_FILES.entries()) {
+  for (const [index, file] of files.entries()) {
     const target = join(paths.models, file)
-    if (!options.force && existsSync(target)) {
-      const existing = await readFile(target)
-      checksums.push(`${createHash('sha256').update(existing).digest('hex')}  ${file}`)
-      progress({ phase: 'models', completed: index + 1, total: INDRA_MODEL_FILES.length, message: file })
+    const expected = hashes[file as keyof typeof hashes]
+    if (!options.force && indraFileMatches(target, expected)) {
+      checksums.push(`${expected}  ${file}`)
+      progress({ phase: 'models', completed: index + 1, total: files.length, message: file })
       continue
     }
-    const url = `https://huggingface.co/${INDRA_OCR_REPO}/resolve/main/${file}`
+    const url = `https://huggingface.co/${INDRA_OCR_REPO}/resolve/${INDRA_MODEL_REVISION}/${file}?download=true`
     const result = await download(fetchImpl, url, target)
+    if (result.sha256 !== expected) {
+      await rm(target, { force: true })
+      throw new Error(`Checksum mismatch for ${file}`)
+    }
     checksums.push(`${result.sha256}  ${file}`)
-    progress({ phase: 'models', completed: index + 1, total: INDRA_MODEL_FILES.length, message: file })
+    progress({ phase: 'models', completed: index + 1, total: files.length, message: file })
   }
   await writeFile(join(directory, 'checksums.sha256'), checksums.join('\n') + '\n', 'utf8')
 
-  // ---- Python environment --------------------------------------------------
-  const python = indraVenvPython(directory)
-  const hasUv = await run('uv', ['--version'])
-  if (!existsSync(python)) {
-    progress({ phase: 'venv', completed: 0, total: 1, message: hasUv ? 'uv venv' : 'python -m venv' })
-    let created = hasUv
-      ? await run('uv', ['venv', paths.venv, '--python', 'python'])
-      : await run('python', ['-m', 'venv', paths.venv])
-    // No discoverable system Python: uv can provision its own managed 3.12.
-    if (!created && hasUv) {
-      created = await run('uv', ['venv', paths.venv, '--python', '3.12'])
-    }
-    if (!created) {
-      throw new Error(
-        'Could not create the Python environment for Indra OCR. Install uv (https://docs.astral.sh/uv/) or Python 3.10+ and retry.'
-      )
-    }
-    progress({ phase: 'venv', completed: 1, total: 1 })
-  }
-
-  progress({ phase: 'package', completed: 0, total: 1, message: `indra-ocr==${INDRA_PACKAGE_VERSION}` })
-  const installed = hasUv
-    ? await run('uv', ['pip', 'install', '--python', python, `indra-ocr==${INDRA_PACKAGE_VERSION}`])
-    : await run(python, [
-        '-m',
-        'pip',
-        'install',
-        '--disable-pip-version-check',
-        `indra-ocr==${INDRA_PACKAGE_VERSION}`
-      ])
-  if (!installed) {
-    throw new Error(
-      'Could not install the indra-ocr package. pip can hang behind some proxies — install uv and retry.'
-    )
-  }
-  progress({ phase: 'package', completed: 1, total: 1, message: `indra-ocr==${INDRA_PACKAGE_VERSION}` })
-
   progress({ phase: 'verify', completed: 0, total: 1 })
-  if (!(await run(python, ['-c', 'import indra_ocr']))) {
-    throw new Error('The indra-ocr package was installed but cannot be imported.')
+  const verified = isIndraModelReady(paths.models, hashes)
+  if (!verified) {
+    throw new Error('Indra models failed verification after download.')
   }
   progress({ phase: 'verify', completed: 1, total: 1 })
 
@@ -232,8 +181,7 @@ export async function fetchIndraRuntime(
     paths.marker,
     JSON.stringify(
       {
-        packageVersion: INDRA_PACKAGE_VERSION,
-        python,
+        revision: INDRA_MODEL_REVISION,
         modelDirectory: paths.models,
         fetchedAt: new Date().toISOString(),
         license: `${INDRA_LICENSE_LABEL} (see models/LICENSE) — fetched, not redistributed`
@@ -244,7 +192,8 @@ export async function fetchIndraRuntime(
     'utf8'
   )
 
-  return getIndraRuntimeStatus(directory)
+  const status = await getIndraRuntimeStatus(directory)
+  return hashes === INDRA_MODEL_SHA256 ? status : { ...status, ready: true }
 }
 
 let activeFetch: Promise<IndraRuntimeStatus> | null = null
@@ -264,4 +213,5 @@ export function fetchIndraRuntimeOnce(
 /** Test hook. */
 export function resetIndraFetchState(): void {
   activeFetch = null
+  resetIndraReadyCache()
 }

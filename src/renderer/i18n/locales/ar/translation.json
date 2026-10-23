@@ -166,7 +166,7 @@
     "indra": {
       "title": "محرك OCR عربي تجريبي (Indra)",
       "subtitle": "يُجلب عند أول استخدام ولا يُضمَّن مع التطبيق. يُستخدم في اختبارات تقييم OCR.",
-      "statusReady": "جاهز · {{version}} · {{size}}",
+      "statusReady": "جاهز · {{size}}",
       "statusMissing": "غير مثبَّت",
       "statusChecking": "جارٍ التحقق…",
       "fetch": "جلب المحرك",
