@@ -13,6 +13,7 @@ import {
 } from '@engine/maktab/native-backend'
 import { resetMaktabOcrBackend } from '@engine/maktab/ocr/backend'
 import {
+  ARABIC_MISENCODED_WARNING,
   CMAP_GAP_RATIO_WARN,
   INVISIBLE_TEXT_LAYER_WARNING,
   TEXT_LAYER_INCOMPLETE_WARNING,
@@ -193,5 +194,25 @@ describe('native pdf-inspector signals', () => {
     expect(result.tier).toBe('embedded_text')
     expect(result.needsReview).toBe(true)
     expect(result.warnings).toContain(INVISIBLE_TEXT_LAYER_WARNING)
+  })
+
+  it('extractFromPdf flags a legacy-encoded Arabic layer for review', async () => {
+    const mojibake =
+      'u01uمقدمهبػعؾاختقارالعؼدياوالؿعرفهالعؾؿقهاماالؼصقدهاففقالزيديهالعؼديهبقصػفاكسؼامذهب'.repeat(10)
+    setMaktabNativePdfBackend({
+      id: 'spy',
+      isAvailable: () => true,
+      classify: async () => null,
+      extract: async () =>
+        nativeExtraction({
+          text: mojibake,
+          signals: mapNativeSignals({})
+        })
+    })
+
+    const result = await extractFromPdf(new ArrayBuffer(8), { engine: 'native' })
+
+    expect(result.needsReview).toBe(true)
+    expect(result.warnings).toContain(ARABIC_MISENCODED_WARNING)
   })
 })

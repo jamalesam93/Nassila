@@ -82,4 +82,23 @@ describe('maktab OCR post-process helpers', () => {
       .join('\n')
     expect(logicalOrderArabicOcrText(visual)).toBe(logical)
   })
+
+  it('arabicTextLooksMisEncoded flags a legacy-encoded layer but not clean Arabic', async () => {
+    const { arabicTextLooksMisEncoded, embeddedArabicLooksMisEncoded, ARABIC_MISENCODED_WARNING } =
+      await import('../../src/engine/maktab/ocr/post-process')
+    const clean =
+      'ومن الوثيقة بالصورة رقم سبعة عشر يتضح أن سبعين بالمائة من المبلغ خصصت كمصاريف إدارية أي تشغيلية للمنظمة الدولية، ' +
+      'وتتضمن مرتبات موظفين وتخزين وإدارة العملية بمبلغ ثلاثة ملايين وأربعمائة ألف دولار، وبالنسبة لثلاثين بالمائة المتبقية'
+    expect(arabicTextLooksMisEncoded(clean)).toBe(false)
+
+    // Legacy fonts map glyphs onto rare letters (ػ ؼ ؽ ؾ ؿ) and never onto a
+    // clean modern distribution.
+    const mojibake = 'u01uمقدمهبػعؾاختقارالعؼدياوالؿعرفهالعؾؿقهاماالؼصقدهاففقالزيديهالعؼديهبقصػفاكسؼامذهب'.repeat(10)
+    expect(arabicTextLooksMisEncoded(mojibake)).toBe(true)
+    expect(embeddedArabicLooksMisEncoded([ARABIC_MISENCODED_WARNING])).toBe(true)
+    expect(embeddedArabicLooksMisEncoded([])).toBe(false)
+
+    // Too little Arabic to judge.
+    expect(arabicTextLooksMisEncoded('مقدمهبػعؾ')).toBe(false)
+  })
 })

@@ -7,6 +7,7 @@ All notable changes to **Nassila** are documented here.
 ### Fixed
 
 - **Arabic OCR line order** — `logicalOrderArabicOcrText` reversed the whole page string. PP-OCR emits each line in visual order but the lines themselves top-to-bottom, so the whole-string reversal restored characters while flipping the order of lines. It now reverses per line; measured on real Arabic book pages against the PDF text layer (normalized CER): **0.037 per-line** vs 0.76 whole-string. Mixed AR/Latin line handling is unchanged.
+- **Legacy-encoded Arabic text layers are now flagged.** A layer decoded through a pre-Unicode Arabic font has no cmap gaps and no `hasEncodingIssues` flag — every code maps, to the wrong character — so it used to reach citation parsing as mojibake. `arabicTextLooksMisEncoded` detects it from the share of rare Arabic letters (real books: 0.0000–0.0001 clean vs 0.0796 mis-encoded) and raises `ARABIC_MISENCODED_WARNING` + `needsReview`, which routes the document to OCR instead.
 
 ### Changed
 

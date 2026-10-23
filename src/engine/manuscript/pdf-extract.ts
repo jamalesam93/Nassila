@@ -15,7 +15,11 @@
 
 import { getMaktabNativePdfBackend } from '../maktab/native-backend'
 import type { NativePdfSignals } from '../maktab/native-pdf-inspector'
-import { textLayerSignalWarnings } from '../maktab/ocr/post-process'
+import {
+  ARABIC_MISENCODED_WARNING,
+  arabicTextLooksMisEncoded,
+  textLayerSignalWarnings
+} from '../maktab/ocr/post-process'
 import { extractFromPdfInspector } from './pdf-inspector-extract'
 
 const MAX_PDF_PAGES = 200
@@ -74,6 +78,11 @@ export async function extractManuscriptFromPdf(
         }
         for (const warning of textLayerSignalWarnings(nativeResult.signals)) {
           if (!warnings.includes(warning)) warnings.push(warning)
+        }
+        // A legacy encoding has no cmap gaps and no probe flag; only the decoded
+        // character distribution gives it away.
+        if (arabicTextLooksMisEncoded(nativeResult.text) && !warnings.includes(ARABIC_MISENCODED_WARNING)) {
+          warnings.push(ARABIC_MISENCODED_WARNING)
         }
         return {
           text: nativeResult.text,
@@ -167,6 +176,7 @@ export async function extractManuscriptFromPdf(
         )
       }
     }
+    if (arabicTextLooksMisEncoded(fullText)) warnings.push(ARABIC_MISENCODED_WARNING)
   }
 
   let offset = 0

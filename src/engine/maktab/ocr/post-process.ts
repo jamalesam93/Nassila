@@ -71,6 +71,42 @@ export function embeddedTextLayerUnreliable(warnings: readonly string[]): boolea
   )
 }
 
+/**
+ * Arabic letters that a correctly encoded modern Arabic text virtually never
+ * uses: the rare letters between ػ and ؿ, the Alef variants, and the extended
+ * Persian/Urdu additions. A legacy (non-Unicode) Arabic font maps its glyphs
+ * onto these, so their share is a direct mojibake detector.
+ */
+const RARE_ARABIC_LETTERS = /[\u063B-\u063F\u0671-\u0673\u06D3\u067A-\u067F\u06A0-\u06AF]/g
+
+/**
+ * Share of rare Arabic letters above which a text layer is treated as a
+ * mis-mapped legacy encoding. Calibrated on real books: clean layers score
+ * 0.0000-0.0001, the legacy-encoded one 0.0796. The 2 % gate leaves a wide
+ * margin for genuine Persian/Urdu text, which legitimately uses some of these.
+ */
+export const ARABIC_RARE_LETTER_RATIO_WARN = 0.02
+
+export const ARABIC_MISENCODED_WARNING =
+  'The Arabic text in this PDF comes from a legacy (non-Unicode) font encoding and decodes to garbled text. The visible page is likely fine — run OCR or import the DOCX.'
+
+/**
+ * Detects Arabic text layers that decoded through a legacy encoding: every
+ * character has a mapping, but to the wrong character, so cmapGaps and
+ * hasEncodingIssues both stay empty. Needs enough text to be meaningful.
+ */
+export function arabicTextLooksMisEncoded(text: string): boolean {
+  const arabic = (text.match(/[\u0600-\u06FF]/g) ?? []).length
+  if (arabic < 400) return false
+  const rare = (text.match(RARE_ARABIC_LETTERS) ?? []).length
+  return rare / arabic > ARABIC_RARE_LETTER_RATIO_WARN
+}
+
+/** True when a warning says the Arabic layer is a mis-mapped legacy encoding. */
+export function embeddedArabicLooksMisEncoded(warnings: readonly string[]): boolean {
+  return warnings.includes(ARABIC_MISENCODED_WARNING)
+}
+
 export type ArabicDeferOptions = {
   /** When true, Arabic-heavy (non-reversed) PDFs may escalate to the Paddle Arabic adapter. */
   arabicAdapterAvailable?: boolean

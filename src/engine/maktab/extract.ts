@@ -5,6 +5,7 @@ import { getArabicRecognizerAdapter } from './ocr/arabic-adapter'
 import {
   ARABIC_OCR_DEFERRED_WARNING,
   chooseOcrLanguages,
+  embeddedArabicLooksMisEncoded,
   embeddedArabicLooksReversed,
   embeddedTextLayerUnreliable,
   embeddedTextLooksSparse,
@@ -65,6 +66,9 @@ async function extractEmbeddedTier(
   // Native signals (pdf-inspector >= 1.23): lossy ToUnicode or a fabricated
   // invisible layer means the glyph text cannot be trusted as the page.
   const unreliableTextLayer = embeddedTextLayerUnreliable(embedded.warnings)
+  // A legacy (non-Unicode) Arabic encoding has no cmap gaps, so it needs its
+  // own check — the decoded text is garbled even though every code mapped.
+  const misEncodedArabic = embeddedArabicLooksMisEncoded(embedded.warnings)
   return toResult(
     {
       text: embedded.text,
@@ -73,7 +77,7 @@ async function extractEmbeddedTier(
       warnings: embedded.warnings,
       tier: 'embedded_text',
       // Sparse Latin may escalate to Tesseract; Arabic-heavy / reversed stays embedded (DOCX).
-      needsReview: sparse || reversedArabic || unreliableTextLayer
+      needsReview: sparse || reversedArabic || unreliableTextLayer || misEncodedArabic
     },
     languages
   )

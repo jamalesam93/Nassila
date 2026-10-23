@@ -44,8 +44,9 @@ Operator map: NassilaT [`training/OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/tra
 
 - `cmapGapRatio` (Σ `unmapped` / Σ `codes`) above **0.02** → `TEXT_LAYER_INCOMPLETE_WARNING`, `needsReview`, and tier-B escalation. This is the structured replacement for the document-wide `في`/`يف` heuristic, which now only runs on the pdf.js tier.
 - Any page flagged `invisible_text_layer` → `INVISIBLE_TEXT_LAYER_WARNING` and `needsReview`: a fabricated layer is not the visible page, so the raster is the better source.
+- **Legacy non-Unicode Arabic encoding** → `ARABIC_MISENCODED_WARNING` + `needsReview`. Such a layer has *no* cmap gaps and no `hasEncodingIssues` flag (every code maps, to the wrong character), so `arabicTextLooksMisEncoded` detects it from the rare-letter share (real books: clean 0.0000–0.0001, mis-encoded 0.0796; gate 0.02).
 - `documentInfo` (title/author/subject/creator/creationDate/modDate) rides on the extraction result for future Raqim/Masdar matching — **no behavior change yet**.
-- The 2% gate is provisional; recalibrate against real files before locking it.
+- The 2% gates are provisional; recalibrate against real files before locking them.
 
 **Mode** (`MaktabExtractionOptions.mode`):
 
