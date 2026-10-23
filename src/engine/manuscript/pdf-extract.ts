@@ -14,6 +14,8 @@
  */
 
 import { getMaktabNativePdfBackend } from '../maktab/native-backend'
+import type { NativePdfSignals } from '../maktab/native-pdf-inspector'
+import { textLayerSignalWarnings } from '../maktab/ocr/post-process'
 import { extractFromPdfInspector } from './pdf-inspector-extract'
 
 const MAX_PDF_PAGES = 200
@@ -40,6 +42,8 @@ export interface PdfManuscriptExtraction {
   pageCount: number
   pageBoundaries: Array<{ page: number; start: number; end: number }>
   warnings: string[]
+  /** Native pdf-inspector signals (>= 1.23); absent on the WASM / pdf.js tiers. */
+  signals?: NativePdfSignals
 }
 
 /** `native` = Firecrawl napi; `inspector` = WASM; `pdfjs` = column-aware fallback. */
@@ -68,11 +72,15 @@ export async function extractManuscriptFromPdf(
             `Native pdf-inspector detected tables on page(s): ${nativeResult.provenance.pagesWithTables.join(', ')}.`
           )
         }
+        for (const warning of textLayerSignalWarnings(nativeResult.signals)) {
+          if (!warnings.includes(warning)) warnings.push(warning)
+        }
         return {
           text: nativeResult.text,
           pageCount: nativeResult.pageCount,
           pageBoundaries: nativeResult.pageBoundaries,
-          warnings
+          warnings,
+          ...(nativeResult.signals ? { signals: nativeResult.signals } : {})
         }
       }
     }

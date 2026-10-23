@@ -2,6 +2,19 @@
 
 All notable changes to **Nassila** are documented here.
 
+## [Unreleased]
+
+### Fixed
+
+- **Arabic OCR line order** — `logicalOrderArabicOcrText` reversed the whole page string. PP-OCR emits each line in visual order but the lines themselves top-to-bottom, so the whole-string reversal restored characters while flipping the order of lines. It now reverses per line; measured on real Arabic book pages against the PDF text layer (normalized CER): **0.037 per-line** vs 0.76 whole-string. Mixed AR/Latin line handling is unchanged.
+
+### Changed
+
+- **Maktab native tier: `@firecrawl/pdf-inspector` 1.17.0 → 1.25.2.** Text-only PDFs now go through `classifyPdf` → `processPdfAsync`, so they never load PDFium/ONNX/OCR models, and extraction no longer blocks the event loop. `processPdfWithOcr` runs only when a page is actually routed to OCR. The offline model directory (`resources/pdf-inspector/pp-ocrv6-small/`) is unchanged — upstream still pins PP-OCRv6 Small.
+- **Structured text-layer signals replace the `في`/`يف` heuristic on the native path.** A `cmapGaps` unmapped-code ratio above 2%, or any page flagged `invisible_text_layer`, now raises an explicit warning plus `needsReview`; the old regex survives only for the pdf.js tier. Upstream 1.23–1.25 also fixes RTL visual-order reading, Arabic ligature reversal and broken subset ToUnicode maps — the defects behind most character-reversed Arabic imports.
+- **Document info carried on native extractions** (`title`, `author`, `creator`, `creationDate`, …) for future Raqim/Masdar matching; no user-visible behavior yet.
+- WASM fallback stays pinned at `@firecrawl/pdf-inspector-wasm@0.1.3` (1.14+ changes the `processPdf` options surface).
+
 ## [2.1.0] — 2026-09-18 · Maktab Arabic
 
 Windows installer `Nassila Setup 2.1.0.exe`. **GitHub Release:** [v2.1.0](https://github.com/jamalesam93/Nassila/releases/tag/v2.1.0).

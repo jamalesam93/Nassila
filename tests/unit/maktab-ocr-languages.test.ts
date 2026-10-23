@@ -72,4 +72,14 @@ describe('maktab OCR post-process helpers', () => {
     expect(logicalOrderArabicOcrText(visual)).toBe(logical)
     expect(logicalOrderArabicOcrText('DOI: 10.1')).toBe('DOI: 10.1')
   })
+
+  it('logicalOrderArabicOcrText reverses each line and preserves line order', async () => {
+    const { logicalOrderArabicOcrText } = await import('../../src/engine/maktab/ocr/post-process')
+    const logical = 'السطر الأول\nالسطر الثاني'
+    const visual = logical
+      .split('\n')
+      .map((line) => [...line].reverse().join(''))
+      .join('\n')
+    expect(logicalOrderArabicOcrText(visual)).toBe(logical)
+  })
 })

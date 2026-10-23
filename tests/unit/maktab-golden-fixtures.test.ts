@@ -34,9 +34,16 @@ import {
   type ArabicPageImage
 } from '../../src/engine/maktab/ocr/arabic-adapter'
 
-/** Simulate PP-OCR Arabic CTC visual (display) order; adapter restores logical order. */
+/**
+ * Simulate PP-OCR Arabic CTC visual (display) order. Measured on real book
+ * pages (2026-10-23): each line comes back reversed, while line order is
+ * already top-to-bottom — so only the per-line characters are reversed here.
+ */
 function ctcVisualOrder(logical: string): string {
-  return [...logical].reverse().join('')
+  return logical
+    .split('\n')
+    .map((line) => [...line].reverse().join(''))
+    .join('\n')
 }
 import {
   buildArabicTextPdf,
@@ -391,7 +398,8 @@ describe('maktab golden fixtures — Arabic OCR adapter candidate (Tiers A–F)'
   it('Tier D: two-column Arabic page preserves right-to-left column reading order', async () => {
     const scanPdf = buildScanPdf()
 
-    // Right column precedes left column in Arabic visual RTL flow
+    // The engine reports the right column's lines first (RTL reading order);
+    // per-line unshuffling must preserve that order instead of flipping it.
     const candidateAdapter = new CandidatePaddleOcrArabicAdapter({
       runner: async () => {
         const rightColumn = [

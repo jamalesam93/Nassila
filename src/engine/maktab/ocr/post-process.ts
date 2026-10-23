@@ -2,6 +2,7 @@
  * Shared text cleanup for tier A (pdf.js) and tier B (OCR) output.
  */
 
+import type { NativePdfSignals } from '../native-pdf-inspector'
 import type { MaktabLanguage } from '../types'
 
 /** BiDi isolates Tesseract often wraps around Latin scraps in Arabic lines. */
@@ -34,6 +35,42 @@ export function embeddedArabicLooksReversed(warnings: string[]): boolean {
   return warnings.some((w) => /character-reversed|broken font encoding/i.test(w))
 }
 
+/**
+ * Share of shown codes the PDF's ToUnicode CMaps failed to map before the text
+ * layer stops being trustworthy. Calibrate against real corpora; 2% is the
+ * conservative default (a handful of unmapped glyphs is normal in bad fonts).
+ */
+export const CMAP_GAP_RATIO_WARN = 0.02
+
+export const TEXT_LAYER_INCOMPLETE_WARNING =
+  'The PDF text layer is missing character mappings (broken ToUnicode). Extracted text may contain replacement characters — review it before relying on it.'
+
+export const INVISIBLE_TEXT_LAYER_WARNING =
+  'The PDF carries an invisible text layer (a fabricated OCR layer). The visible page may not match the extracted text — review it before relying on it.'
+
+/**
+ * Warnings derived from native pdf-inspector (>= 1.23) signals.
+ * Empty when the text layer mapped cleanly and every page's text is visible.
+ */
+export function textLayerSignalWarnings(signals: NativePdfSignals | undefined): string[] {
+  if (!signals) return []
+  const warnings: string[] = []
+  if (signals.cmapGapRatio > CMAP_GAP_RATIO_WARN) {
+    warnings.push(TEXT_LAYER_INCOMPLETE_WARNING)
+  }
+  if (signals.pagesWithInvisibleTextLayer.length > 0) {
+    warnings.push(INVISIBLE_TEXT_LAYER_WARNING)
+  }
+  return warnings
+}
+
+/** True when tier A produced text but the native engine says it is unreliable. */
+export function embeddedTextLayerUnreliable(warnings: readonly string[]): boolean {
+  return warnings.some(
+    (w) => w === TEXT_LAYER_INCOMPLETE_WARNING || w === INVISIBLE_TEXT_LAYER_WARNING
+  )
+}
+
 export type ArabicDeferOptions = {
   /** When true, Arabic-heavy (non-reversed) PDFs may escalate to the Paddle Arabic adapter. */
   arabicAdapterAvailable?: boolean
@@ -61,17 +98,27 @@ export const ARABIC_OCR_DEFERRED_WARNING =
   'Arabic PDF text looks unreliable for OCR (broken font encoding or no Arabic adapter). Prefer importing the DOCX.'
 
 /**
- * PP-OCR Arabic CTC often emits visual (display) order. For Arabic-dominant
- * lines, reverse code points to logical order. For mixed AR/Latin, use Paddle's
- * segment `pred_reverse` (keep Latin/digit runs contiguous).
+ * PP-OCR Arabic CTC emits each line in visual (display) order, but the lines
+ * themselves are already top-to-bottom. Reverse **per line** so reading order
+ * survives; reversing the whole page string scrambles the line order (measured
+ * on real books: per-line CER 0.037 vs 0.76 for a whole-string reversal).
+ * For mixed AR/Latin lines, keep Latin/digit runs contiguous.
  */
 export function logicalOrderArabicOcrText(pred: string): string {
+  if (!pred) return pred
+  return pred
+    .split(/\r?\n/)
+    .map((line) => logicalOrderArabicLine(line))
+    .join('\n')
+}
+
+function logicalOrderArabicLine(pred: string): string {
   if (!pred) return pred
   const arabic = (pred.match(/[\u0600-\u06FF]/g) ?? []).length
   if (arabic === 0) return pred
   const latin = (pred.match(/[A-Za-z]/g) ?? []).length
 
-  // Pure / Arabic-heavy: full reverse recovers logical reading order.
+  // Pure / Arabic-heavy line: full reverse recovers logical reading order.
   if (latin === 0 || arabic >= latin * 2) {
     return [...pred].reverse().join('')
   }

@@ -33,15 +33,25 @@ app.whenReady().then(async () => {
 
     const hasClassify = typeof mod?.classifyPdf === 'function'
     const hasProcess = typeof mod?.processPdfWithOcr === 'function'
+    // 1.16+: text-only path used when classification needs no OCR pages.
+    const hasTextFastPath = typeof mod?.processPdfAsync === 'function'
+    let version = 'unknown'
+    try {
+      version = require('@firecrawl/pdf-inspector/package.json').version
+    } catch {
+      // version is diagnostics only
+    }
     const modelDirCandidates = [
-      join(process.resourcesPath || root, 'pdf-inspector', 'models'),
-      join(root, 'resources', 'pdf-inspector', 'models')
+      join(process.resourcesPath || root, 'pdf-inspector', 'pp-ocrv6-small'),
+      join(root, 'resources', 'pdf-inspector', 'pp-ocrv6-small')
     ]
     const modelDir = modelDirCandidates.find((p) => existsSync(p)) ?? null
 
     console.log('probe:native-pdf-inspector=true')
+    console.log('version=', version)
     console.log('classifyPdf=', hasClassify)
     console.log('processPdfWithOcr=', hasProcess)
+    console.log('processPdfAsync=', hasTextFastPath)
     console.log('modelDirectory=', modelDir ?? '(missing — operator fetch required)')
     console.log(
       'note=PDFium/ONNX DLLs are a separate operator step; soft-degrade is expected without them'

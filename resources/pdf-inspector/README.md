@@ -1,7 +1,11 @@
 # Offline pdf-inspector runtime (Nassila 2.0 MaktabOCR)
 
-On-device selective OCR for `@firecrawl/pdf-inspector@1.17.0`. **No network** at
+On-device selective OCR for `@firecrawl/pdf-inspector@1.25.2`. **No network** at
 audit time when `offline: true` and this directory is populated.
+
+Text-only PDFs never need these assets: the native tier calls `processPdfAsync`
+when `classifyPdf` reports no OCR pages, and only routed pages load
+PDFium/ONNX/the model set.
 
 ## Layout
 

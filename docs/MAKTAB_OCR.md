@@ -35,10 +35,17 @@ Operator map: NassilaT [`training/OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/tra
 
 | Tier | Engine | When | Status |
 |------|--------|------|--------|
-| **A0 — native** | `@firecrawl/pdf-inspector@1.17.0` (`classifyPdf` / `processPdfWithOcr`, `mode: Auto`, `offline: true`) | Main process; napi + optional PP-OCRv6 Small cache | **Scaffolding** — soft-load; degrades when DLL/model missing |
+| **A0 — native** | `@firecrawl/pdf-inspector@1.25.2` (`classifyPdf` → `processPdfAsync` for text pages; `processPdfWithOcr` with `mode: Auto`, `offline: true` only when a page routes to OCR) | Main process; napi + optional PP-OCRv6 Small cache | **Live** — the text path needs no PDFium/ONNX/models; the OCR path degrades softly |
 | **A1 — WASM** | `@firecrawl/pdf-inspector-wasm@0.1.3` | PDF has extractable glyphs; native unavailable | **Live** — **pinned at 0.1.3** (1.14+ WASM breaks `processPdf` options in `pdf-inspector-extract.ts`) |
 | **A2 — pdf.js** | `pdfjs-dist` via `pdf-extract.ts` | Native + WASM miss / pin `engine: 'pdfjs'` | **Live** |
 | **B — OCR** | Tesseract.js (Apache-2.0) + Leptonica (BSD-2) | Scan / sparse Latin after tier A | **Live (O1)** |
+
+**Native signals (pdf-inspector 1.23+).** The text path returns `cmapGaps` (per-font unmapped codes) and document info; the OCR path returns `ocrReasonsByPage` (notably `invisible_text_layer`). Maktab maps them to `NativePdfSignals` and turns them into:
+
+- `cmapGapRatio` (Σ `unmapped` / Σ `codes`) above **0.02** → `TEXT_LAYER_INCOMPLETE_WARNING`, `needsReview`, and tier-B escalation. This is the structured replacement for the document-wide `في`/`يف` heuristic, which now only runs on the pdf.js tier.
+- Any page flagged `invisible_text_layer` → `INVISIBLE_TEXT_LAYER_WARNING` and `needsReview`: a fabricated layer is not the visible page, so the raster is the better source.
+- `documentInfo` (title/author/subject/creator/creationDate/modDate) rides on the extraction result for future Raqim/Masdar matching — **no behavior change yet**.
+- The 2% gate is provisional; recalibrate against real files before locking it.
 
 **Mode** (`MaktabExtractionOptions.mode`):
 

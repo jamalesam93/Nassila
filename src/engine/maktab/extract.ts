@@ -6,6 +6,7 @@ import {
   ARABIC_OCR_DEFERRED_WARNING,
   chooseOcrLanguages,
   embeddedArabicLooksReversed,
+  embeddedTextLayerUnreliable,
   embeddedTextLooksSparse,
   mergeOcrWithEmbeddedPages,
   normalizeExtractedText,
@@ -61,6 +62,9 @@ async function extractEmbeddedTier(
   const embedded = await extractManuscriptFromPdf(buffer, engine ? { engine } : {})
   const sparse = embeddedTextLooksSparse(embedded.warnings)
   const reversedArabic = embeddedArabicLooksReversed(embedded.warnings)
+  // Native signals (pdf-inspector >= 1.23): lossy ToUnicode or a fabricated
+  // invisible layer means the glyph text cannot be trusted as the page.
+  const unreliableTextLayer = embeddedTextLayerUnreliable(embedded.warnings)
   return toResult(
     {
       text: embedded.text,
@@ -69,7 +73,7 @@ async function extractEmbeddedTier(
       warnings: embedded.warnings,
       tier: 'embedded_text',
       // Sparse Latin may escalate to Tesseract; Arabic-heavy / reversed stays embedded (DOCX).
-      needsReview: sparse || reversedArabic
+      needsReview: sparse || reversedArabic || unreliableTextLayer
     },
     languages
   )
