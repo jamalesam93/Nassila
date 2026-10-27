@@ -3,7 +3,7 @@
 **Worker:** Maktab (مكتب) · **Task:** `doc_extract` (LLM facet planned)  
 **Policy:** on-device only for v1 / 2.0 scaffolding; cloud optional later.  
 **Languages (OCR ingest):** English and French via Tesseract (`eng`, `fra`) and native PP-OCRv6 Small when routed; Arabic production via Paddle PP-OCRv5. **Sanad L3 trains English and Arabic only** — `fra` is not a Sanad language target.  
-**Arabic (honest 2026-10-24):** **2.1.0** shipped production Paddle PP-OCRv5 (`resources/arabic-ocr/`). **2.1.1** fixes line order, flags legacy-encoded layers, and runs Indra on onnxruntime-node when its weights are downloaded. Paddle re-reads a page Indra cannot, and stays the only Arabic OCR path until that download. Tesseract `ara` is **not** the primary path. Character-reversed ToUnicode still prefers DOCX. Evidence: `reports/arabic_ocr_real_holdout_20261023.md` (raw run `E:\Antigravity Projects\NassilaAGY\ocr-ab`). The in-app port matched that Python run (median CER 0.067 on 84 reference-valid pages).
+**Arabic (honest 2026-10-27):** **2.1.2** shipped Arabic localization & security hardening. **2.1.0** shipped production Paddle PP-OCRv5 (`resources/arabic-ocr/`). **2.1.1** fixes line order, flags legacy-encoded layers, and runs Indra on onnxruntime-node when its weights are downloaded. Paddle re-reads a page Indra cannot, and stays the only Arabic OCR path until that download. Tesseract `ara` is **not** the primary path. Character-reversed ToUnicode still prefers DOCX. Evidence: `reports/arabic_ocr_real_holdout_20261023.md` (raw run `E:\Antigravity Projects\NassilaAGY\ocr-ab`). The in-app port matched that Python run (median CER 0.067 on 84 reference-valid pages).
 
 ---
 

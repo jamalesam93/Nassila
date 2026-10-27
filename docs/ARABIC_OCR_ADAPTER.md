@@ -4,7 +4,7 @@
 **Index:** NassilaT [`2.1_2.2_ARABIC_OPERATOR_INDEX.md`](../../NassilaT/training/2.1_2.2_ARABIC_OPERATOR_INDEX.md) (2.0 stub → archive)  
 **Maktab context:** [`MAKTAB_OCR.md`](./MAKTAB_OCR.md) · pack [`resources/arabic-ocr/README.md`](../resources/arabic-ocr/README.md)
 
-**Honesty (2026-10-24):** **2.1.1 shipped.** Official Arabic PP-OCRv5 ONNX pack + main-process `ppu-paddle-ocr` runner remain the fallback and the path when Indra is not downloaded. When the user downloads Indra, Arabic OCR pages are read by the in-app ONNX port first. 2.1.1 also adds per-line reversal and legacy-encoded routing. Operator: `npm run ocr:arabic-adapter` then `npm run probe:arabic-ocr`. Reverse-font ToUnicode **always** prefers DOCX. Sanad FT-7 is **2.2.0**, paused for budget.
+**Honesty (2026-10-27):** **2.1.2 shipped.** (2.1.1 shipped 2026-10-23). Official Arabic PP-OCRv5 ONNX pack + main-process `ppu-paddle-ocr` runner remain the fallback and the path when Indra is not downloaded. When the user downloads Indra, Arabic OCR pages are read by the in-app ONNX port first. 2.1.1 also adds per-line reversal and legacy-encoded routing. Operator: `npm run ocr:arabic-adapter` then `npm run probe:arabic-ocr`. Reverse-font ToUnicode **always** prefers DOCX. Sanad FT-7 is **2.2.0**, paused for budget.
 
 ---
 
