@@ -102,12 +102,15 @@ export async function extractPaperIdentity(
   fileName: string
 ): Promise<PaperIdentitySignals> {
   let pageItems: string[][] = []
+  let loadingTask: { destroy?: () => Promise<void> } | null = null
   try {
     const { loadPdfJs, configurePdfJsWorker } = await import('../manuscript/pdfjs-loader')
     const pdfjsLib = await loadPdfJs()
     await configurePdfJsWorker(pdfjsLib)
     // Copy bytes — pdf.js may transfer/detach the underlying buffer.
-    const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buffer.slice(0)) }).promise
+    const task = pdfjsLib.getDocument({ data: new Uint8Array(buffer.slice(0)) })
+    loadingTask = task
+    const pdf = await task.promise
     const pageCount = Math.min(pdf.numPages, FIRST_PAGES)
     for (let i = 1; i <= pageCount; i++) {
       const page = await pdf.getPage(i)
@@ -119,9 +122,10 @@ export async function extractPaperIdentity(
       )
       if (page.cleanup) void page.cleanup()
     }
-    await pdf.destroy()
   } catch {
     pageItems = []
+  } finally {
+    await loadingTask?.destroy?.().catch(() => {})
   }
 
   const bodyText = pageItems.map((items) => items.join(' ')).join('\n')

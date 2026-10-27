@@ -280,7 +280,7 @@ async function build(
         await writeFile(item.png, canvas.toBuffer('image/png'))
         done++
       }
-      await doc.destroy()
+      await doc.loadingTask.destroy()
     } catch (err) {
       info(`rasterize failed for ${file}: ${err.message}`)
     }

@@ -241,38 +241,44 @@ export async function extractPdfWithArabicOcr(
     return { ...paddle, warnings: warnings.concat(paddle.warnings) }
   }
 
-  const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buffer.slice(0)) }).promise
-  const pageCount = Math.min(pdf.numPages, MAX_OCR_PAGES)
-  if (pdf.numPages > MAX_OCR_PAGES) {
-    warnings.push(`OCR limited to first ${MAX_OCR_PAGES} of ${pdf.numPages} pages.`)
-  }
-
   const pageTexts: string[] = []
   const pageConfidences: number[] = []
   let fallbacks = 0
   const startedAt = Date.now()
-  onProgress?.({ processed: 0, total: pageCount, elapsedMs: 0 })
+  const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(buffer.slice(0)) })
 
-  for (let pageNum = 1; pageNum <= pageCount; pageNum++) {
-    const page = await pdf.getPage(pageNum)
-    const png = await rasterizePdfPage(pdf, page, dpi)
-    const chosen = await chooseArabicPage(
-      async () => {
-        const gray = await pngToGray(png)
-        return recognizeGrayPage(gray, models, ops)
-      },
-      async () => {
-        const paddle = await recognizeArabicPageImage({ bytes: png, dpi })
-        return { text: paddle.text, confidence: paddle.confidence }
-      }
-    )
-    if (chosen.engine === 'paddle') fallbacks += 1
-    const text = chosen.result.text.trim()
-    if (text) {
-      pageTexts.push(text)
-      pageConfidences.push(chosen.result.confidence)
+  try {
+    const pdf = await loadingTask.promise
+    const pageCount = Math.min(pdf.numPages, MAX_OCR_PAGES)
+    if (pdf.numPages > MAX_OCR_PAGES) {
+      warnings.push(`OCR limited to first ${MAX_OCR_PAGES} of ${pdf.numPages} pages.`)
     }
-    onProgress?.({ processed: pageNum, total: pageCount, elapsedMs: Date.now() - startedAt })
+
+    onProgress?.({ processed: 0, total: pageCount, elapsedMs: 0 })
+
+    for (let pageNum = 1; pageNum <= pageCount; pageNum++) {
+      const page = await pdf.getPage(pageNum)
+      const png = await rasterizePdfPage(pdf, page, dpi)
+      const chosen = await chooseArabicPage(
+        async () => {
+          const gray = await pngToGray(png)
+          return recognizeGrayPage(gray, models, ops)
+        },
+        async () => {
+          const paddle = await recognizeArabicPageImage({ bytes: png, dpi })
+          return { text: paddle.text, confidence: paddle.confidence }
+        }
+      )
+      if (chosen.engine === 'paddle') fallbacks += 1
+      const text = chosen.result.text.trim()
+      if (text) {
+        pageTexts.push(text)
+        pageConfidences.push(chosen.result.confidence)
+      }
+      onProgress?.({ processed: pageNum, total: pageCount, elapsedMs: Date.now() - startedAt })
+    }
+  } finally {
+    await loadingTask.destroy?.().catch(() => {})
   }
 
   if (fallbacks > 0) {

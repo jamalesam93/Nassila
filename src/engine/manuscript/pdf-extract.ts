@@ -116,37 +116,42 @@ export async function extractManuscriptFromPdf(
 
   // Copy bytes — pdf.js may transfer/detach the underlying ArrayBuffer into its worker.
   const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(buffer.slice(0)) })
-  const pdf = await loadingTask.promise
-
-  const pageCount = pdf.numPages
-  if (pageCount > MAX_PDF_PAGES) {
-    throw new Error(`PDF has ${pageCount} pages; maximum supported is ${MAX_PDF_PAGES}.`)
-  }
-
+  let pageCount = 0
   let fullText = ''
   let totalGlyphCount = 0
   const pageTexts: string[] = []
 
-  for (let i = 1; i <= pageCount; i++) {
-    const page = await pdf.getPage(i)
-    const viewport = page.getViewport({ scale: 1 })
-    const content = await page.getTextContent()
+  try {
+    const pdf = await loadingTask.promise
 
-    const items = content.items as PdfTextItem[]
-    totalGlyphCount += items.reduce((s, it) => s + (it.str?.length ?? 0), 0)
-
-    const blocks = itemsToBlocks(items)
-    const columns = splitColumnGroups(blocks, viewport.width)
-    const lines: { text: string; y: number }[] = []
-    for (const column of columns) {
-      lines.push(...blocksToLines(column))
+    pageCount = pdf.numPages
+    if (pageCount > MAX_PDF_PAGES) {
+      throw new Error(`PDF has ${pageCount} pages; maximum supported is ${MAX_PDF_PAGES}.`)
     }
-    const pageText = linesToText(lines)
 
-    pageTexts.push(postProcess(pageText))
-    if (pageTexts.reduce((length, text) => length + text.length, 0) > MAX_EXTRACTED_TEXT_CHARS) {
-      throw new Error('PDF text extraction exceeded the safe size limit (4 MB of text).')
+    for (let i = 1; i <= pageCount; i++) {
+      const page = await pdf.getPage(i)
+      const viewport = page.getViewport({ scale: 1 })
+      const content = await page.getTextContent()
+
+      const items = content.items as PdfTextItem[]
+      totalGlyphCount += items.reduce((s, it) => s + (it.str?.length ?? 0), 0)
+
+      const blocks = itemsToBlocks(items)
+      const columns = splitColumnGroups(blocks, viewport.width)
+      const lines: { text: string; y: number }[] = []
+      for (const column of columns) {
+        lines.push(...blocksToLines(column))
+      }
+      const pageText = linesToText(lines)
+
+      pageTexts.push(postProcess(pageText))
+      if (pageTexts.reduce((length, text) => length + text.length, 0) > MAX_EXTRACTED_TEXT_CHARS) {
+        throw new Error('PDF text extraction exceeded the safe size limit (4 MB of text).')
+      }
     }
+  } finally {
+    await loadingTask.destroy?.().catch(() => {})
   }
 
   fullText = pageTexts.join('\n\n').trim()

@@ -45,7 +45,7 @@
   "author": "Nassila contributors",
   "license": "MIT",
   "engines": {
-    "node": "^20.19.0 || >=22.12.0"
+    "node": ">=22.13.0 || >=24"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
@@ -57,7 +57,7 @@
     "@vitejs/plugin-react": "^4.7.0",
     "autoprefixer": "^10.4.27",
     "canvas": "^3.1.0",
-    "electron": "^41.0.4",
+    "electron": "^42.11.16",
     "electron-builder": "^26.8.1",
     "electron-vite": "^5.0.0",
     "eslint": "^9.39.4",
@@ -67,9 +67,8 @@
     "jsdom": "^29.0.1",
     "postcss": "^8.5.8",
     "rcedit": "^4.0.1",
-    "sharp": "^0.34.5",
+    "sharp": "^0.35.5",
     "tailwindcss": "^4.2.2",
-    "to-ico": "^1.1.5",
     "typescript": "^6.0.2",
     "typescript-eslint": "^8.59.3",
     "vite": "^6.4.1",
@@ -88,8 +87,8 @@
     "citeproc": "^2.4.63",
     "i18next": "^26.1.0",
     "mammoth": "^1.12.0",
-    "onnxruntime-node": "^1.29.0",
-    "pdfjs-dist": "^5.5.207",
+    "onnxruntime-node": "1.29.0",
+    "pdfjs-dist": "^6.2.108",
     "ppu-paddle-ocr": "^6.4.3",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",

@@ -89,9 +89,10 @@ export async function extractPdfWithTesseract(
   const pageTexts: string[] = []
   const pageConfidences: number[] = []
   const startedAt = Date.now()
+  const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(buffer.slice(0)) })
 
   try {
-    const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buffer.slice(0)) }).promise
+    const pdf = await loadingTask.promise
     const pageCount = Math.min(pdf.numPages, MAX_OCR_PAGES)
     if (pdf.numPages > MAX_OCR_PAGES) {
       warnings.push(`OCR limited to first ${MAX_OCR_PAGES} of ${pdf.numPages} pages.`)
@@ -116,6 +117,7 @@ export async function extractPdfWithTesseract(
       })
     }
   } finally {
+    await loadingTask.destroy?.().catch(() => {})
     await worker.terminate()
   }
 

@@ -161,15 +161,20 @@ async function rasterizePdfPage(pdf, page, dpi) {
 }
 
 async function ocrPdf(pdfjsLib, worker, bytes, dpi) {
-  const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(bytes.slice(0)) }).promise
-  const pages = []
-  for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-    const page = await pdf.getPage(pageNum)
-    const png = await rasterizePdfPage(pdf, page, dpi)
-    const { data } = await worker.recognize(png)
-    if (data.text && data.text.trim()) pages.push(data.text.trim())
+  const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(bytes.slice(0)) })
+  try {
+    const pdf = await loadingTask.promise
+    const pages = []
+    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+      const page = await pdf.getPage(pageNum)
+      const png = await rasterizePdfPage(pdf, page, dpi)
+      const { data } = await worker.recognize(png)
+      if (data.text && data.text.trim()) pages.push(data.text.trim())
+    }
+    return { text: pages.join('\n\n').trim(), pageCount: pages.length || 1, pdfNumPages: pdf.numPages }
+  } finally {
+    await loadingTask.destroy().catch(() => {})
   }
-  return { text: pages.join('\n\n').trim(), pageCount: pages.length || 1, pdfNumPages: pdf.numPages }
 }
 
 function normalize(text) {

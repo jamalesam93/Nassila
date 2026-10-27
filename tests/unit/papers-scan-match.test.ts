@@ -148,7 +148,7 @@ describe('extractPaperIdentity via pdf.js (#19)', () => {
       destroy: async () => {}
     }
     ;(loadPdfJs as ReturnType<typeof vi.fn>).mockResolvedValue({
-      getDocument: () => ({ promise: Promise.resolve(fakePdf) }),
+      getDocument: () => ({ promise: Promise.resolve(fakePdf), destroy: async () => {} }),
       GlobalWorkerOptions: {}
     })
 

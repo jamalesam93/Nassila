@@ -180,34 +180,39 @@ export async function extractPdfWithArabicPaddle(
   const pageTexts: string[] = []
   const pageConfidences: number[] = []
   const startedAt = Date.now()
+  const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(buffer.slice(0)) })
 
-  const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buffer.slice(0)) }).promise
-  const pageCount = Math.min(pdf.numPages, MAX_OCR_PAGES)
-  if (pdf.numPages > MAX_OCR_PAGES) {
-    warnings.push(`OCR limited to first ${MAX_OCR_PAGES} of ${pdf.numPages} pages.`)
-  }
-
-  onProgress?.({ processed: 0, total: pageCount, elapsedMs: 0 })
-
-  for (let pageNum = 1; pageNum <= pageCount; pageNum++) {
-    const page = await pdf.getPage(pageNum)
-    const png = await rasterizePdfPage(pdf, page, dpi)
-    const ab = png.buffer.slice(png.byteOffset, png.byteOffset + png.byteLength) as ArrayBuffer
-    const result = await service.recognize(ab)
-    const text = logicalOrderArabicOcrText((result.text ?? '').trim())
-    const confidence =
-      typeof result.confidence === 'number' && Number.isFinite(result.confidence)
-        ? result.confidence
-        : 0
-    if (text) {
-      pageTexts.push(text)
-      pageConfidences.push(confidence)
+  try {
+    const pdf = await loadingTask.promise
+    const pageCount = Math.min(pdf.numPages, MAX_OCR_PAGES)
+    if (pdf.numPages > MAX_OCR_PAGES) {
+      warnings.push(`OCR limited to first ${MAX_OCR_PAGES} of ${pdf.numPages} pages.`)
     }
-    onProgress?.({
-      processed: pageNum,
-      total: pageCount,
-      elapsedMs: Date.now() - startedAt
-    })
+
+    onProgress?.({ processed: 0, total: pageCount, elapsedMs: 0 })
+
+    for (let pageNum = 1; pageNum <= pageCount; pageNum++) {
+      const page = await pdf.getPage(pageNum)
+      const png = await rasterizePdfPage(pdf, page, dpi)
+      const ab = png.buffer.slice(png.byteOffset, png.byteOffset + png.byteLength) as ArrayBuffer
+      const result = await service.recognize(ab)
+      const text = logicalOrderArabicOcrText((result.text ?? '').trim())
+      const confidence =
+        typeof result.confidence === 'number' && Number.isFinite(result.confidence)
+          ? result.confidence
+          : 0
+      if (text) {
+        pageTexts.push(text)
+        pageConfidences.push(confidence)
+      }
+      onProgress?.({
+        processed: pageNum,
+        total: pageCount,
+        elapsedMs: Date.now() - startedAt
+      })
+    }
+  } finally {
+    await loadingTask.destroy?.().catch(() => {})
   }
 
   const text = pageTexts.join('\n\n').trim()
