@@ -1,6 +1,6 @@
 # Ouroboros loop state
 
-**Last updated:** 2026-10-23  
+**Last updated:** 2026-10-27  
 **Operator:** Nassila maintainer
 
 Read this at the start of every agent session. Update when focus, blockers, or ship gates change.
@@ -11,6 +11,7 @@ Read this at the start of every agent session. Update when focus, blockers, or s
 
 | Priority | Track | Status |
 |----------|-------|--------|
+| **P0** | **2.1.2 Arabic localization & security hardening** | **Shipped 2026-10-27** — comprehensive Arabic translation audit, full 6-form CLDR pluralization, zero-dependency DIB ICO generator, Electron 42.11.18, PDF.js 6.4.299, 0 dependency vulnerabilities, loadingTask cleanup lifecycle hardening. |
 | **P0** | **2.1.1 Arabic OCR fidelity** | **Shipped 2026-10-23** — per-line Arabic OCR reversal, legacy-encoded layers routed to OCR, pdf-inspector 1.25.2. Indra (onnxruntime-node, ~14 MB download, no Python) reads Arabic OCR pages when installed; Paddle is the fallback and the path when Indra is absent. |
 | **P0** | **2.1.0 Maktab Arabic** | **Shipped 2026-09-18** — Track A production Maktab Arabic OCR (Paddle PP-OCRv5) **+** Track C Arabic-aware mapping. No GPU. Do not claim Arabic L3. |
 | **P0** | **2.2.0 Sanad Arabic** | **Paused (budget) 2026-10-23.** FT-7 **NO-GO** 2026-10-14. FT-7b **NO-GO** 2026-10-16 — AR verdict 0.776 (bar 0.90), EN v2 0.945 (bar 0.950). FT-7c v122 stays **frozen** and is **not** to be trained. Vast is the only ground when cash returns. No Colab. |
@@ -23,9 +24,11 @@ Read this at the start of every agent session. Update when focus, blockers, or s
 | **P1** | Infrastructure hygiene | Windows CI packaging job, dead-code cleanup, agent rule refresh |
 | **P1∥** | NassilaT corpus / eval | Tier 3 gates completed; Docling clean holdout 419 claims / 175 DOIs; retrieval 100/100 DOIs; E2E 32 manuscripts; Shahid multimodal 150 pilot + 210 holdout; Sanad Hub = **9B FT-6** (`nassila-sanad-9b` v119) |
 
-**Latest app:** **2.1.1** (Arabic OCR fidelity) — shipped 2026-10-23. Production Arabic scan OCR is still Paddle PP-OCRv5 (2.1.0). **Next planned:** **2.2.0 Sanad Arabic**, paused for budget. Do not start FT-7c.
+**Latest app:** **2.1.2** (Arabic localization & security hardening) — shipped 2026-10-27. Production Arabic scan OCR is still Paddle PP-OCRv5 (2.1.0). **Next planned:** **2.2.0 Sanad Arabic**, paused for budget. Do not start FT-7c.
 
 **2.0.0 gate (2026-09-06):** **GO** — NassilaT `training/EVAL_GONOGO_TIER3_MEMO.md`. All hard gates satisfied across all 6 tracks. Release cut approved.
+
+**Honesty (2026-10-27):** **2.1.2 shipped.** Comprehensive Arabic localization and CLDR pluralization audit. Zero dependency vulnerabilities with Electron 42 and PDF.js 6. Resource cleanup hardened across PDF.js extraction/OCR. Arabic scan OCR uses Indra when downloaded, and PP-OCRv5 otherwise. Arabic L3 remains unvalidated until **2.2.0 / FT-7**, which is **paused for budget**.
 
 **Honesty (2026-10-24):** **2.1.1 shipped.** Arabic scan OCR uses Indra when the user has downloaded its weights, and PP-OCRv5 otherwise. 2.1.1 also fixes line order and flags legacy-encoded Arabic layers. Reverse-font still prefers DOCX. Arabic L3 remains unvalidated until **2.2.0 / FT-7**, which is **paused for budget**. **Sanad trains English and Arabic only** — do not add French (or any third language) as a gate or prospective cut.
 
@@ -136,6 +139,7 @@ Committed and verified in the 2.0.0 release:
 
 ## Blockers
 
+- **2.1.2 Arabic localization & security hardening:** **SHIPPED 2026-10-27** — comprehensive Arabic translation audit, CLDR 6-form plurals, zero-dependency DIB ICO generator, Electron 42.11.18, PDF.js 6.4.299, 0 dependency vulnerabilities, loadingTask cleanup.
 - **2.1.1 Arabic OCR fidelity:** **SHIPPED 2026-10-23** — line order, legacy-encoded routing, pdf-inspector 1.25.2, in-app Indra (Paddle fallback).
 - **2.1.0 Maktab Arabic (Tracks A+C):** **SHIPPED 2026-09-18** — Paddle pack + IPC `ara` + mapping fixtures; reverse-font still DOCX; `probe:arabic-ocr` PASS. Arabic L3 unvalidated.
 - **2.2.0 Sanad Arabic (Track B):** **Paused for budget (2026-10-23).** FT-7 NO-GO 2026-10-14. FT-7b NO-GO 2026-10-16 — Arabic compounds never split, `weak` confused with insufficient, quotes copy paraphrase wording; EN v2 0.945 vs 0.950. FT-7c v122 is frozen and must not be trained. Quants withheld; v119 / v120 / v121 LoRA repos public, v120 and v121 cards marked NO-GO. UI AR ≠ model AR until GO. Vast is the only ground when cash returns.
@@ -146,7 +150,7 @@ Committed and verified in the 2.0.0 release:
 ## Next actions (ordered)
 
 0. **2.2.0 Track B (paused for budget):** Do not start FT-7c. v122 stays frozen (`NassilaT/training/FT7C_VAST_RUN.md`). When cash returns, Vast is the only ground: a fresh LoRA from the base model, same gates and holdouts. No Colab. Sign GO only when every gate passes.
-0b. Cut GitHub **v2.1.1** + installer `Nassila Setup 2.1.1.exe` when publishing this patch. v2.1.0 remains the previous installer.
+0b. Cut GitHub **v2.1.2** + installer `Nassila Setup 2.1.2.exe` when publishing this patch. v2.1.0 remains the last published installer binary until build:win.
 1. Fix agent infrastructure: refresh stale cursor rules, clean dead-code references.
 1b. ✅ **done (2026-10-11) — packaging hygiene: −255.0 MB unpacked (973.8 → 718.8 MB).** `onnxruntime-node` shipped all five prebuilt slices (~282 MB) while only `win32/x64` can load on a Windows x64 build → **−219 MB**, pruned via `scripts/prune-native-platforms.mjs` on `beforePack`/`afterPack` (reversible: `afterPack` restores the source tree). Script-only `canvas` moved to `devDependencies` → **−35 MB**. `@napi-rs/canvas` stays — pdf.js requires it at runtime. Verified by `npm run build:unpack` + measurement (`resources/app.asar.unpacked` 443.9 → 189.7 MB; one ORT slice present). Recorded in `FEATURES-AND-TWEAKS.md` package budgets. **Do not** re-implement the slice prune as a `win.files` negation — it trips `containsOnlyIgnore()` in electron-builder and packs the whole repo (+174.6 MB). See `docs/Nassila-Ouroboros-Future.md` §4.0.0 workstream **C**.
 2. Add **Windows packaging CI job** (`windows-latest` → `build:unpack` → `probe-ocr-bundled`).

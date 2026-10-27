@@ -1,12 +1,12 @@
 # Features & Tweaks — Nassila app
 
-**Status:** 2026-10-24 — **2.1.1 Arabic OCR fidelity shipped** (Indra reads Arabic scans when downloaded; Paddle is the fallback). Next cut **2.2.0 Sanad Arabic** is **paused for budget** (FT-7 and FT-7b NO-GO; FT-7c frozen, not started). Companion to NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) and the [website docs](https://nassila-web.vercel.app/en/docs/sanad-setup) (now canonical). Scope is the **desktop app** ([Nassila](https://github.com/jamalesam93/Nassila)). Items are grouped by priority and each has an effort, a blast radius, and acceptance checks so they can be picked off independently.
+**Status:** 2026-10-27 — **2.1.2 Arabic localization & security hardening shipped** (comprehensive Arabic audit, CLDR 6-form plurals, 0 dependency vulnerabilities, Electron 42, PDF.js 6). Next cut **2.2.0 Sanad Arabic** is **paused for budget** (FT-7 and FT-7b NO-GO; FT-7c frozen, not started). Companion to NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) and the [website docs](https://nassila-web.vercel.app/en/docs/sanad-setup) (now canonical). Scope is the **desktop app** ([Nassila](https://github.com/jamalesam93/Nassila)). Items are grouped by priority and each has an effort, a blast radius, and acceptance checks so they can be picked off independently.
 
-> **Version streams:** App releases (**Nassila 2.1.1** shipped; next planned cut **2.2.0 Sanad Arabic** paused for budget) and Sanad checkpoints **SNN** / **FT-N** (**9B FT-6/v119** sole published Hub tier until FT-7 GO; 4B S15 / 12B S14 retired) are independent — see NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) § App release train.
+> **Version streams:** App releases (**Nassila 2.1.2** shipped; next planned cut **2.2.0 Sanad Arabic** paused for budget) and Sanad checkpoints **SNN** / **FT-N** (**9B FT-6/v119** sole published Hub tier until FT-7 GO; 4B S15 / 12B S14 retired) are independent — see NassilaT [`OUROBOROS_OPERATOR_MAP.md`](../../NassilaT/training/OUROBOROS_OPERATOR_MAP.md) § App release train.
 
 > **Red line reminder (from the website docs spec):** no training methodology, corpus, QLoRA, eval scorecards, or NassilaT internals surface in the app. All copy must stay user-facing.
 
-> **Locked authority sequence:** **Phase 0 Trust reset** (before 1.2.2) → **1.2.2 Throughput** → **1.2.3 Quote chip** → **1.2.4 Raqim Repair** → **1.2.5 Masdar attach** → **1.2.6 Raqim Resolve** → **1.2.7 Projects + Help + onboarding** → **1.2.8 OCR O2 + a11y** → **1.2.9 Preflight + quality ledger** → **1.3.0 Sharh-lite** → … → **1.8.0 Sanad 9B** → **1.10.0 Masdar Papers** → **1.10.1 Packaged network parity** → **2.0.0 MaktabOCR + Shahid** (shipped 2026-09-06) → **2.1.0 Maktab Arabic** (shipped 2026-09-18) → **2.1.1 Arabic OCR fidelity** (shipped 2026-10-23) → **2.2.0 Sanad Arabic** (FT-7, paused for budget) → **2.3.0–5.0.0** (`Nassila-Ouroboros-Future.md` §5). Do not claim Arabic manuscript audit.
+> **Locked authority sequence:** **Phase 0 Trust reset** (before 1.2.2) → **1.2.2 Throughput** → **1.2.3 Quote chip** → **1.2.4 Raqim Repair** → **1.2.5 Masdar attach** → **1.2.6 Raqim Resolve** → **1.2.7 Projects + Help + onboarding** → **1.2.8 OCR O2 + a11y** → **1.2.9 Preflight + quality ledger** → **1.3.0 Sharh-lite** → … → **1.8.0 Sanad 9B** → **1.10.0 Masdar Papers** → **1.10.1 Packaged network parity** → **2.0.0 MaktabOCR + Shahid** (shipped 2026-09-06) → **2.1.0 Maktab Arabic** (shipped 2026-09-18) → **2.1.1 Arabic OCR fidelity** (shipped 2026-10-23) → **2.1.2 Arabic localization & security hardening** (shipped 2026-10-27) → **2.2.0 Sanad Arabic** (FT-7, paused for budget) → **2.3.0–5.0.0** (`Nassila-Ouroboros-Future.md` §5). Do not claim Arabic manuscript audit.
 ### Phase 0-A — Trust reset (before 1.2.2)
 
 Stabilize the production trust boundary before throughput work: move manuscript registry/network ownership out of the renderer, align the production prompt with evaluation, prevent false L3 passes and synthetic-span grounding, report mapping ambiguity/coverage, settle first-use OCR language-pack behavior, and add packaged Windows audit smoke plus basic CI. Exit gates are defined in [`Nassila-Ouroboros-Future.md`](./Nassila-Ouroboros-Future.md) §5.
@@ -636,3 +636,23 @@ Do not pull these into a tweak batch outside the **2.0.0 freeze contract** (`#22
 - [x] A page Indra cannot read falls back to Paddle
 
 **References:** `resources/indra-ocr/README.md`, `scripts/eval-arabic-ocr/run-indra-ts.ts`, `reports/arabic_ocr_real_holdout_20261023.md`. Raw run: `E:\Antigravity Projects\NassilaAGY\ocr-ab`.
+
+
+### 26. 2.1.2 — Arabic localization & security hardening (shipped)
+
+**Problem.** Arabic UI copy contained English calques and transliterations, citation and issue count plurals were limited to English-style singular/plural without CLDR 6-form Arabic grammar, build dependencies contained deprecated transitive trees (e.g. `to-ico` pulling 85 legacy packages), and dependency audits surfaced advisories in older Electron and PDF.js versions alongside potential PDF loading task worker leaks.
+
+**What shipped.**
+- Comprehensive Arabic translation and menu audit: authentic scholarly terminology (predatory journals as `دوريات ومجلات وهمية / افتراسية / احتيالية`), natural UI copy, and RTL typographical alignment.
+- Full 6-form CLDR Arabic pluralization (`zero`, `one`, `two`, `few`, `many`, `other`) across citations, detected issues, and verification tallies, verified by key-parity tests.
+- Zero-dependency inline DIB `.ico` generator in `scripts/rasterize-icon.mjs` using `sharp`, eliminating `to-ico` and 85 transitive packages.
+- Major dependency upgrades: Electron `^42.11.16` (`42.11.18`), `pdfjs-dist` `^6.2.108` (`6.4.299`), `sharp` `0.35.5`, pinned `onnxruntime-node@1.29.0`, with 0 vulnerabilities in `npm audit`.
+- Hardened PDF.js worker lifecycle: enforced `await loadingTask.destroy().catch(() => {})` in `finally` blocks across all extraction and OCR call sites.
+- CI optimization: `ONNXRUNTIME_NODE_INSTALL: skip` in `.github/workflows/ci.yml`.
+
+**Acceptance.**
+- [x] Arabic CLDR 6-form plurals verified by unit tests (`i18n-key-parity.test.ts`)
+- [x] Generated icon is bit-for-bit identical (361,102 bytes)
+- [x] `npm audit` reports 0 vulnerabilities
+- [x] All 5 PDF.js loading tasks and test probes properly invoke `destroy()` in `finally`
+- [x] All 660 tests pass across 119 test files

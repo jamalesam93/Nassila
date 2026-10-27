@@ -1,10 +1,10 @@
 # Nassila-Ouroboros Future
 
-**Date:** 2026-10-23 (2.1.1 Arabic OCR fidelity; FT-7 paused for budget; original synthesis 2026-07-20)  
+**Date:** 2026-10-27 (2.1.2 Arabic localization & security hardening; FT-7 paused for budget; original synthesis 2026-07-20)  
 **Scope:** Nassila (app) · NassilaT (training) · nassila-web (docs)  
 **Sources reviewed:** `NassilaT/training/OUROBOROS_OPERATOR_MAP.md`, `Nassila/docs/FEATURES-AND-TWEAKS.md`, `STATE.md`, `PRODUCT.md`, `OUROBOROS_CONTEXT.md`, `CHANGELOG.md`, engine/renderer code, field notes, website release train
 
-**App baseline:** **2.1.1** (Arabic OCR fidelity, 2026-10-23; 2.1.0 Maktab Arabic 2026-09-18; 2.0.0 MaktabOCR + Shahid 2026-09-06). **Sanad model (Hub):** 9B **FT-6** (sole published tier, v119, 2026-08-21). **Next planned cut:** **2.2.0 Sanad Arabic** — FT-7 and FT-7b **NO-GO**; FT-7c frozen and **paused for budget**. Vast is the only training ground when it resumes. **Shahid deterministic LIVE in 2.0.0**. Arabic scan OCR: Indra when downloaded (2.1.1), Paddle otherwise (2.1.0 pack). **IA:** loop vs bibliography only.
+**App baseline:** **2.1.2** (Arabic localization & security hardening, 2026-10-27; 2.1.1 Arabic OCR fidelity 2026-10-23; 2.1.0 Maktab Arabic 2026-09-18; 2.0.0 MaktabOCR + Shahid 2026-09-06). **Sanad model (Hub):** 9B **FT-6** (sole published tier, v119, 2026-08-21). **Next planned cut:** **2.2.0 Sanad Arabic** — FT-7 and FT-7b **NO-GO**; FT-7c frozen and **paused for budget**. Vast is the only training ground when it resumes. **Shahid deterministic LIVE in 2.0.0**. Arabic scan OCR: Indra when downloaded (2.1.1), Paddle otherwise (2.1.0 pack). **IA:** loop vs bibliography only.
 
 ---
 
@@ -285,6 +285,7 @@ Suggested versions and worker-themed codenames. **Not dates, not public promises
 | **2.0.0** | **MaktabOCR + Shahid** | **مكتب OCR + شاهد** | Maktab / Shahid | Firecrawl native pdf-inspector + selective OCR; scan fallback; Shahid table/figure evidence path; Tier 3 + multimodal PASS | **Shipped 2026-09-06** |
 | **2.1.0** | **Maktab Arabic** | **مكتب عربي** | Maktab | Production Arabic scan OCR (Paddle) + Arabic-aware mapping | **Shipped 2026-09-18** |
 | **2.1.1** | **Arabic OCR fidelity** | **دقة OCR العربي** | Maktab | Per-line Arabic OCR order; legacy-encoded layers routed to OCR; Indra reads Arabic scans when downloaded, Paddle otherwise | **Shipped 2026-10-23** |
+| **2.1.2** | **Arabic localization & security hardening** | **تدقيق التعريب والتحصين الأمني** | Core / i18n | Comprehensive Arabic copy & CLDR 6-form plurals; 0 vulnerabilities; Electron 42; PDF.js 6; worker cleanup | **Shipped 2026-10-27** |
 | **2.2.0** | **Sanad Arabic** | **سند عربي** | Sanad | Native Arabic L3 + Hub label after GO | Planned — FT-7 and FT-7b **NO-GO**; FT-7c frozen, **paused for budget** |
 | **2.3.0** | **Masdar Auto** | **مصدر آلي** | Masdar / Maktab | Auto cited-PDF ingest; library proxy prefixes; page provenance; Zenodo/GitHub | Planned |
 | **2.4.0** | **Tasnif Risk** | **تصنيف المخاطر** | Tasnif | Retraction flags; preprint→version; citation-age / self-cite; predatory cadence | Planned |
@@ -298,7 +299,7 @@ Suggested versions and worker-themed codenames. **Not dates, not public promises
 | **4.2.0** | **Shahid Vision** | **شاهد بصري** | Shahid | Full multimodal Shahid (separate vision artifact; targets the 4.0.0 `ort` runtime) | Planned — GPU |
 | **5.0.0** | **One Nassila** | **ناسيلا واحدة** | Product | Routed multi-artifact pack; institutional webview last resort; offline review packages | Planned |
 
-**Recommended cut order:** 1.4.0 → 1.5.0 → 1.6.0 → 1.7.0 → **1.8.0 Sanad 9B** ✅ → (**FT-6 Hub-only**, no 1.9.0 installer) → **1.10.0 Masdar Papers** ✅ → **1.10.1 Packaged network parity** ✅ → **2.0.0 MaktabOCR + Shahid** ✅ → **2.1.0 Maktab Arabic** ✅ (shipped 2026-09-18) → **2.1.1 Arabic OCR fidelity** ✅ (shipped 2026-10-23) → **2.2.0 Sanad Arabic** (paused for budget) → **2.3.0–2.5.0** → **3.0.0 Ouroboros** → **3.1–4.1** → **4.2.0 Shahid Vision** → **5.0.0 One Nassila**. GPU-gated cuts (2.2, 3.1–3.3, 4.2) may swap with deterministic ones while budget is constrained; **4.0.0 is packaging work, not GPU-gated**, and its workstream **C** is unblocked today.
+**Recommended cut order:** 1.4.0 → 1.5.0 → 1.6.0 → 1.7.0 → **1.8.0 Sanad 9B** ✅ → (**FT-6 Hub-only**, no 1.9.0 installer) → **1.10.0 Masdar Papers** ✅ → **1.10.1 Packaged network parity** ✅ → **2.0.0 MaktabOCR + Shahid** ✅ → **2.1.0 Maktab Arabic** ✅ (shipped 2026-09-18) → **2.1.1 Arabic OCR fidelity** ✅ (shipped 2026-10-23) → **2.1.2 Arabic localization & security hardening** ✅ (shipped 2026-10-27) → **2.2.0 Sanad Arabic** (paused for budget) → **2.3.0–2.5.0** → **3.0.0 Ouroboros** → **3.1–4.1** → **4.2.0 Shahid Vision** → **5.0.0 One Nassila**. GPU-gated cuts (2.2, 3.1–3.3, 4.2) may swap with deterministic ones while budget is constrained; **4.0.0 is packaging work, not GPU-gated**, and its workstream **C** is unblocked today.
 
 #### 1.4.0 — Raqim Statute · رقيم تشريع
 
@@ -867,7 +868,7 @@ Before retaining an unqualified Arabic model claim:
 | Window | Focus |
 |--------|--------|
 | **Shipped (2.0.0)** | Shipped 1.4.0–2.0.0. Hub Sanad = **9B FT-6** (2026-08-21). Native pdf-inspector + pretrained Arabic adapter LIVE; Shahid table/figure evidence LIVE; grey-lit confirm LIVE; Tier 3 + multimodal gates PASSED. |
-| **Shipped (2.1.1)** | Arabic OCR fidelity. Indra reads Arabic scans when downloaded; Paddle is the fallback. |
+| **Shipped (2.1.2)** | Arabic localization & security hardening. Comprehensive copy audit, CLDR 6-form plurals, 0 vulnerabilities, Electron 42, PDF.js 6. |
 | **NO-GO** | **2.2.0 Sanad Arabic** — FT-7 and FT-7b NO-GO. FT-7c frozen and paused for budget. |
 | **Then** | 2.3.0–2.5.0 deterministic loop; **3.0.0 Ouroboros**; 3.1–4.2 facets/surfaces; **5.0.0 One Nassila**. |
 | **Unversioned** | Cloud-default LLM, notification center, thesis generation, fuzzy auto-apply, cloud sync — non-goals or rejected. |
@@ -990,13 +991,14 @@ If Sanad validation metrics appear on the site, do not publish bare “accuracy.
 
 ## 9. Implementation matrix (current vs planned)
 
-**Baseline:** app **2.1.1** (2026-10-23). Model **9B FT-6** (sole published Hub Sanad tier, Qwen 3.5 9B v119); 4B S15 / 12B S14 retired.
+**Baseline:** app **2.1.2** (2026-10-27). Model **9B FT-6** (sole published Hub Sanad tier, Qwen 3.5 9B v119); 4B S15 / 12B S14 retired.
 
 ### Shipped
 
 | Release | Codename (EN) | Codename (AR) | Status |
 |---------|---------------|---------------|--------|
 | 2.1.1 | Arabic OCR fidelity | دقة OCR العربي | **Shipped** 2026-10-23 — line order, legacy-encoded routing, Indra when downloaded, Paddle otherwise |
+| 2.1.2 | Arabic localization & security hardening | تدقيق التعريب والتحصين الأمني | **Shipped** 2026-10-27 — Arabic copy & CLDR plurals, Electron 42, PDF.js 6, 0 vulnerabilities |
 | 2.1.0 | Maktab Arabic | مكتب عربي | **Shipped** 2026-09-18 — production Paddle AR OCR + Arabic-aware mapping; L3 unvalidated |
 | 2.0.0 | MaktabOCR + Shahid | مكتب OCR + شاهد | **Shipped** 2026-09-06 — Firecrawl native + pretrained Arabic adapter; Shahid table/figure live; Tier 3 + multimodal PASS |
 | 1.10.1 | Packaged network parity | تكافؤ الشبكة المعبأة | **Shipped** 2026-08-23 |

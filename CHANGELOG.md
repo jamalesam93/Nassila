@@ -2,6 +2,72 @@
 
 All notable changes to **Nassila** are documented here.
 
+## [2.1.2] — 2026-10-27 · Arabic localization & security hardening
+
+App version **2.1.2**. Combines comprehensive Arabic UI copy audit, native CLDR 6-form pluralization, zero-dependency Windows ICO generation, Electron and PDF.js major version upgrades, and complete dependency vulnerability remediation (0 vulnerabilities). Cut the Windows installer with `npm run build:win` when publishing the GitHub release.
+
+### Added
+
+- **Full 6-form CLDR Arabic pluralization:**
+  - Added native Arabic plural grammar forms (`zero`, `one`, `two`, `few`, `many`, `other`) for citation counts, detected issues, and verification tallies in `src/renderer/i18n/locales/ar/translation.json`.
+  - Updated `tests/unit/i18n-key-parity.test.ts` to assert CLDR plural form compliance and 100% key parity with the English catalog.
+- **Zero-dependency ICO rasterization:**
+  - Implemented raw Device Independent Bitmap (DIB) stream encoding in `scripts/rasterize-icon.mjs` using `sharp`. The generated `resources/icon.ico` is bit-for-bit identical (361,102 bytes). Removed `to-ico` and eliminated 85 legacy transitive packages (including `jimp`, `request`, and obsolete image decoders).
+
+### Fixed
+
+- **Arabic translation & terminology audit:**
+  - Audited and corrected Arabic UI translations across all views, eliminating English calques and transliterations in favor of scholarly terminology.
+  - Standardized predatory journal terminology (`دوريات ومجلات وهمية / افتراسية / احتيالية`).
+  - Aligned native menu strings (`src/main/menu-i18n.ts`) with Arabic platform conventions and RTL typographical layout.
+- **PDF.js worker & resource lifecycle leaks:**
+  - Wrapped loading tasks with `loadingTask.destroy()` in `finally` blocks across all 5 extraction and OCR call sites (`src/engine/manuscript/pdf-extract.ts`, `src/engine/papers/match.ts`, `src/main/maktab/indra-ocr.ts`, `src/main/maktab/arabic-paddle-ocr.ts`, `src/main/maktab/tesseract-ocr.ts`) and evaluation scripts (`scripts/probe-ocr-golden.mjs`, `scripts/eval-arabic-ocr.mjs`).
+  - Prevents worker memory accumulation and dangling file locks during high-volume manuscript and folder-scan auditing.
+
+### Security
+
+- **Electron upgrade:** Upgraded `electron` to `^42.11.16` (`42.11.18`), resolving all 14 active Electron security advisories.
+- **PDF.js upgrade:** Upgraded `pdfjs-dist` to `^6.2.108` (`6.4.299`), resolving known PDF parser vulnerabilities and adapting to the v6 worker destruction API.
+- **0 dependency vulnerabilities:** Upgraded `sharp@^0.35.5`, pinned `onnxruntime-node@1.29.0`, and refreshed in-range transitive dependencies (`adm-zip@0.6.1`, `@xmldom/xmldom@0.8.15`, `postcss@8.5.32`, `vite@6.4.5`, `vitest@4.1.12`). Both `npm audit --omit=dev` and `npm audit` report 0 vulnerabilities.
+
+### Changed
+
+- **CI workflow:** Added `ONNXRUNTIME_NODE_INSTALL: skip` to `.github/workflows/ci.yml` to prevent Linux GPU package installation hangs.
+- **Node runtime engines:** Updated `engines.node` in `package.json` to `>=22.13.0 || >=24`.
+
+## [2.1.2] — 2026-10-27 · Arabic localization & security hardening
+
+App version **2.1.2**. Combines comprehensive Arabic UI copy audit, native CLDR 6-form pluralization, zero-dependency Windows ICO generation, Electron and PDF.js major version upgrades, and complete dependency vulnerability remediation (0 vulnerabilities). Cut the Windows installer with `npm run build:win` when publishing the GitHub release.
+
+### Added
+
+- **Full 6-form CLDR Arabic pluralization:**
+  - Added native Arabic plural grammar forms (`zero`, `one`, `two`, `few`, `many`, `other`) for citation counts, detected issues, and verification tallies in `src/renderer/i18n/locales/ar/translation.json`.
+  - Updated `tests/unit/i18n-key-parity.test.ts` to assert CLDR plural form compliance and 100% key parity with the English catalog.
+- **Zero-dependency ICO rasterization:**
+  - Implemented raw Device Independent Bitmap (DIB) stream encoding in `scripts/rasterize-icon.mjs` using `sharp`. The generated `resources/icon.ico` is bit-for-bit identical (361,102 bytes). Removed `to-ico` and eliminated 85 legacy transitive packages (including `jimp`, `request`, and obsolete image decoders).
+
+### Fixed
+
+- **Arabic translation & terminology audit:**
+  - Audited and corrected Arabic UI translations across all views, eliminating English calques and transliterations in favor of scholarly terminology.
+  - Standardized predatory journal terminology (`دوريات ومجلات وهمية / افتراسية / احتيالية`).
+  - Aligned native menu strings (`src/main/menu-i18n.ts`) with Arabic platform conventions and RTL typographical layout.
+- **PDF.js worker & resource lifecycle leaks:**
+  - Wrapped loading tasks with `loadingTask.destroy()` in `finally` blocks across all 5 extraction and OCR call sites (`src/engine/manuscript/pdf-extract.ts`, `src/engine/papers/match.ts`, `src/main/maktab/indra-ocr.ts`, `src/main/maktab/arabic-paddle-ocr.ts`, `src/main/maktab/tesseract-ocr.ts`) and evaluation scripts (`scripts/probe-ocr-golden.mjs`, `scripts/eval-arabic-ocr.mjs`).
+  - Prevents worker memory accumulation and dangling file locks during high-volume manuscript and folder-scan auditing.
+
+### Security
+
+- **Electron upgrade:** Upgraded `electron` to `^42.11.16` (`42.11.18`), resolving all 14 active Electron security advisories.
+- **PDF.js upgrade:** Upgraded `pdfjs-dist` to `^6.2.108` (`6.4.299`), resolving known PDF parser vulnerabilities and adapting to the v6 worker destruction API.
+- **0 dependency vulnerabilities:** Upgraded `sharp@^0.35.5`, pinned `onnxruntime-node@1.29.0`, and refreshed in-range transitive dependencies (`adm-zip@0.6.1`, `@xmldom/xmldom@0.8.15`, `postcss@8.5.32`, `vite@6.4.5`, `vitest@4.1.12`). Both `npm audit --omit=dev` and `npm audit` report 0 vulnerabilities.
+
+### Changed
+
+- **CI workflow:** Added `ONNXRUNTIME_NODE_INSTALL: skip` to `.github/workflows/ci.yml` to prevent Linux GPU package installation hangs.
+- **Node runtime engines:** Updated `engines.node` in `package.json` to `>=22.13.0 || >=24`.
+
 ## [2.1.1] — 2026-10-23 · Arabic OCR fidelity
 
 App version **2.1.1**. Arabic scan pages are read by Indra when its weights are installed, and by the packaged Paddle PP-OCRv5 adapter otherwise. This patch also fixes how Arabic text is read. Cut the Windows installer with `npm run build:win` when publishing the GitHub release.

@@ -1,9 +1,10 @@
-# Nassila Windows installers (v1.1.0 – v2.1.1)
+# Nassila Windows installers (v1.1.0 – v2.1.2)
 
 Built on this machine for [GitHub Releases](https://github.com/jamalesam93/Nassila/releases).
 
 | Version | Codename | Installer | Release notes |
 |---------|----------|-----------|---------------|
+| **2.1.2** | **Arabic localization & security hardening** | `Nassila Setup 2.1.2.exe` (cut on publish) | [v2.1.2-RELEASE_NOTES.md](./v2.1.2-RELEASE_NOTES.md) |
 | **2.1.1** | **Arabic OCR fidelity** | `Nassila Setup 2.1.1.exe` (cut on publish) | [v2.1.1-RELEASE_NOTES.md](./v2.1.1-RELEASE_NOTES.md) |
 | **2.1.0** | **Maktab Arabic** | `Nassila Setup 2.1.0.exe` | [v2.1.0-RELEASE_NOTES.md](./v2.1.0-RELEASE_NOTES.md) |
 | **2.0.0** | **MaktabOCR + Shahid** | `Nassila Setup 2.0.0.exe` | [v2.0.0-RELEASE_NOTES.md](./v2.0.0-RELEASE_NOTES.md) |
@@ -25,13 +26,13 @@ Built on this machine for [GitHub Releases](https://github.com/jamalesam93/Nassi
 
 **Next (see [`docs/Nassila-Ouroboros-Future.md`](../docs/Nassila-Ouroboros-Future.md) §5):** 2.2.0 **Sanad Arabic** (paused for budget). Sanad **FT-6** (v119) is the sole published Hub tier (S15/S14 retired).
 
-**Latest:** use **2.1.1**. The 2.1.0 installer remains the last attached binary until `build:win` is run for this patch. Older installers are for release history.
+**Latest:** use **2.1.2**. The 2.1.0 installer remains the last attached binary until `build:win` is run for this patch. Older installers are for release history.
 
-## Create GitHub release (2.1.1)
+## Create GitHub release (2.1.2)
 
 ```bash
 npm run build:win
-gh release create v2.1.1 "dist/Nassila Setup 2.1.1.exe" --title "v2.1.1 — Arabic OCR fidelity" --latest --notes-file release-artifacts/v2.1.1-RELEASE_NOTES.md
+gh release create v2.1.2 "dist/Nassila Setup 2.1.2.exe" --title "v2.1.2 — Arabic localization & security hardening" --latest --notes-file release-artifacts/v2.1.2-RELEASE_NOTES.md
 ```
 
 **Note:** This folder is local build output — do not commit `.exe` files to git.

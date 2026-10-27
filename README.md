@@ -11,24 +11,25 @@ Import or paste your bibliography, fix common errors, verify rows against Crossr
 
 | | |
 |---|---|
-| **Download (Windows)** | [**v2.1.1**](https://github.com/jamalesam93/Nassila/releases/tag/v2.1.1) · [Latest release](https://github.com/jamalesam93/Nassila/releases/latest) |
+| **Download (Windows)** | [**v2.1.2**](https://github.com/jamalesam93/Nassila/releases/tag/v2.1.2) · [Latest release](https://github.com/jamalesam93/Nassila/releases/latest) |
 | **Sanad model (HF)** | [`nassila-sanad-9b`](https://huggingface.co/QinEmPeRoR93/nassila-sanad-9b) (**FT-6** / v119 — sole tier; 6 default + 6 MTP GGUFs) — setup on the [website](https://nassila-web.vercel.app/en/docs/manuscript) |
 | **Website & docs** | [nassila-web.vercel.app](https://nassila-web.vercel.app) — [How-to](https://nassila-web.vercel.app/en/docs/how-to) · [User guide](https://nassila-web.vercel.app/en/docs/user-guide) · [Changelog](https://nassila-web.vercel.app/en/changelog) |
 | **Documentation (repo)** | [How-to guide](docs/HOW_TO_GUIDE.md) · [User guide](docs/USER_GUIDE.md) · [Brand](docs/BRAND.md) · [Changelog](CHANGELOG.md) |
 | **License** | [MIT](LICENSE) |
 
-> End users: install from **Releases** ([**v2.1.1**](https://github.com/jamalesam93/Nassila/releases/tag/v2.1.1)) or visit the [**website**](https://nassila-web.vercel.app). Developers: clone this repo and see [Getting started](#getting-started).
+> End users: install from **Releases** ([**v2.1.2**](https://github.com/jamalesam93/Nassila/releases/tag/v2.1.2)) or visit the [**website**](https://nassila-web.vercel.app). Developers: clone this repo and see [Getting started](#getting-started).
 
 The name **Nassila** is coined, inspired by the idea of a **sanad** (سند): a clear chain from what you write to where it came from.
 
-## What's new in v2.1.1 — Arabic OCR fidelity
+## What's new in v2.1.2 — Arabic localization & security hardening
 
-- **Arabic scans.** Settings → Local models can download Indra (about 14 MB, no Python). Once installed, Indra reads Arabic scan pages. Paddle PP-OCRv5, packaged with the app, re-reads a page Indra cannot. Without that download, Arabic scans stay on Paddle.
-- **Latin scans still use Tesseract.** Bundled English and French packs (`eng` / `fra`) cover Enhanced OCR. Arabic does not use Tesseract.
-- **Reading order and legacy fonts.** Arabic OCR lines stay in reading order. A text layer that decodes to the wrong characters is sent to OCR instead of being parsed as bibliography text. Character-reversed font PDFs still need **DOCX**.
-- **Arabic L3 is still unvalidated.** Sanad Arabic (**2.2.0**) stays paused.
+- **Arabic localization & CLDR pluralization:** Comprehensive copy audit across all views and native menus. Replaced English calques with standard academic terminology (e.g. predatory journals as `دوريات ومجلات وهمية / افتراسية`), and added full 6-form CLDR pluralization rules (`zero`, `one`, `two`, `few`, `many`, `other`) for citations and issues.
+- **Security hardening & 0 vulnerabilities:** Upgraded Electron to `^42.11.16` (`42.11.18`, eliminating all 14 active CVE advisories), upgraded PDF.js to `^6.2.108` (`6.4.299`), pinned `onnxruntime-node@1.29.0`, and refreshed transitive packages. `npm audit` reports 0 vulnerabilities.
+- **PDF.js worker leak prevention:** Systematically wrapped all PDF extraction and OCR document loading tasks with `loadingTask.destroy()` in `finally` cleanup blocks.
+- **Zero-dependency icon generator:** Removed `to-ico` and eliminated 85 legacy transitive packages in favor of an inline DIB stream encoder producing a bit-for-bit identical icon.
+- **Arabic OCR & L3:** Scanned Arabic PDFs continue to use in-app Indra when weights are downloaded (with packaged Paddle fallback). Sanad Arabic (**2.2.0**) stays paused for budget.
 
-Earlier releases: [CHANGELOG.md](CHANGELOG.md) · [v2.1.1 release](https://github.com/jamalesam93/Nassila/releases/tag/v2.1.1).
+Earlier releases: [CHANGELOG.md](CHANGELOG.md) · [v2.1.2 release](https://github.com/jamalesam93/Nassila/releases/tag/v2.1.2).
 
 ## Who is this for?
 
